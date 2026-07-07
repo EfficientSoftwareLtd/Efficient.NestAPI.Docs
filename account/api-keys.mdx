@@ -1,85 +1,47 @@
 ---
 title: "API keys"
-description: "Create, list, regenerate, and delete API keys, and control browser origins."
+description: "Key classes, lifecycle, and browser-origin (CORS) control."
 ---
 
-If you hold an **Admin-class** key you can manage keys programmatically. Usage-class keys can
-call nesting and importer endpoints but cannot manage keys — do that from the dashboard or
-with an Admin key.
+An **API key** authenticates every request as a Bearer token (see [Authentication](/authentication)).
+Keys come in two classes:
 
-<Info>
-These endpoints keep internal-looking routes (`/apiAdmin/keys`, `/apikeys/...`) for backward
-compatibility. They are the supported, documented account-management surface.
-</Info>
+| Class | Can do |
+|-------|--------|
+| **Usage** | Submit nesting requests. The default. |
+| **Admin** | Everything a Usage key can, plus manage browser origins and [fairness](/account/profile). |
 
-## List keys
+## Creating and managing keys
 
-```bash
-curl https://dev.api.nestapi.com/apiAdmin/keys \
-  -H "Authorization: Bearer YOUR_ADMIN_KEY"
-```
+<Note>
+Key lifecycle — **create, list, regenerate, and delete** — is currently managed from your
+**NestAPI dashboard**, not through the API. Use the dashboard to issue an Admin or Usage key,
+set its expiry and parallelism, and rotate or disable it. Programmatic, API-key-driven key
+management is on the roadmap; this page will document those endpoints when they ship.
+</Note>
 
-`GET /apiAdmin/keys` returns your active keys.
-
-## Create a key
-
-`POST /apiAdmin/keys` creates a key. Fields:
-
-| Field | Type | Notes |
-|-------|------|-------|
-| `Reference` | string | Your label for the key. |
-| `Email` | string | Contact/owner email. |
-| `Expires` | date? | Optional expiry. Omit for a non-expiring key. |
-| `Parallelism` | int | How many nests this key may run in parallel. |
-| `KeyType` | enum | `Usage` (nesting only, default) or `Admin` (also manage keys + fairness). |
-| `Trial` | bool | Request a time-boxed trial key. |
-
-```bash
-curl https://dev.api.nestapi.com/apiAdmin/keys \
-  -X POST \
-  -H "Authorization: Bearer YOUR_ADMIN_KEY" \
-  -H "Content-Type: application/json" \
-  -d '{ "Reference": "ci-pipeline", "Email": "ops@example.com", "Parallelism": 2, "KeyType": "Usage" }'
-```
-
-The response includes the new key value. **Store it securely — it is your secret.**
-
-## Regenerate a key
-
-`PUT /apiAdmin/keys` issues a fresh secret for an existing key (rotation). The old value stops
-working.
-
-```bash
-curl https://dev.api.nestapi.com/apiAdmin/keys \
-  -X PUT \
-  -H "Authorization: Bearer YOUR_ADMIN_KEY" \
-  -H "Content-Type: application/json" \
-  -d '{ "ApiKey": "THE_KEY_TO_ROTATE" }'
-```
-
-## Delete (disable) a key
-
-`DELETE /apiAdmin/keys` disables a key immediately — use this the moment a key is
-compromised.
-
-```bash
-curl https://dev.api.nestapi.com/apiAdmin/keys \
-  -X DELETE \
-  -H "Authorization: Bearer YOUR_ADMIN_KEY" \
-  -H "Content-Type: application/json" \
-  -d '{ "ApiKey": "THE_KEY_TO_DISABLE" }'
-```
+To check a key you already hold — validity and expiry — see
+[Identity &amp; key status](/account/profile).
 
 ## Browser origins (CORS)
 
-For keys used from a browser, restrict which **origins** may call the API with that key.
-Origins are matched **exactly** — scheme, host, and (non-default) port must all match.
+These endpoints **are** API-callable with an **Admin** key. For a key used from a browser,
+restrict which **origins** may call the API with it. Origins are matched **exactly** — scheme,
+host, and (non-default) port must all match.
 
-| Endpoint | Purpose |
-|----------|---------|
-| `GET /apikeys/{KeyId}/origins` | List allowed origins |
-| `POST /apikeys/{KeyId}/origins` | Add an allowed origin (e.g. `https://app.example.com`) |
-| `DELETE /apikeys/{KeyId}/origins` | Remove an allowed origin |
+| Endpoint | Method | Purpose |
+|----------|--------|---------|
+| `/apikeys/{KeyId}/origins` | GET | List allowed origins |
+| `/apikeys/{KeyId}/origins` | POST | Add an allowed origin |
+| `/apikeys/{KeyId}/origins` | DELETE | Remove an allowed origin |
+
+```bash
+curl https://dev.api.nestapi.com/apikeys/YOUR_KEY_ID/origins \
+  -X POST \
+  -H "Authorization: Bearer YOUR_ADMIN_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{ "Origin": "https://app.example.com" }'
+```
 
 <Tip>
 For local development add your dev server's exact origin, e.g. `http://localhost:3000` —
