@@ -3,11 +3,102 @@
   "info": {
     "title": "NestAPI",
     "version": "1.0.0",
-    "description": "Placeholder spec. This file is overwritten on every API deployment by the pipeline step that fetches /openapi, converts it to OpenAPI 3.0, and commits it here. Do not hand-edit."
+    "description": "Seed spec with a representative subset of endpoints. Replaced on every API deployment by the pipeline that fetches /openapi, converts it to OpenAPI 3.0, and commits it here. Do not hand-edit."
   },
   "servers": [
     { "url": "https://dev.api.nestapi.com", "description": "Staging" }
   ],
-  "paths": {},
-  "components": {}
+  "security": [
+    { "bearerAuth": [] }
+  ],
+  "tags": [
+    { "name": "nesting", "description": "Submit nesting jobs, retrieve results and exports" },
+    { "name": "public", "description": "Health check and public utility endpoints" },
+    { "name": "account", "description": "API key and account management" }
+  ],
+  "paths": {
+    "/public/alive": {
+      "get": {
+        "tags": ["public"],
+        "summary": "Health check",
+        "operationId": "Alive",
+        "security": [],
+        "responses": {
+          "200": { "description": "The API is alive." }
+        }
+      }
+    },
+    "/public/whoAmI": {
+      "post": {
+        "tags": ["public"],
+        "summary": "Identity behind the current API key",
+        "operationId": "WhoAmI",
+        "responses": {
+          "200": { "description": "Details of the account the key belongs to." },
+          "401": { "description": "API key missing or invalid." }
+        }
+      }
+    },
+    "/nesting": {
+      "post": {
+        "tags": ["nesting"],
+        "summary": "Submit a DXF nesting request",
+        "description": "Submit base64-encoded DXF files with the sheets to nest onto and the nesting settings. Returns a RequestId immediately; the completed ApiNestingResult is delivered asynchronously to your ResultsWebhookUri.",
+        "operationId": "DxfNestingRequest",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["Request"],
+                "properties": {
+                  "Request": {
+                    "type": "object",
+                    "description": "The nesting payload (Base64NestingRequest): base64 DXF parts, sheets, and settings."
+                  },
+                  "ResultsWebhookUri": {
+                    "type": "string",
+                    "format": "uri",
+                    "description": "Webhook URI the ApiNestingResult is POSTed to on completion."
+                  },
+                  "AutomaticallyStartNesting": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "If true, nesting starts immediately. If false, connect to SignalR then call /nesting/delayedstart."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Nesting request accepted. Returns a RequestId for tracking." },
+          "400": { "description": "Invalid request — check file encoding or missing required fields." },
+          "401": { "description": "API key missing or invalid." }
+        }
+      }
+    },
+    "/auth/validate": {
+      "get": {
+        "tags": ["account"],
+        "summary": "Validate the current API key",
+        "description": "Confirms the key is active and returns basic identity info.",
+        "operationId": "ValidateApiKey",
+        "responses": {
+          "200": { "description": "Validation result (Valid, UserId)." },
+          "401": { "description": "API key missing or invalid." }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "description": "API key sent as a Bearer token: Authorization: Bearer <key>."
+      }
+    }
+  }
 }
