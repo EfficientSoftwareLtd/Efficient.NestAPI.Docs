@@ -27,14 +27,12 @@ You can obtain keys in two ways:
 <CodeGroup>
 
 ```bash cURL
-curl https://dev.api.nestapi.com/public/whoAmI \
-  -X POST \
+curl https://dev.api.nestapi.com/auth/validate \
   -H "Authorization: Bearer YOUR_API_KEY"
 ```
 
 ```javascript Node
-const res = await fetch("https://dev.api.nestapi.com/public/whoAmI", {
-  method: "POST",
+const res = await fetch("https://dev.api.nestapi.com/auth/validate", {
   headers: { Authorization: `Bearer ${process.env.NESTAPI_KEY}` },
 });
 console.log(await res.json());
@@ -44,13 +42,13 @@ console.log(await res.json());
 using var http = new HttpClient();
 http.DefaultRequestHeaders.Authorization =
     new AuthenticationHeaderValue("Bearer", apiKey);
-var res = await http.PostAsync("https://dev.api.nestapi.com/public/whoAmI", null);
+var res = await http.GetAsync("https://dev.api.nestapi.com/auth/validate");
 ```
 
 </CodeGroup>
 
-`POST /public/whoAmI` echoes back the identity behind the key — a quick way to confirm a
-key is valid and see which account it belongs to.
+`GET /auth/validate` confirms the key is active and returns basic identity info
+(`Valid`, `UserId`) — a quick way to check a key works.
 
 ## Verifying a key
 
@@ -66,7 +64,7 @@ Two account endpoints help you check a key's state:
 | Class | Can do |
 |-------|--------|
 | **Usage** | Submit nesting and importer requests. The default. |
-| **Admin** | Everything a Usage key can, plus manage keys (create, regenerate, delete) and fairness. |
+| **Admin** | Everything a Usage key can, plus manage browser origins and fairness settings. |
 
 ## Security
 
@@ -76,6 +74,8 @@ source control. For browser-based apps, restrict a key to specific origins with 
 [allowed-origins endpoints](/account/api-keys) and keep long-lived keys server-side.
 </Warning>
 
-- Rotate keys periodically with `PUT /apiAdmin/keys` (regenerate).
-- Set an expiry when creating a key for time-boxed integrations.
-- Disable a compromised key immediately with `DELETE /apiAdmin/keys`.
+- Rotate keys periodically, and set an expiry for time-boxed integrations.
+- Disable a compromised key immediately.
+
+Key creation, rotation, and disabling are done from your NestAPI **dashboard** — see
+[API keys](/account/api-keys).

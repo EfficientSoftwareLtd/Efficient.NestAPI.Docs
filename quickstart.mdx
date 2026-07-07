@@ -11,12 +11,11 @@ takes a few minutes and assumes you already have an [API key](/authentication).
 <Step title="Confirm your key works">
 
 ```bash
-curl https://dev.api.nestapi.com/public/whoAmI \
-  -X POST \
+curl https://dev.api.nestapi.com/auth/validate \
   -H "Authorization: Bearer YOUR_API_KEY"
 ```
 
-A `200` with your account identity means you're ready.
+A `200` with `"Valid": true` means you're ready.
 
 </Step>
 

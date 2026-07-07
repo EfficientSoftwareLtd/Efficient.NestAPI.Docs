@@ -6,17 +6,6 @@ description: "Check who a key belongs to, whether it's valid, and when it expire
 A few lightweight endpoints let you inspect the key you're calling with — useful for health
 checks, diagnostics, and surfacing key state in your own UI.
 
-## Who am I?
-
-`POST /public/whoAmI` returns the identity behind the current key — the quickest way to
-confirm a key works and see which account it maps to.
-
-```bash
-curl https://dev.api.nestapi.com/public/whoAmI \
-  -X POST \
-  -H "Authorization: Bearer YOUR_API_KEY"
-```
-
 ## Is the key valid?
 
 `GET /auth/validate` confirms the key is active and returns basic identity info
@@ -38,11 +27,6 @@ curl https://dev.api.nestapi.com/apiKey/validUntil \
 ```
 
 <Tip>
-Poll `validUntil` in scheduled jobs to warn before an integration's key lapses, and rotate
-ahead of time with `PUT /apiAdmin/keys` (see [API keys](/account/api-keys)).
+Poll `validUntil` in scheduled jobs to warn before an integration's key lapses, and rotate it
+ahead of time from your dashboard (see [API keys](/account/api-keys)).
 </Tip>
-
-<Note>
-Managing keys themselves (create, list, rotate, delete) needs an Admin-class key — see
-[API keys](/account/api-keys).
-</Note>

@@ -28,17 +28,6 @@
         }
       }
     },
-    "/public/whoAmI": {
-      "post": {
-        "tags": ["public"],
-        "summary": "Identity behind the current API key",
-        "operationId": "WhoAmI",
-        "responses": {
-          "200": { "description": "Details of the account the key belongs to." },
-          "401": { "description": "API key missing or invalid." }
-        }
-      }
-    },
     "/nesting": {
       "post": {
         "tags": ["nesting"],
