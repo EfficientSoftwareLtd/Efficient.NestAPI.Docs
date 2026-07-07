@@ -14,16 +14,17 @@ The site combines **hand-written guides** (the `.mdx` files in this repo) with a
 
 Each branch is a separate Mintlify project. Mintlify auto-deploys on push.
 
-### Differences between the two `mint.json` files
+### Configuration (`docs.json`)
 
-`mint.json` on this (`development`) branch is the staging config. When promoting content to
-`main`, the only two differences are:
+Site config is `docs.json` (Mintlify's current schema — the older `mint.json` is not used).
+The API base URL for the "Try it" playground comes from the `servers` block of the synced
+`openapi.json`, which the pipeline stamps per environment — so `docs.json` is **identical on
+both branches** and content promotes cleanly by merging `development` → `main` with no
+per-branch overrides.
 
-1. Remove the `"topAnchor"` staging banner.
-2. Change `"api.baseUrl"` from `https://dev.api.nestapi.com` to `https://api.nestapi.com`.
-
-Everything else (navigation, groups, colours) is identical, so promote by merging
-`development` → `main` and keeping `main`'s `mint.json` overrides for those two fields.
+The API Reference is auto-generated: the `API Reference` navigation group points at
+`/openapi.json` and Mintlify builds the endpoint groups from the spec's own tags
+(`nesting`, `public`, `account`) and their descriptions.
 
 ## `openapi.json` is generated — do not hand-edit
 
