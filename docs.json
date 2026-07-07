@@ -1,0 +1,55 @@
+{
+  "$schema": "https://mintlify.com/docs.json",
+  "theme": "mint",
+  "name": "NestAPI Documentation",
+  "colors": {
+    "primary": "#0D9373",
+    "light": "#07C983",
+    "dark": "#0D9373"
+  },
+  "logo": {
+    "light": "/images/logo-light.svg",
+    "dark": "/images/logo-dark.svg"
+  },
+  "favicon": "/images/favicon.svg",
+  "navigation": {
+    "groups": [
+      {
+        "group": "Getting Started",
+        "pages": ["introduction", "authentication", "quickstart"]
+      },
+      {
+        "group": "Guides",
+        "pages": [
+          "guides/nesting-workflow",
+          "guides/webhooks",
+          "guides/geometry-types",
+          "guides/quote-nesting",
+          "guides/1d-nesting"
+        ]
+      },
+      {
+        "group": "Concepts",
+        "pages": [
+          "concepts/parts-and-sheets",
+          "concepts/nesting-settings",
+          "concepts/common-cutting",
+          "concepts/export-types"
+        ]
+      },
+      {
+        "group": "Account",
+        "pages": ["account/api-keys", "account/profile"]
+      },
+      {
+        "group": "API Reference",
+        "openapi": "/openapi.json"
+      }
+    ]
+  },
+  "navbar": {
+    "links": [
+      { "label": "Sign Up for Trial", "href": "https://api.nestapi.com/trial" }
+    ]
+  }
+}
