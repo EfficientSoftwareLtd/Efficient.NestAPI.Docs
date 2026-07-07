@@ -2,91 +2,5053 @@
   "openapi": "3.0.0",
   "info": {
     "title": "NestAPI",
-    "version": "1.0.0",
-    "description": "Seed spec with a representative subset of endpoints. Replaced on every API deployment by the pipeline that fetches /openapi, converts it to OpenAPI 3.0, and commits it here. Do not hand-edit."
+    "version": "1.0"
   },
-  "servers": [
-    { "url": "https://dev.api.nestapi.com", "description": "Staging" }
-  ],
-  "security": [
-    { "bearerAuth": [] }
-  ],
-  "tags": [
-    { "name": "nesting", "description": "Submit nesting jobs, retrieve results and exports" },
-    { "name": "public", "description": "Health check and public utility endpoints" },
-    { "name": "account", "description": "API key and account management" }
-  ],
   "paths": {
-    "/public/alive": {
+    "/admin/fairness/config": {
       "get": {
-        "tags": ["public"],
-        "summary": "Health check",
-        "operationId": "Alive",
-        "security": [],
+        "tags": [
+          "fairness"
+        ],
+        "summary": "Get the account's per-customer fairness configuration",
+        "description": "Admin only. Returns whether fairness/overage are enabled, the default per-key weight, and the shared-burst percentage for the account's active plan.",
+        "operationId": "GetFairnessConfig",
         "responses": {
-          "200": { "description": "The API is alive." }
-        }
-      }
-    },
-    "/nesting": {
-      "post": {
-        "tags": ["nesting"],
-        "summary": "Submit a DXF nesting request",
-        "description": "Submit base64-encoded DXF files with the sheets to nest onto and the nesting settings. Returns a RequestId immediately; the completed ApiNestingResult is delivered asynchronously to your ResultsWebhookUri.",
-        "operationId": "DxfNestingRequest",
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FairnessConfigResponse"
+                }
+              }
+            }
+          }
+        },
+        "deprecated": false,
+        "security": [
+          {
+            "Bearer": []
+          }
+        ]
+      },
+      "patch": {
+        "tags": [
+          "fairness"
+        ],
+        "summary": "Update the account's per-customer fairness configuration",
+        "description": "Admin only. Only the fields you supply are changed. Fairness is a paid-plan feature. See NESTING_MINUTES_FAIRNESS_DESIGN.md.",
+        "operationId": "SetFairnessConfig",
+        "parameters": [
+          {
+            "name": "FairnessEnabled",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "OverageEnabled",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "DefaultLineageWeight",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "BurstPercent",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
         "requestBody": {
-          "required": true,
           "content": {
             "application/json": {
               "schema": {
-                "type": "object",
-                "required": ["Request"],
-                "properties": {
-                  "Request": {
-                    "type": "object",
-                    "description": "The nesting payload (Base64NestingRequest): base64 DXF parts, sheets, and settings."
-                  },
-                  "ResultsWebhookUri": {
-                    "type": "string",
-                    "format": "uri",
-                    "description": "Webhook URI the ApiNestingResult is POSTed to on completion."
-                  },
-                  "AutomaticallyStartNesting": {
-                    "type": "boolean",
-                    "default": true,
-                    "description": "If true, nesting starts immediately. If false, connect to SignalR then call /nesting/delayedstart."
+                "$ref": "#/components/schemas/SetFairnessConfig"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FairnessConfigResponse"
+                }
+              }
+            }
+          }
+        },
+        "deprecated": false,
+        "security": [
+          {
+            "Bearer": []
+          }
+        ]
+      },
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/Accept"
+        }
+      ]
+    },
+    "/apikeys/{KeyId}/origins": {
+      "get": {
+        "tags": [
+          "account"
+        ],
+        "summary": "List allowed origins for an API key",
+        "description": "List allowed origins for an API key",
+        "operationId": "GetKeyAllowedOrigins",
+        "parameters": [
+          {
+            "name": "KeyId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "List<String>",
+                  "type": "array",
+                  "items": {
+                    "type": "string"
                   }
                 }
               }
             }
           }
         },
+        "deprecated": false,
+        "security": [
+          {
+            "Bearer": []
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "account"
+        ],
+        "summary": "Add an allowed browser Origin (CORS) to an API key. Provide a full absolute origin — scheme, host and (non-default) port — e.g. https://app.example.com. Origins are matched exactly, so register each distinct origin you call the API from. For local development, add your dev server's localhost origin (e.g. http://localhost:3000); the scheme and port must match exactly (http://localhost:3000 is different from https://localhost:3000 and from http://localhost:5173).",
+        "description": "Add an allowed browser Origin (CORS) to an API key. Provide a full absolute origin — scheme, host and (non-default) port — e.g. https://app.example.com. Origins are matched exactly, so register each distinct origin you call the API from. For local development, add your dev server's localhost origin (e.g. http://localhost:3000); the scheme and port must match exactly (http://localhost:3000 is different from https://localhost:3000 and from http://localhost:5173).",
+        "operationId": "AddKeyAllowedOrigin",
+        "parameters": [
+          {
+            "name": "KeyId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Origin",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddKeyAllowedOrigin"
+              }
+            }
+          }
+        },
         "responses": {
-          "200": { "description": "Nesting request accepted. Returns a RequestId for tracking." },
-          "400": { "description": "Invalid request — check file encoding or missing required fields." },
-          "401": { "description": "API key missing or invalid." }
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "List<String>",
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "deprecated": false,
+        "security": [
+          {
+            "Bearer": []
+          }
+        ]
+      },
+      "delete": {
+        "tags": [
+          "account"
+        ],
+        "summary": "Remove an allowed origin from an API key",
+        "description": "Remove an allowed origin from an API key",
+        "operationId": "RemoveKeyAllowedOrigin",
+        "parameters": [
+          {
+            "name": "KeyId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Origin",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "List<String>",
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "deprecated": false,
+        "security": [
+          {
+            "Bearer": []
+          }
+        ]
+      },
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/Accept"
+        }
+      ]
+    },
+    "/v1/nesting/successes": {
+      "get": {
+        "tags": [
+          "nesting"
+        ],
+        "summary": "Fetch nests that have been completed successfully in the last 24 hours",
+        "description": "Fetch nests that have been completed successfully in the last 24 hours",
+        "operationId": "SuccessfulNestsRequest",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "List<SuccessfulNest>",
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/SuccessfulNest"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "deprecated": false,
+        "security": [
+          {
+            "Bearer": []
+          }
+        ]
+      },
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/Accept"
+        }
+      ]
+    },
+    "/v1/nesting/failures": {
+      "get": {
+        "tags": [
+          "nesting"
+        ],
+        "summary": "Fetch nests that have been failed in the last 24 hours",
+        "description": "Fetch nests that have been failed in the last 24 hours",
+        "operationId": "FailingNestsRequest",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "List<FailedNest>",
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/FailedNest"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "deprecated": false,
+        "security": [
+          {
+            "Bearer": []
+          }
+        ]
+      },
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/Accept"
+        }
+      ]
+    },
+    "/v1/nesting/status": {
+      "get": {
+        "tags": [
+          "nesting"
+        ],
+        "summary": "Get the status of a nesting request by RequestId",
+        "description": "Returns the current status (Running, Completed, Failed) and the ResultIdentity if available.",
+        "operationId": "FetchNestingStatus",
+        "parameters": [
+          {
+            "name": "RequestId",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NestingStatusResponse"
+                }
+              }
+            }
+          }
+        },
+        "deprecated": false,
+        "security": [
+          {
+            "Bearer": []
+          }
+        ]
+      },
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/Accept"
+        }
+      ]
+    },
+    "/v1/nesting/render/": {
+      "get": {
+        "tags": [
+          "nesting"
+        ],
+        "summary": "Request a Render response for a nesting Result",
+        "description": "This endpoint requires calling with your ApiKey <br /><b>RequestId</b><br /> <br /> RequestId to get result from<br /><b>ResultIdentity</b> <br /> ResultId for the result you wish to fetch<br />",
+        "operationId": "FetchNestingRender",
+        "parameters": [
+          {
+            "name": "RequestId",
+            "in": "query",
+            "x-nullable": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "ResultIdentity",
+            "in": "query",
+            "x-nullable": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RenderResponse"
+                }
+              }
+            }
+          }
+        },
+        "deprecated": false,
+        "security": [
+          {
+            "Bearer": []
+          }
+        ]
+      },
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/Accept"
+        }
+      ]
+    },
+    "/v1/nesting/result/": {
+      "post": {
+        "tags": [
+          "nesting"
+        ],
+        "summary": "Request a ReportSource response for a nesting Result",
+        "description": "This endpoint requires calling with your ApiKey <br /><b>RequestId</b><br /> <br /> RequestId to get result from<br /><b>ResultIdentity</b> <br /> ResultId for the result you wish to fetch<br />",
+        "operationId": "FetchNestingResult",
+        "parameters": [
+          {
+            "name": "RequestId",
+            "in": "query",
+            "x-nullable": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "ResultIdentity",
+            "in": "query",
+            "x-nullable": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "ReportSourceRenderingSettings",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FetchNestingResult"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReportSourceResponse"
+                }
+              }
+            }
+          }
+        },
+        "deprecated": false,
+        "security": [
+          {
+            "Bearer": []
+          }
+        ]
+      },
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/Accept"
+        }
+      ]
+    },
+    "/v1/nesting/parametric": {
+      "post": {
+        "tags": [
+          "nesting"
+        ],
+        "summary": "NestingRequest based on parametric part definitions.",
+        "description": "This endpoint requires calling with your ApiKey <br /><b>Request</b><br /> <b>ParametricNestingRequest</b> <br /> Refer to Model link in body section of this endpoint's api doc below (Next to Example Value) <br /><b>ResultsWebhookUri</b><br /> Web hook uri to POST the result to",
+        "operationId": "ParametricGeometryNestingRequest",
+        "parameters": [
+          {
+            "name": "Request",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "ResultsWebhookUri",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "AutomaticallyStartNesting",
+            "in": "query",
+            "x-nullable": false,
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ParametricGeometryNestingRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiNestingResult"
+                }
+              }
+            }
+          }
+        },
+        "deprecated": false,
+        "security": [
+          {
+            "Bearer": []
+          }
+        ]
+      },
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/Accept"
+        }
+      ]
+    },
+    "/v1/nesting/geometry": {
+      "post": {
+        "tags": [
+          "nesting"
+        ],
+        "summary": "NestingRequest based on Encoded geometry (from our importer or defined as SimpleGeometry).",
+        "description": "This endpoint requires calling with your ApiKey <br /><b>Request</b><br /> <b>GeometryNestingRequest</b> <br /> Refer to Model link in body section of this endpoint's api doc below (Next to Example Value) <br /><b>ResultsWebhookUri</b><br /> Web hook uri to POST the result to",
+        "operationId": "EncodedGeometryNestingRequest",
+        "parameters": [
+          {
+            "name": "Request",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "ResultsWebhookUri",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "AutomaticallyStartNesting",
+            "in": "query",
+            "x-nullable": false,
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EncodedGeometryNestingRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiNestingResult"
+                }
+              }
+            }
+          }
+        },
+        "deprecated": false,
+        "security": [
+          {
+            "Bearer": []
+          }
+        ]
+      },
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/Accept"
+        }
+      ]
+    },
+    "/v1/nesting/mynesting": {
+      "post": {
+        "tags": [
+          "nesting"
+        ],
+        "summary": "MyNesting XML encoded request",
+        "description": "This endpoint requires calling with your ApiKey <br /><b>Request</b><br /> <b>MyNestingXML</b> <br /> Refer to Model link in body section of this endpoint's api doc below (Next to Example Value) <br /><b>ResultsWebhookUri</b><br /> Web hook uri to POST the result to",
+        "operationId": "MyNestingRequest",
+        "parameters": [
+          {
+            "name": "MyNestingXML",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "ResultsWebhookUri",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MyNestingRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiNestingResult"
+                }
+              }
+            }
+          }
+        },
+        "deprecated": false,
+        "security": [
+          {
+            "Bearer": []
+          }
+        ]
+      },
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/Accept"
+        }
+      ]
+    },
+    "/v1/nesting/geometryquotenesting": {
+      "post": {
+        "tags": [
+          "nesting"
+        ],
+        "summary": "QuoteNestingRequest",
+        "description": "This endpoint requires calling with your ApiKey <br />",
+        "operationId": "EncodedGeometryQuoteNestingRequest",
+        "parameters": [
+          {
+            "name": "Request",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "ResultsWebhookUri",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "AutomaticallyStartNesting",
+            "in": "query",
+            "x-nullable": false,
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EncodedGeometryQuoteNestingRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiNestingResult"
+                }
+              }
+            }
+          }
+        },
+        "deprecated": false,
+        "security": [
+          {
+            "Bearer": []
+          }
+        ]
+      },
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/Accept"
+        }
+      ]
+    },
+    "/v1/nesting/quotenesting": {
+      "post": {
+        "tags": [
+          "nesting"
+        ],
+        "summary": "QuoteNestingRequest",
+        "description": "This endpoint requires calling with your ApiKey <br />",
+        "operationId": "DxfQuoteNestingRequest",
+        "parameters": [
+          {
+            "name": "Request",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "ResultsWebhookUri",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "AutomaticallyStartNesting",
+            "in": "query",
+            "x-nullable": false,
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DxfQuoteNestingRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiNestingResult"
+                }
+              }
+            }
+          }
+        },
+        "deprecated": false,
+        "security": [
+          {
+            "Bearer": []
+          }
+        ]
+      },
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/Accept"
+        }
+      ]
+    },
+    "/v1/nesting/1D": {
+      "post": {
+        "tags": [
+          "nesting"
+        ],
+        "summary": "1D Nesting Request",
+        "description": "This endpoint requires calling with your ApiKey <br />",
+        "operationId": "NestingRequest1D",
+        "parameters": [
+          {
+            "name": "Request",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NestingRequest1D"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Nesting1DResponse"
+                }
+              }
+            }
+          }
+        },
+        "deprecated": false,
+        "security": [
+          {
+            "Bearer": []
+          }
+        ]
+      },
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/Accept"
+        }
+      ]
+    },
+    "/v1/apiKey/validUntil": {
+      "get": {
+        "tags": [
+          "account"
+        ],
+        "summary": "Check the expiry date of your ApiKey",
+        "description": "This endpoint requires calling with your Api Key.<br />If your Api key has an expiry it will return when it expires.<br />If your Api key does not expire, it will return 31/12/9999 as the expiry date.",
+        "operationId": "GetApiValidUntil",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiKeyValidUntil"
+                }
+              }
+            }
+          }
+        },
+        "deprecated": false,
+        "security": [
+          {
+            "Bearer": []
+          }
+        ]
+      },
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/Accept"
+        }
+      ]
+    },
+    "/v1/nesting/delayedstart": {
+      "post": {
+        "tags": [
+          "nesting"
+        ],
+        "summary": "Call this to start nesting in nesting ui once you have connected to signal R and invoked ListenForUpdates",
+        "description": "This endpoint requires calling with your ApiKey <br /><br />Call this to start nesting in nesting ui once you have connected to signal R and invoked ListenForUpdates",
+        "operationId": "ReadyForNesting",
+        "parameters": [
+          {
+            "name": "RequestId",
+            "in": "query",
+            "x-nullable": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReadyForNesting"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NestingStarted"
+                }
+              }
+            }
+          }
+        },
+        "deprecated": false,
+        "security": [
+          {
+            "Bearer": []
+          }
+        ]
+      },
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/Accept"
+        }
+      ]
+    },
+    "/v1/nesting/exportquotenest": {
+      "get": {
+        "tags": [
+          "nesting"
+        ],
+        "operationId": "GenerateQuoteNestingExport",
+        "parameters": [
+          {
+            "name": "RequestId",
+            "in": "query",
+            "x-nullable": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "WebHookUri",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NestApiExport"
+                }
+              }
+            }
+          }
+        },
+        "deprecated": false,
+        "security": [
+          {
+            "Bearer": []
+          }
+        ]
+      },
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/Accept"
+        }
+      ]
+    },
+    "/v1/nesting/export": {
+      "get": {
+        "tags": [
+          "nesting"
+        ],
+        "summary": "Request a response for a nesting Result based on ResponseType passed",
+        "description": "This endpoint requires calling with your ApiKey <br /><br /><b>Id</b><br/> <b>String</b><br /> This Id is NestIdentifier in the JSON pushed to your webhook for nesting. It is also returned from the /nesting endpoint<br /><br /><b>ResultId</b><br/> <b>String</b><br /> This Id is ResultIdentity in the JSON pushed to your webhook for nesting.<br /><br /><b>ResponseType</b><br/> <b>Enum / Int</b><br /> This alters the kind of result that is pushed to your provided webhook <br /><b>0 or result </b> - Posts part placement details of result to webhook<br /><b>1 or render</b> - Posts base64 encode render (SVG or PNG) of the result to webhook<br /><b>2 or dxf</b> - Posts base64 encoded dxf file of the results to webhook <br /><b>3 or reportsource</b> - Posts information designed for report generation, statistics and base64 renderings to webhook <br /><b>4 or remnantexport</b> -Posts  base64 encoded zip file containing the dxf representation of remnants generated by the nesting to webhook<br /><br /><b>WebHookUri</b><br/> <b>String</b><br /> Web hook uri to POST the result to",
+        "operationId": "GenerateNestApiExport",
+        "parameters": [
+          {
+            "name": "RequestId",
+            "in": "query",
+            "x-nullable": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "ResultId",
+            "in": "query",
+            "x-nullable": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "ResponseType",
+            "in": "query",
+            "x-nullable": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "Result",
+                "Render",
+                "DXF",
+                "ReportSource",
+                "RemnantExport",
+                "Runtime",
+                "PartsExport"
+              ]
+            }
+          },
+          {
+            "name": "WebHookUri",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NestApiExport"
+                }
+              }
+            }
+          }
+        },
+        "deprecated": false,
+        "security": [
+          {
+            "Bearer": []
+          }
+        ]
+      },
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/Accept"
+        }
+      ]
+    },
+    "/v1/auth/validate": {
+      "get": {
+        "tags": [
+          "account"
+        ],
+        "summary": "Validates the caller's API key is active and returns basic identity info",
+        "description": "Validates the caller's API key is active and returns basic identity info",
+        "operationId": "ValidateApiKey",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidateApiKeyResponse"
+                }
+              }
+            }
+          }
+        },
+        "deprecated": false,
+        "security": [
+          {
+            "Bearer": []
+          }
+        ]
+      },
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/Accept"
+        }
+      ]
+    },
+    "/admin/keys/{ApiKeyId}/weight": {
+      "patch": {
+        "tags": [
+          "fairness"
+        ],
+        "summary": "Set a key's fairness weight",
+        "description": "Admin only. Sets the per-customer fairness weight for one of your keys; omit LineageWeight (null) to clear the override and fall back to the plan default.",
+        "operationId": "SetKeyFairnessWeight",
+        "parameters": [
+          {
+            "name": "ApiKeyId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "LineageWeight",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SetKeyFairnessWeight"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KeyFairnessWeightResponse"
+                }
+              }
+            }
+          }
+        },
+        "deprecated": false,
+        "security": [
+          {
+            "Bearer": []
+          }
+        ]
+      },
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/Accept"
+        }
+      ]
+    },
+    "/usage/fairness": {
+      "get": {
+        "tags": [
+          "fairness"
+        ],
+        "summary": "Per-customer nesting-minutes usage breakdown",
+        "description": "Admin only (an Admin API key or the account owner). Returns how the account's nesting minutes are being shared across your API keys for the current period. Each row is one of your keys (i.e. one of your customers): the minutes it has consumed, its guaranteed fair-share floor, any overage it incurred, and a sizing signal to help you right-size weights. When fairness is not enabled on the plan the rows are informational only.",
+        "operationId": "GetFairnessUsage",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FairnessUsageResponse"
+                }
+              }
+            }
+          }
+        },
+        "deprecated": false,
+        "security": [
+          {
+            "Bearer": []
+          }
+        ]
+      },
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/Accept"
+        }
+      ]
+    },
+    "/v1/nesting/export/cached": {
+      "get": {
+        "tags": [
+          "nesting"
+        ],
+        "summary": "Fetch a cached nesting export generated via SignalR result generation request",
+        "description": "Fetch a cached nesting export generated via SignalR result generation request",
+        "operationId": "FetchCachedNestingExport",
+        "parameters": [
+          {
+            "name": "RequestId",
+            "in": "query",
+            "x-nullable": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "ResultId",
+            "in": "query",
+            "x-nullable": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "ResponseType",
+            "in": "query",
+            "x-nullable": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "Result",
+                "Render",
+                "DXF",
+                "ReportSource",
+                "RemnantExport",
+                "Runtime",
+                "PartsExport"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CachedNestingExportResponse"
+                }
+              }
+            }
+          }
+        },
+        "deprecated": false,
+        "security": [
+          {
+            "Bearer": []
+          }
+        ]
+      },
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/Accept"
+        }
+      ]
+    },
+    "/v1/nesting": {
+      "post": {
+        "tags": [
+          "nesting"
+        ],
+        "summary": "NestingRequest based on geometry imported from the provided base64 encoded files.",
+        "description": "This endpoint requires calling with your ApiKey <br /><b>Request</b><br /> <b>Base64NestingRequest</b> <br /> Refer to Model link in body section of this endpoint's api doc below (Next to Example Value) <br /><b>ResultsWebhookUri</b><br /> Web hook uri to POST the result to",
+        "operationId": "DxfNestingRequest",
+        "parameters": [
+          {
+            "name": "Request",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "ResultsWebhookUri",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "AutomaticallyStartNesting",
+            "in": "query",
+            "x-nullable": false,
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DxfNestingRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Nesting request accepted. Returns a RequestId for tracking.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiNestingResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request — check file encoding or missing required fields.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiNestingResult"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "API key is missing or invalid.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiNestingResult"
+                }
+              }
+            }
+          }
+        },
+        "deprecated": false,
+        "security": [
+          {
+            "Bearer": []
+          }
+        ]
+      },
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/Accept"
+        }
+      ]
+    },
+    "/public/alive": {
+      "get": {
+        "tags": [
+          "public"
+        ],
+        "summary": "Endpoint to check if the api is alive",
+        "description": "Endpoint to check if the api is alive",
+        "operationId": "Alive",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Object"
+                }
+              }
+            }
+          }
+        },
+        "deprecated": false
+      },
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/Accept"
+        }
+      ]
+    }
+  },
+  "tags": [
+    {
+      "name": "account",
+      "description": "API key and account management"
+    },
+    {
+      "name": "admin"
+    },
+    {
+      "name": "ApiAdmin"
+    },
+    {
+      "name": "auth"
+    },
+    {
+      "name": "fairness",
+      "description": "Per-customer nesting-minutes fairness config, weights and usage (requires an Admin API key)"
+    },
+    {
+      "name": "importer"
+    },
+    {
+      "name": "nesting",
+      "description": "Submit nesting jobs, retrieve results and exports"
+    },
+    {
+      "name": "public",
+      "description": "Health check and public utility endpoints"
+    }
+  ],
+  "servers": [
+    {
+      "description": "Staging",
+      "url": "https://dev.api.nestapi.com"
+    }
+  ],
+  "components": {
+    "parameters": {
+      "Accept": {
+        "name": "Accept",
+        "in": "header",
+        "description": "Accept Header",
+        "required": true,
+        "schema": {
+          "type": "string",
+          "enum": [
+            "application/json"
+          ]
         }
       }
     },
-    "/auth/validate": {
-      "get": {
-        "tags": ["account"],
-        "summary": "Validate the current API key",
-        "description": "Confirms the key is active and returns basic identity info.",
-        "operationId": "ValidateApiKey",
-        "responses": {
-          "200": { "description": "Validation result (Valid, UserId)." },
-          "401": { "description": "API key missing or invalid." }
-        }
-      }
-    }
-  },
-  "components": {
     "securitySchemes": {
-      "bearerAuth": {
-        "type": "http",
-        "scheme": "bearer",
-        "description": "API key sent as a Bearer token: Authorization: Bearer <key>."
+      "Bearer": {
+        "type": "apiKey",
+        "name": "Authorization",
+        "in": "header"
+      }
+    },
+    "schemas": {
+      "Object": {
+        "properties": {},
+        "description": "Object",
+        "type": "object"
+      },
+      "RevokeApiKey": {
+        "title": "RevokeApiKey",
+        "properties": {
+          "ApiKeyId": {
+            "type": "string"
+          }
+        },
+        "description": "RevokeApiKey",
+        "type": "object"
+      },
+      "GetFairnessConfig": {
+        "title": "GetFairnessConfig",
+        "properties": {},
+        "description": "GetFairnessConfig",
+        "type": "object"
+      },
+      "SetFairnessConfig": {
+        "title": "SetFairnessConfig",
+        "properties": {
+          "FairnessEnabled": {
+            "type": "boolean"
+          },
+          "OverageEnabled": {
+            "type": "boolean"
+          },
+          "DefaultLineageWeight": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "BurstPercent": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "description": "SetFairnessConfig",
+        "type": "object"
+      },
+      "ListApiKeys": {
+        "title": "ListApiKeys",
+        "properties": {},
+        "description": "ListApiKeys",
+        "type": "object"
+      },
+      "CreateApiKey": {
+        "title": "CreateApiKey",
+        "properties": {
+          "Reference": {
+            "type": "string"
+          },
+          "Expires": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "Email": {
+            "type": "string"
+          },
+          "Parallelism": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": false
+          },
+          "KeyType": {
+            "type": "string"
+          },
+          "Trial": {
+            "type": "boolean",
+            "nullable": false
+          }
+        },
+        "description": "CreateApiKey",
+        "type": "object"
+      },
+      "GetKeyAllowedOrigins": {
+        "title": "GetKeyAllowedOrigins",
+        "properties": {
+          "KeyId": {
+            "type": "string"
+          }
+        },
+        "description": "List allowed origins for an API key",
+        "type": "object"
+      },
+      "AddKeyAllowedOrigin": {
+        "title": "AddKeyAllowedOrigin",
+        "properties": {
+          "KeyId": {
+            "type": "string"
+          },
+          "Origin": {
+            "type": "string"
+          }
+        },
+        "description": "Add an allowed browser Origin (CORS) to an API key. Provide a full absolute origin — scheme, host and (non-default) port — e.g. https://app.example.com. Origins are matched exactly, so register each distinct origin you call the API from. For local development, add your dev server's localhost origin (e.g. http://localhost:3000); the scheme and port must match exactly (http://localhost:3000 is different from https://localhost:3000 and from http://localhost:5173).",
+        "type": "object"
+      },
+      "RemoveKeyAllowedOrigin": {
+        "title": "RemoveKeyAllowedOrigin",
+        "properties": {
+          "KeyId": {
+            "type": "string"
+          },
+          "Origin": {
+            "type": "string"
+          }
+        },
+        "description": "Remove an allowed origin from an API key",
+        "type": "object"
+      },
+      "FetchUserProfile": {
+        "title": "FetchUserProfile",
+        "properties": {},
+        "description": "Get users profile",
+        "type": "object"
+      },
+      "SuccessfulNestsRequest": {
+        "title": "SuccessfulNestsRequest",
+        "properties": {},
+        "description": "SuccessfulNestsRequest",
+        "type": "object"
+      },
+      "FailingNestsRequest": {
+        "title": "FailingNestsRequest",
+        "properties": {},
+        "description": "FailingNestsRequest",
+        "type": "object"
+      },
+      "FetchNestingStatus": {
+        "title": "FetchNestingStatus",
+        "properties": {
+          "RequestId": {
+            "type": "string"
+          }
+        },
+        "description": "FetchNestingStatus",
+        "type": "object"
+      },
+      "FetchNestingRender": {
+        "title": "FetchNestingRender",
+        "properties": {
+          "RequestId": {
+            "type": "string",
+            "nullable": false
+          },
+          "ResultIdentity": {
+            "type": "string",
+            "nullable": false
+          }
+        },
+        "description": "FetchNestingRender",
+        "type": "object"
+      },
+      "FetchNestingResult": {
+        "title": "FetchNestingResult",
+        "properties": {
+          "RequestId": {
+            "type": "string",
+            "nullable": false
+          },
+          "ResultIdentity": {
+            "type": "string",
+            "nullable": false
+          },
+          "ReportSourceRenderingSettings": {
+            "$ref": "#/components/schemas/ReportSourceRenderingSettings"
+          }
+        },
+        "description": "FetchNestingResult",
+        "type": "object"
+      },
+      "ReportSourceRenderingSettings": {
+        "title": "ReportSourceRenderingSettings",
+        "properties": {
+          "NestingRenderSettings": {
+            "$ref": "#/components/schemas/RenderSettings"
+          },
+          "RenderPartLabelMode": {
+            "type": "string"
+          },
+          "PartLabelHeight": {
+            "type": "number",
+            "format": "double"
+          },
+          "PartPreviewRenderSettings": {
+            "$ref": "#/components/schemas/RenderSettings"
+          }
+        },
+        "description": "ReportSourceRenderingSettings",
+        "type": "object"
+      },
+      "RenderSettings": {
+        "title": "RenderSettings",
+        "properties": {
+          "RenderFormat": {
+            "type": "string"
+          },
+          "xDimension": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": false
+          },
+          "yDimension": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": false
+          },
+          "BackColorARGB": {
+            "type": "string"
+          },
+          "OutlineLineColorARGB": {
+            "type": "string"
+          },
+          "PartFillColorARGB": {
+            "type": "string"
+          },
+          "AutomaticallyChoosePartFillColor": {
+            "type": "boolean",
+            "nullable": false
+          }
+        },
+        "description": "RenderSettings",
+        "type": "object"
+      },
+      "ParametricGeometryNestingRequest": {
+        "title": "ParametricGeometryNestingRequest",
+        "properties": {
+          "Request": {
+            "$ref": "#/components/schemas/ParametricNestingRequest"
+          },
+          "ResultsWebhookUri": {
+            "$ref": "#/components/schemas/Uri"
+          },
+          "AutomaticallyStartNesting": {
+            "type": "boolean",
+            "nullable": false
+          }
+        },
+        "description": "Submit a nesting request from parametric part definitions. Async: returns a RequestId; the result is delivered to your ResultsWebhookUri.",
+        "type": "object"
+      },
+      "ParametricNestingRequest": {
+        "title": "ParametricNestingRequest",
+        "properties": {
+          "GeometryDefinitionImportSettings": {
+            "$ref": "#/components/schemas/ImportSettings"
+          },
+          "NestSettings": {
+            "$ref": "#/components/schemas/NestSettings"
+          },
+          "RenderSettings": {
+            "$ref": "#/components/schemas/RenderSettings"
+          },
+          "DXFExportSettings": {
+            "$ref": "#/components/schemas/DXFExportSettings"
+          },
+          "CommonCutSettings": {
+            "$ref": "#/components/schemas/CommonCutSettings"
+          },
+          "ReportSourceSettings": {
+            "$ref": "#/components/schemas/ReportSourceRenderingSettings"
+          },
+          "Parts": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ParametricPart"
+            }
+          },
+          "Sheets": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Sheet"
+            }
+          },
+          "Assemblies": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Assembly_ParametricPart_"
+            }
+          },
+          "RemnantGenerationSettings": {
+            "$ref": "#/components/schemas/RemnantGenerationSettings"
+          },
+          "PartExportSettings": {
+            "$ref": "#/components/schemas/PartExportSettings"
+          },
+          "Tag": {
+            "type": "string"
+          }
+        },
+        "description": "ParametricNestingRequest",
+        "type": "object"
+      },
+      "ImportSettings": {
+        "title": "ImportSettings",
+        "properties": {
+          "CutLayers": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ImportLayerAssignment"
+            }
+          },
+          "AttachLayers": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ImportLayerAssignment"
+            }
+          },
+          "IgnoreLayers": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ImportLayerAssignment"
+            }
+          },
+          "UseAllPartsInFile": {
+            "type": "boolean"
+          },
+          "CollateMultipleBlockInserts": {
+            "type": "boolean"
+          },
+          "AppendPartNamesToIdentities": {
+            "type": "boolean"
+          },
+          "UsePartNamesAsIdentityOnMultiPartImport": {
+            "type": "boolean"
+          },
+          "AutomaticallyAttachUnusedCutAssignedGeometry": {
+            "type": "boolean"
+          },
+          "LayerNameForAutomaticallyAttachedGeometry": {
+            "type": "string"
+          },
+          "MeasurementUnitsOfImportGeometry": {
+            "type": "string"
+          }
+        },
+        "description": "ImportSettings",
+        "type": "object"
+      },
+      "ImportLayerAssignment": {
+        "title": "ImportLayerAssignment",
+        "properties": {
+          "ColourHex": {
+            "type": "string"
+          },
+          "LayerName": {
+            "type": "string"
+          },
+          "LineType": {
+            "type": "string"
+          }
+        },
+        "description": "ImportLayerAssignment",
+        "type": "object"
+      },
+      "NestSettings": {
+        "title": "NestSettings",
+        "properties": {
+          "PartSpacing": {
+            "type": "number",
+            "format": "double",
+            "nullable": false
+          },
+          "ReportIntermediateResults": {
+            "type": "boolean",
+            "nullable": false
+          },
+          "MaxRunTimeSeconds": {
+            "type": "number",
+            "format": "double",
+            "nullable": false
+          },
+          "UtilisationStopTarget": {
+            "type": "number",
+            "format": "double"
+          },
+          "RepeatPreference": {
+            "type": "string"
+          },
+          "NestingDirection": {
+            "type": "string"
+          },
+          "MaximumCPUCount": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": false
+          },
+          "NestingOrigin": {
+            "type": "string"
+          },
+          "AllowEnginePopups": {
+            "type": "boolean",
+            "nullable": false
+          },
+          "ExportDiagnosticData": {
+            "type": "boolean",
+            "nullable": false
+          },
+          "DiagnosticDataPath": {
+            "type": "string"
+          },
+          "MaximumDifferentSheetSizes": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": false
+          },
+          "NestingObjective": {
+            "type": "string"
+          },
+          "InnerLoopFillPreference": {
+            "type": "string"
+          },
+          "FillerPartsStrategy": {
+            "type": "string"
+          },
+          "StrictPartPriorities": {
+            "type": "boolean",
+            "nullable": false
+          }
+        },
+        "description": "NestSettings",
+        "type": "object"
+      },
+      "DXFExportSettings": {
+        "title": "DXFExportSettings",
+        "properties": {
+          "DXFVersion": {
+            "type": "string"
+          },
+          "ExportFileType": {
+            "type": "string"
+          },
+          "FilePathWithoutExtension": {
+            "type": "string"
+          },
+          "ExportFolderPath": {
+            "type": "string"
+          },
+          "PreferredFileNameInFolderWithoutExtension": {
+            "type": "string"
+          },
+          "NestOrientationAngleCCW": {
+            "type": "number",
+            "format": "double"
+          },
+          "AddPartLabels": {
+            "type": "boolean"
+          },
+          "PartLabelHeight": {
+            "type": "number",
+            "format": "double"
+          },
+          "AddNestStatistics": {
+            "type": "boolean"
+          },
+          "ExportSheetBoundaries": {
+            "type": "boolean"
+          },
+          "SheetExportSettings": {
+            "type": "string"
+          },
+          "RemoveCommonEdges": {
+            "type": "boolean"
+          },
+          "OuterLoopDirection": {
+            "type": "string"
+          },
+          "InnerLoopDirection": {
+            "type": "string"
+          },
+          "ExportedGeometryStructure": {
+            "type": "string"
+          },
+          "ExportPartsAsBlocks": {
+            "type": "boolean"
+          },
+          "ExportAllPartsOnSingleLayer": {
+            "type": "boolean"
+          },
+          "AllPartsSingleLayerName": {
+            "type": "string"
+          },
+          "SheetsLayerName": {
+            "type": "string"
+          },
+          "AppendSheetDimensionsToFileName": {
+            "type": "boolean"
+          },
+          "AppendQuantityToFileName": {
+            "type": "boolean"
+          },
+          "AppendSheetIdentifierToFileName": {
+            "type": "boolean"
+          },
+          "SplitCirclesIntoArcPairs": {
+            "type": "boolean"
+          }
+        },
+        "description": "DXFExportSettings",
+        "type": "object"
+      },
+      "CommonCutSettings": {
+        "title": "CommonCutSettings",
+        "properties": {
+          "CommonCuttingImportance": {
+            "type": "string"
+          },
+          "CommonCutSafety": {
+            "type": "string"
+          },
+          "CommonCutLeadinCheck": {
+            "type": "string"
+          },
+          "CommonCutMode": {
+            "type": "string"
+          },
+          "MaterialCostPerUnitSqr": {
+            "type": "number",
+            "format": "double",
+            "nullable": false
+          },
+          "CuttingCostPerUnit": {
+            "type": "number",
+            "format": "double",
+            "nullable": false
+          },
+          "MinLengthOfCommonCut": {
+            "type": "number",
+            "format": "double",
+            "nullable": false
+          },
+          "RegardingRatio": {
+            "type": "number",
+            "format": "double",
+            "nullable": false
+          },
+          "CanIntroduceHolesFromCommonCut": {
+            "type": "boolean",
+            "nullable": false
+          },
+          "OnlyPairs": {
+            "type": "boolean",
+            "nullable": false
+          },
+          "CommonCutPartsMaximumDimensionX": {
+            "type": "number",
+            "format": "double",
+            "nullable": false
+          },
+          "CommonCutPartsMaximumDimensionY": {
+            "type": "number",
+            "format": "double",
+            "nullable": false
+          },
+          "AllowCommonCutOnHoles": {
+            "type": "boolean",
+            "nullable": false
+          },
+          "CommonCutGap": {
+            "type": "number",
+            "format": "double",
+            "nullable": false
+          }
+        },
+        "description": "CommonCutSettings",
+        "type": "object"
+      },
+      "ParametricPart": {
+        "title": "ParametricPart",
+        "properties": {
+          "ParametricType": {
+            "type": "string"
+          },
+          "A": {
+            "type": "number",
+            "format": "double",
+            "nullable": false
+          },
+          "B": {
+            "type": "number",
+            "format": "double"
+          },
+          "C": {
+            "type": "number",
+            "format": "double"
+          },
+          "D": {
+            "type": "number",
+            "format": "double"
+          },
+          "Identifier": {
+            "type": "string"
+          },
+          "GeometryDefinitionType": {
+            "type": "string"
+          },
+          "Quantity": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": false
+          },
+          "AllowableRotation": {
+            "type": "string"
+          },
+          "AllowableTilt": {
+            "type": "number",
+            "format": "double",
+            "nullable": false
+          },
+          "AllowMirror": {
+            "type": "boolean",
+            "nullable": false
+          },
+          "PartSpacingOverride": {
+            "type": "number",
+            "format": "double"
+          },
+          "Priority": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": false
+          },
+          "EncodedPartJson": {
+            "type": "string"
+          },
+          "InitialRotationAngleFollowingImportCCW": {
+            "type": "number",
+            "format": "double",
+            "nullable": false
+          },
+          "CustomRotationStepAngle": {
+            "type": "number",
+            "format": "double",
+            "nullable": false
+          },
+          "AllowCommonCutIfEnabled": {
+            "type": "boolean",
+            "nullable": false
+          },
+          "FillerPartQuantity": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": false
+          },
+          "NestAsRectangle": {
+            "type": "boolean",
+            "nullable": false
+          },
+          "CommonCutMaxBlockSize": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": false
+          }
+        },
+        "description": "ParametricPart",
+        "type": "object"
+      },
+      "Sheet": {
+        "title": "Sheet",
+        "properties": {
+          "Identifier": {
+            "type": "string"
+          },
+          "GeometryDefinitionType": {
+            "type": "string"
+          },
+          "RectangularXDimension": {
+            "type": "number",
+            "format": "double"
+          },
+          "RectangularYDimension": {
+            "type": "number",
+            "format": "double"
+          },
+          "IrregularSheetSpacing": {
+            "type": "number",
+            "format": "double"
+          },
+          "TopSpacing": {
+            "type": "number",
+            "format": "double"
+          },
+          "LeftSpacing": {
+            "type": "number",
+            "format": "double"
+          },
+          "RightSpacing": {
+            "type": "number",
+            "format": "double"
+          },
+          "BottomSpacing": {
+            "type": "number",
+            "format": "double"
+          },
+          "Quantity": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": false
+          },
+          "Priority": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": false
+          },
+          "EncodedSheetJson": {
+            "type": "string"
+          }
+        },
+        "description": "Sheet",
+        "type": "object"
+      },
+      "Assembly_ParametricPart_": {
+        "title": "Assembly`1",
+        "properties": {
+          "Parts": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ParametricPart"
+            }
+          },
+          "Quantity": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": false
+          }
+        },
+        "description": "Assembly<ParametricPart>",
+        "type": "object"
+      },
+      "RemnantGenerationSettings": {
+        "title": "RemnantGenerationSettings",
+        "properties": {
+          "MinimumDimensionMM": {
+            "type": "number",
+            "format": "double",
+            "nullable": false
+          },
+          "MinimumAreaMM2": {
+            "type": "number",
+            "format": "double",
+            "nullable": false
+          },
+          "GenerateRemnantsOnFinalNestedSheetOnly": {
+            "type": "boolean",
+            "nullable": false
+          },
+          "IncludeRemnantsInExportedNests": {
+            "type": "boolean",
+            "nullable": false
+          },
+          "ExportFolderPath": {
+            "type": "string"
+          },
+          "RemnantsLayerName": {
+            "type": "string"
+          },
+          "AllowRemnantGenerationInsidePartHoles": {
+            "type": "boolean",
+            "nullable": false
+          },
+          "RemnantGenerationType": {
+            "type": "string"
+          }
+        },
+        "description": "RemnantGenerationSettings",
+        "type": "object"
+      },
+      "PartExportSettings": {
+        "title": "PartExportSettings",
+        "properties": {
+          "AddPartLabel": {
+            "type": "boolean"
+          },
+          "PartLabelHeight": {
+            "type": "number",
+            "format": "double"
+          },
+          "InnerLoopDirection": {
+            "type": "string"
+          },
+          "OuterLoopDirection": {
+            "type": "string"
+          },
+          "DXFVersion": {
+            "type": "string"
+          },
+          "ExportedGeometryStructure": {
+            "type": "string"
+          }
+        },
+        "description": "PartExportSettings",
+        "type": "object"
+      },
+      "Uri": {
+        "title": "Uri",
+        "properties": {},
+        "description": "Uri",
+        "type": "object"
+      },
+      "EncodedGeometryNestingRequest": {
+        "title": "EncodedGeometryNestingRequest",
+        "properties": {
+          "Request": {
+            "$ref": "#/components/schemas/GeometryNestingRequest"
+          },
+          "ResultsWebhookUri": {
+            "$ref": "#/components/schemas/Uri"
+          },
+          "AutomaticallyStartNesting": {
+            "type": "boolean",
+            "nullable": false
+          }
+        },
+        "description": "Submit a nesting request from encoded geometry (from the importer or defined as SimpleGeometry). Async: returns a RequestId; the result is delivered to your ResultsWebhookUri.",
+        "type": "object"
+      },
+      "GeometryNestingRequest": {
+        "title": "GeometryNestingRequest",
+        "properties": {
+          "GeometryDefinitionImportSettings": {
+            "$ref": "#/components/schemas/ImportSettings"
+          },
+          "NestSettings": {
+            "$ref": "#/components/schemas/NestSettings"
+          },
+          "RenderSettings": {
+            "$ref": "#/components/schemas/RenderSettings"
+          },
+          "DXFExportSettings": {
+            "$ref": "#/components/schemas/DXFExportSettings"
+          },
+          "CommonCutSettings": {
+            "$ref": "#/components/schemas/CommonCutSettings"
+          },
+          "ReportSourceSettings": {
+            "$ref": "#/components/schemas/ReportSourceRenderingSettings"
+          },
+          "Parts": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Part"
+            }
+          },
+          "Sheets": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Sheet"
+            }
+          },
+          "Assemblies": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Assembly_Part_"
+            }
+          },
+          "RemnantGenerationSettings": {
+            "$ref": "#/components/schemas/RemnantGenerationSettings"
+          },
+          "PartExportSettings": {
+            "$ref": "#/components/schemas/PartExportSettings"
+          },
+          "Tag": {
+            "type": "string"
+          }
+        },
+        "description": "GeometryNestingRequest",
+        "type": "object"
+      },
+      "Part": {
+        "title": "Part",
+        "properties": {
+          "Identifier": {
+            "type": "string"
+          },
+          "GeometryDefinitionType": {
+            "type": "string"
+          },
+          "Quantity": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": false
+          },
+          "AllowableRotation": {
+            "type": "string"
+          },
+          "AllowableTilt": {
+            "type": "number",
+            "format": "double",
+            "nullable": false
+          },
+          "AllowMirror": {
+            "type": "boolean",
+            "nullable": false
+          },
+          "PartSpacingOverride": {
+            "type": "number",
+            "format": "double"
+          },
+          "Priority": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": false
+          },
+          "EncodedPartJson": {
+            "type": "string"
+          },
+          "InitialRotationAngleFollowingImportCCW": {
+            "type": "number",
+            "format": "double",
+            "nullable": false
+          },
+          "CustomRotationStepAngle": {
+            "type": "number",
+            "format": "double",
+            "nullable": false
+          },
+          "AllowCommonCutIfEnabled": {
+            "type": "boolean",
+            "nullable": false
+          },
+          "FillerPartQuantity": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": false
+          },
+          "NestAsRectangle": {
+            "type": "boolean",
+            "nullable": false
+          },
+          "CommonCutMaxBlockSize": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": false
+          }
+        },
+        "description": "Part",
+        "type": "object"
+      },
+      "Assembly_Part_": {
+        "title": "Assembly`1",
+        "properties": {
+          "Parts": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Part"
+            }
+          },
+          "Quantity": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": false
+          }
+        },
+        "description": "Assembly<Part>",
+        "type": "object"
+      },
+      "MyNestingRequest": {
+        "title": "MyNestingRequest",
+        "properties": {
+          "MyNestingXML": {
+            "type": "string"
+          },
+          "ResultsWebhookUri": {
+            "$ref": "#/components/schemas/Uri"
+          }
+        },
+        "description": "Submit a nesting request from a MyNesting XML document. Async: returns a RequestId; the result is delivered to your ResultsWebhookUri.",
+        "type": "object"
+      },
+      "EncodedGeometryQuoteNestingRequest": {
+        "title": "EncodedGeometryQuoteNestingRequest",
+        "properties": {
+          "Request": {
+            "$ref": "#/components/schemas/QuoteNestingRequest_QuotePart_QuoteSheet_"
+          },
+          "ResultsWebhookUri": {
+            "$ref": "#/components/schemas/Uri"
+          },
+          "AutomaticallyStartNesting": {
+            "type": "boolean",
+            "nullable": false
+          }
+        },
+        "description": "Submit a quote nest from encoded geometry — a fast material-usage estimate for quoting. Export with /nesting/exportquotenest.",
+        "type": "object"
+      },
+      "QuoteNestingRequest_QuotePart_QuoteSheet_": {
+        "title": "QuoteNestingRequest`2",
+        "properties": {
+          "ExternalRequestId": {
+            "type": "string"
+          },
+          "ReportIntermediateResults": {
+            "type": "boolean",
+            "nullable": false
+          },
+          "QuoteNestingMode": {
+            "type": "string"
+          },
+          "SimpleRemnantPreference": {
+            "type": "string"
+          },
+          "ScrapAssignmentScheme": {
+            "type": "string"
+          },
+          "TimePerNestingSeconds": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": false
+          },
+          "Parts": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/QuotePart"
+            }
+          },
+          "Sheets": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/QuoteSheet"
+            }
+          },
+          "MeasurementUnits": {
+            "type": "string"
+          },
+          "IncludeRenderInResults": {
+            "type": "boolean",
+            "nullable": false
+          },
+          "OverviewRenderSettings": {
+            "$ref": "#/components/schemas/RenderSettings"
+          },
+          "SheetRenderSettings": {
+            "$ref": "#/components/schemas/RenderSettings"
+          },
+          "PartRenderSettings": {
+            "$ref": "#/components/schemas/RenderSettings"
+          },
+          "GeometryDefinitionImportSettings": {
+            "$ref": "#/components/schemas/ImportSettings"
+          },
+          "DXFExportSettings": {
+            "$ref": "#/components/schemas/DXFExportSettings"
+          },
+          "PartExportSettings": {
+            "$ref": "#/components/schemas/PartExportSettings"
+          }
+        },
+        "description": "QuoteNestingRequest<QuotePart,QuoteSheet>",
+        "type": "object"
+      },
+      "QuotePart": {
+        "title": "QuotePart",
+        "properties": {
+          "Material": {
+            "type": "string"
+          },
+          "Thickness": {
+            "type": "string"
+          },
+          "CuttingProcess": {
+            "type": "string"
+          },
+          "LimitedToSheets": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "Identifier": {
+            "type": "string"
+          },
+          "GeometryDefinitionType": {
+            "type": "string"
+          },
+          "Quantity": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": false
+          },
+          "AllowableRotation": {
+            "type": "string"
+          },
+          "AllowableTilt": {
+            "type": "number",
+            "format": "double",
+            "nullable": false
+          },
+          "AllowMirror": {
+            "type": "boolean",
+            "nullable": false
+          },
+          "PartSpacingOverride": {
+            "type": "number",
+            "format": "double"
+          },
+          "Priority": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": false
+          },
+          "EncodedPartJson": {
+            "type": "string"
+          },
+          "InitialRotationAngleFollowingImportCCW": {
+            "type": "number",
+            "format": "double",
+            "nullable": false
+          },
+          "CustomRotationStepAngle": {
+            "type": "number",
+            "format": "double",
+            "nullable": false
+          },
+          "AllowCommonCutIfEnabled": {
+            "type": "boolean",
+            "nullable": false
+          },
+          "FillerPartQuantity": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": false
+          },
+          "NestAsRectangle": {
+            "type": "boolean",
+            "nullable": false
+          },
+          "CommonCutMaxBlockSize": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": false
+          }
+        },
+        "description": "QuotePart",
+        "type": "object"
+      },
+      "QuoteSheet": {
+        "title": "QuoteSheet",
+        "properties": {
+          "Material": {
+            "type": "string"
+          },
+          "Thickness": {
+            "type": "string"
+          },
+          "MinimumSimpleRemnantDimension": {
+            "type": "number",
+            "format": "double",
+            "nullable": false
+          },
+          "PartSpacing": {
+            "type": "number",
+            "format": "double",
+            "nullable": false
+          },
+          "Identifier": {
+            "type": "string"
+          },
+          "GeometryDefinitionType": {
+            "type": "string"
+          },
+          "RectangularXDimension": {
+            "type": "number",
+            "format": "double"
+          },
+          "RectangularYDimension": {
+            "type": "number",
+            "format": "double"
+          },
+          "IrregularSheetSpacing": {
+            "type": "number",
+            "format": "double"
+          },
+          "TopSpacing": {
+            "type": "number",
+            "format": "double"
+          },
+          "LeftSpacing": {
+            "type": "number",
+            "format": "double"
+          },
+          "RightSpacing": {
+            "type": "number",
+            "format": "double"
+          },
+          "BottomSpacing": {
+            "type": "number",
+            "format": "double"
+          },
+          "Quantity": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": false
+          },
+          "Priority": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": false
+          },
+          "EncodedSheetJson": {
+            "type": "string"
+          }
+        },
+        "description": "QuoteSheet",
+        "type": "object"
+      },
+      "DxfQuoteNestingRequest": {
+        "title": "DxfQuoteNestingRequest",
+        "properties": {
+          "Request": {
+            "$ref": "#/components/schemas/QuoteNestingRequest_Base64QuotePart_Base64QuoteSheet_"
+          },
+          "ResultsWebhookUri": {
+            "$ref": "#/components/schemas/Uri"
+          },
+          "AutomaticallyStartNesting": {
+            "type": "boolean",
+            "nullable": false
+          }
+        },
+        "description": "Submit a quote nest from base64-encoded DXF parts — a fast material-usage estimate for quoting, not full production output. Export with /nesting/exportquotenest.",
+        "type": "object"
+      },
+      "QuoteNestingRequest_Base64QuotePart_Base64QuoteSheet_": {
+        "title": "QuoteNestingRequest`2",
+        "properties": {
+          "ExternalRequestId": {
+            "type": "string"
+          },
+          "ReportIntermediateResults": {
+            "type": "boolean",
+            "nullable": false
+          },
+          "QuoteNestingMode": {
+            "type": "string"
+          },
+          "SimpleRemnantPreference": {
+            "type": "string"
+          },
+          "ScrapAssignmentScheme": {
+            "type": "string"
+          },
+          "TimePerNestingSeconds": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": false
+          },
+          "Parts": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Base64QuotePart"
+            }
+          },
+          "Sheets": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Base64QuoteSheet"
+            }
+          },
+          "MeasurementUnits": {
+            "type": "string"
+          },
+          "IncludeRenderInResults": {
+            "type": "boolean",
+            "nullable": false
+          },
+          "OverviewRenderSettings": {
+            "$ref": "#/components/schemas/RenderSettings"
+          },
+          "SheetRenderSettings": {
+            "$ref": "#/components/schemas/RenderSettings"
+          },
+          "PartRenderSettings": {
+            "$ref": "#/components/schemas/RenderSettings"
+          },
+          "GeometryDefinitionImportSettings": {
+            "$ref": "#/components/schemas/ImportSettings"
+          },
+          "DXFExportSettings": {
+            "$ref": "#/components/schemas/DXFExportSettings"
+          },
+          "PartExportSettings": {
+            "$ref": "#/components/schemas/PartExportSettings"
+          }
+        },
+        "description": "QuoteNestingRequest<Base64QuotePart,Base64QuoteSheet>",
+        "type": "object"
+      },
+      "Base64QuotePart": {
+        "title": "Base64QuotePart",
+        "properties": {
+          "Material": {
+            "type": "string"
+          },
+          "Thickness": {
+            "type": "string"
+          },
+          "CuttingProcess": {
+            "type": "string"
+          },
+          "LimitedToSheets": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "Base64EncodedGeometryDefinition": {
+            "type": "string"
+          },
+          "GeometryDefinitionCompressionType": {
+            "type": "string"
+          },
+          "FileNameWithExtension": {
+            "type": "string"
+          },
+          "Identifier": {
+            "type": "string"
+          },
+          "GeometryDefinitionType": {
+            "type": "string"
+          },
+          "Quantity": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": false
+          },
+          "AllowableRotation": {
+            "type": "string"
+          },
+          "AllowableTilt": {
+            "type": "number",
+            "format": "double",
+            "nullable": false
+          },
+          "AllowMirror": {
+            "type": "boolean",
+            "nullable": false
+          },
+          "PartSpacingOverride": {
+            "type": "number",
+            "format": "double"
+          },
+          "Priority": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": false
+          },
+          "EncodedPartJson": {
+            "type": "string"
+          },
+          "InitialRotationAngleFollowingImportCCW": {
+            "type": "number",
+            "format": "double",
+            "nullable": false
+          },
+          "CustomRotationStepAngle": {
+            "type": "number",
+            "format": "double",
+            "nullable": false
+          },
+          "AllowCommonCutIfEnabled": {
+            "type": "boolean",
+            "nullable": false
+          },
+          "FillerPartQuantity": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": false
+          },
+          "NestAsRectangle": {
+            "type": "boolean",
+            "nullable": false
+          },
+          "CommonCutMaxBlockSize": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": false
+          }
+        },
+        "description": "Base64QuotePart",
+        "type": "object"
+      },
+      "Base64QuoteSheet": {
+        "title": "Base64QuoteSheet",
+        "properties": {
+          "Material": {
+            "type": "string"
+          },
+          "Thickness": {
+            "type": "string"
+          },
+          "MinimumSimpleRemnantDimension": {
+            "type": "number",
+            "format": "double",
+            "nullable": false
+          },
+          "PartSpacing": {
+            "type": "number",
+            "format": "double",
+            "nullable": false
+          },
+          "Base64EncodedGeometryDefinition": {
+            "type": "string"
+          },
+          "GeometryDefinitionCompressionType": {
+            "type": "string"
+          },
+          "FileNameWithExtension": {
+            "type": "string"
+          },
+          "Identifier": {
+            "type": "string"
+          },
+          "GeometryDefinitionType": {
+            "type": "string"
+          },
+          "RectangularXDimension": {
+            "type": "number",
+            "format": "double"
+          },
+          "RectangularYDimension": {
+            "type": "number",
+            "format": "double"
+          },
+          "IrregularSheetSpacing": {
+            "type": "number",
+            "format": "double"
+          },
+          "TopSpacing": {
+            "type": "number",
+            "format": "double"
+          },
+          "LeftSpacing": {
+            "type": "number",
+            "format": "double"
+          },
+          "RightSpacing": {
+            "type": "number",
+            "format": "double"
+          },
+          "BottomSpacing": {
+            "type": "number",
+            "format": "double"
+          },
+          "Quantity": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": false
+          },
+          "Priority": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": false
+          },
+          "EncodedSheetJson": {
+            "type": "string"
+          }
+        },
+        "description": "Base64QuoteSheet",
+        "type": "object"
+      },
+      "NestingRequest1D": {
+        "title": "NestingRequest1D",
+        "properties": {
+          "Request": {
+            "$ref": "#/components/schemas/Nesting1DRequest"
+          }
+        },
+        "description": "Submit a 1D (linear) nesting request for bar, tube, or profile stock. Returns the optimised cutting plan synchronously in the response.",
+        "type": "object"
+      },
+      "Nesting1DRequest": {
+        "title": "Nesting1DRequest",
+        "properties": {
+          "SourceLength": {
+            "type": "number",
+            "format": "double",
+            "nullable": false
+          },
+          "SourceWidth": {
+            "type": "number",
+            "format": "double",
+            "nullable": false
+          },
+          "CutGap": {
+            "type": "number",
+            "format": "double",
+            "nullable": false
+          },
+          "SourceQuantity": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": false
+          },
+          "ComputationTime": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": false
+          },
+          "Lengths": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Nesting1DRequestLength"
+            }
+          }
+        },
+        "description": "Nesting1DRequest",
+        "type": "object"
+      },
+      "Nesting1DRequestLength": {
+        "title": "Nesting1DRequestLength",
+        "properties": {
+          "Quantity": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": false
+          },
+          "Length": {
+            "type": "number",
+            "format": "double",
+            "nullable": false
+          }
+        },
+        "description": "Nesting1DRequestLength",
+        "type": "object"
+      },
+      "ReadyForNesting": {
+        "title": "ReadyForNesting",
+        "properties": {
+          "RequestId": {
+            "type": "string",
+            "nullable": false
+          }
+        },
+        "description": "ReadyForNesting",
+        "type": "object"
+      },
+      "GenerateQuoteNestingExport": {
+        "title": "GenerateQuoteNestingExport",
+        "properties": {
+          "RequestId": {
+            "type": "string",
+            "nullable": false
+          },
+          "WebHookUri": {
+            "$ref": "#/components/schemas/Uri"
+          }
+        },
+        "description": "GenerateQuoteNestingExport",
+        "type": "object"
+      },
+      "GenerateNestApiExport": {
+        "title": "GenerateNestApiExport",
+        "properties": {
+          "RequestId": {
+            "type": "string",
+            "nullable": false
+          },
+          "ResultId": {
+            "type": "string",
+            "nullable": false
+          },
+          "ResponseType": {
+            "type": "string"
+          },
+          "WebHookUri": {
+            "$ref": "#/components/schemas/Uri"
+          }
+        },
+        "description": "GenerateNestApiExport",
+        "type": "object"
+      },
+      "GetApiValidUntil": {
+        "title": "GetApiValidUntil",
+        "properties": {},
+        "description": "GetApiValidUntil",
+        "type": "object"
+      },
+      "ValidateApiKey": {
+        "title": "ValidateApiKey",
+        "properties": {},
+        "description": "Validates the caller's API key is active and returns basic identity info",
+        "type": "object"
+      },
+      "FetchKeys": {
+        "title": "FetchKeys",
+        "properties": {},
+        "description": "Get a list of active API keys",
+        "type": "object"
+      },
+      "CreateKey": {
+        "title": "CreateKey",
+        "properties": {
+          "Reference": {
+            "type": "string"
+          },
+          "Expires": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "Email": {
+            "type": "string"
+          },
+          "Parallelism": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": false
+          },
+          "KeyType": {
+            "type": "string"
+          },
+          "Trial": {
+            "type": "boolean",
+            "nullable": false
+          }
+        },
+        "description": "Create a new api key",
+        "type": "object"
+      },
+      "DeleteKey": {
+        "title": "DeleteKey",
+        "properties": {
+          "ApiKey": {
+            "type": "string"
+          }
+        },
+        "description": "Disable an active api key",
+        "type": "object"
+      },
+      "RegenerateKey": {
+        "title": "RegenerateKey",
+        "properties": {
+          "ApiKey": {
+            "type": "string"
+          }
+        },
+        "description": "Regenerate an active api key",
+        "type": "object"
+      },
+      "SetApiKeyType": {
+        "title": "SetApiKeyType",
+        "properties": {
+          "ApiKeyId": {
+            "type": "string"
+          },
+          "KeyType": {
+            "type": "string"
+          }
+        },
+        "description": "SetApiKeyType",
+        "type": "object"
+      },
+      "SetKeyFairnessWeight": {
+        "title": "SetKeyFairnessWeight",
+        "properties": {
+          "ApiKeyId": {
+            "type": "string"
+          },
+          "LineageWeight": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "description": "SetKeyFairnessWeight",
+        "type": "object"
+      },
+      "GetFairnessUsage": {
+        "title": "GetFairnessUsage",
+        "properties": {},
+        "description": "GetFairnessUsage",
+        "type": "object"
+      },
+      "FetchCachedNestingExport": {
+        "title": "FetchCachedNestingExport",
+        "properties": {
+          "RequestId": {
+            "type": "string",
+            "nullable": false
+          },
+          "ResultId": {
+            "type": "string",
+            "nullable": false
+          },
+          "ResponseType": {
+            "type": "string"
+          }
+        },
+        "description": "FetchCachedNestingExport",
+        "type": "object"
+      },
+      "DxfNestingRequest": {
+        "title": "DxfNestingRequest",
+        "properties": {
+          "Request": {
+            "$ref": "#/components/schemas/Base64NestingRequest"
+          },
+          "ResultsWebhookUri": {
+            "$ref": "#/components/schemas/Uri"
+          },
+          "AutomaticallyStartNesting": {
+            "type": "boolean",
+            "nullable": false
+          }
+        },
+        "description": "Submit a nesting request from base64-encoded DXF files. Returns a RequestId immediately; the completed layout is delivered asynchronously to your ResultsWebhookUri (or streamed over SignalR when AutomaticallyStartNesting is false).",
+        "type": "object"
+      },
+      "Base64NestingRequest": {
+        "title": "Base64NestingRequest",
+        "properties": {
+          "GeometryDefinitionImportSettings": {
+            "$ref": "#/components/schemas/ImportSettings"
+          },
+          "NestSettings": {
+            "$ref": "#/components/schemas/NestSettings"
+          },
+          "RenderSettings": {
+            "$ref": "#/components/schemas/RenderSettings"
+          },
+          "DXFExportSettings": {
+            "$ref": "#/components/schemas/DXFExportSettings"
+          },
+          "CommonCutSettings": {
+            "$ref": "#/components/schemas/CommonCutSettings"
+          },
+          "ReportSourceSettings": {
+            "$ref": "#/components/schemas/ReportSourceRenderingSettings"
+          },
+          "Parts": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Base64Part"
+            }
+          },
+          "Sheets": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Base64Sheet"
+            }
+          },
+          "Assemblies": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Assembly_Base64Part_"
+            }
+          },
+          "RemnantGenerationSettings": {
+            "$ref": "#/components/schemas/RemnantGenerationSettings"
+          },
+          "PartExportSettings": {
+            "$ref": "#/components/schemas/PartExportSettings"
+          },
+          "Tag": {
+            "type": "string"
+          }
+        },
+        "description": "Base64NestingRequest",
+        "type": "object"
+      },
+      "Base64Part": {
+        "title": "Base64Part",
+        "properties": {
+          "Base64EncodedGeometryDefinition": {
+            "type": "string"
+          },
+          "GeometryDefinitionCompressionType": {
+            "type": "string"
+          },
+          "FileNameWithExtension": {
+            "type": "string"
+          },
+          "Identifier": {
+            "type": "string"
+          },
+          "GeometryDefinitionType": {
+            "type": "string"
+          },
+          "Quantity": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": false
+          },
+          "AllowableRotation": {
+            "type": "string"
+          },
+          "AllowableTilt": {
+            "type": "number",
+            "format": "double",
+            "nullable": false
+          },
+          "AllowMirror": {
+            "type": "boolean",
+            "nullable": false
+          },
+          "PartSpacingOverride": {
+            "type": "number",
+            "format": "double"
+          },
+          "Priority": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": false
+          },
+          "EncodedPartJson": {
+            "type": "string"
+          },
+          "InitialRotationAngleFollowingImportCCW": {
+            "type": "number",
+            "format": "double",
+            "nullable": false
+          },
+          "CustomRotationStepAngle": {
+            "type": "number",
+            "format": "double",
+            "nullable": false
+          },
+          "AllowCommonCutIfEnabled": {
+            "type": "boolean",
+            "nullable": false
+          },
+          "FillerPartQuantity": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": false
+          },
+          "NestAsRectangle": {
+            "type": "boolean",
+            "nullable": false
+          },
+          "CommonCutMaxBlockSize": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": false
+          }
+        },
+        "description": "Base64Part",
+        "type": "object"
+      },
+      "Base64Sheet": {
+        "title": "Base64Sheet",
+        "properties": {
+          "Base64EncodedGeometryDefinition": {
+            "type": "string"
+          },
+          "GeometryDefinitionCompressionType": {
+            "type": "string"
+          },
+          "FileNameWithExtension": {
+            "type": "string"
+          },
+          "Identifier": {
+            "type": "string"
+          },
+          "GeometryDefinitionType": {
+            "type": "string"
+          },
+          "RectangularXDimension": {
+            "type": "number",
+            "format": "double"
+          },
+          "RectangularYDimension": {
+            "type": "number",
+            "format": "double"
+          },
+          "IrregularSheetSpacing": {
+            "type": "number",
+            "format": "double"
+          },
+          "TopSpacing": {
+            "type": "number",
+            "format": "double"
+          },
+          "LeftSpacing": {
+            "type": "number",
+            "format": "double"
+          },
+          "RightSpacing": {
+            "type": "number",
+            "format": "double"
+          },
+          "BottomSpacing": {
+            "type": "number",
+            "format": "double"
+          },
+          "Quantity": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": false
+          },
+          "Priority": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": false
+          },
+          "EncodedSheetJson": {
+            "type": "string"
+          }
+        },
+        "description": "Base64Sheet",
+        "type": "object"
+      },
+      "Assembly_Base64Part_": {
+        "title": "Assembly`1",
+        "properties": {
+          "Parts": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Base64Part"
+            }
+          },
+          "Quantity": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": false
+          }
+        },
+        "description": "Assembly<Base64Part>",
+        "type": "object"
+      },
+      "Authenticate": {
+        "title": "Authenticate",
+        "properties": {
+          "provider": {
+            "description": "AuthProvider, e.g. credentials",
+            "type": "string"
+          },
+          "UserName": {
+            "type": "string"
+          },
+          "Password": {
+            "type": "string"
+          },
+          "RememberMe": {
+            "type": "boolean"
+          },
+          "AccessToken": {
+            "type": "string"
+          },
+          "AccessTokenSecret": {
+            "type": "string"
+          },
+          "ReturnUrl": {
+            "type": "string"
+          },
+          "ErrorView": {
+            "type": "string"
+          },
+          "Meta": {
+            "$ref": "#/components/schemas/Dictionary_String_String_"
+          }
+        },
+        "description": "Sign In",
+        "type": "object"
+      },
+      "Dictionary_String_String_": {
+        "title": "Dictionary<String,String>",
+        "additionalProperties": {
+          "type": "string"
+        },
+        "description": "Dictionary<String,String>",
+        "type": "object"
+      },
+      "Alive": {
+        "title": "Alive",
+        "properties": {},
+        "description": "Endpoint to check if the api is alive",
+        "type": "object"
+      },
+      "GetAssignmentTypes": {
+        "title": "GetAssignmentTypes",
+        "properties": {},
+        "description": "Get all assignable layer selection -  currently Cut/Ignore/Attach/Not Assigned",
+        "type": "object"
+      },
+      "CreateImportSession": {
+        "title": "CreateImportSession",
+        "properties": {
+          "Settings": {
+            "$ref": "#/components/schemas/ImportSessionSettings"
+          }
+        },
+        "description": "Start a new importer session. Optional header X-End-User-Id: an end-user identifier for accounts where multiple end users share one API key — when supplied, importer layer assignments are stored and reloaded per end user; when omitted, they are indexed by API key/account only.",
+        "type": "object"
+      },
+      "ImportSessionSettings": {
+        "title": "ImportSessionSettings",
+        "properties": {
+          "DefaultNamingScheme": {
+            "type": "string"
+          },
+          "MeasurementUnits": {
+            "type": "string"
+          },
+          "AreaMeasurementUnits": {
+            "type": "string"
+          },
+          "ImportBlocksIndependently": {
+            "type": "boolean",
+            "nullable": false
+          },
+          "PanZoomMode": {
+            "type": "string"
+          }
+        },
+        "description": "ImportSessionSettings",
+        "type": "object"
+      },
+      "CancelSessionSettings": {
+        "title": "CancelSessionSettings",
+        "properties": {
+          "SessionId": {
+            "type": "string",
+            "nullable": false
+          }
+        },
+        "description": "Cancel the session and remove all data",
+        "type": "object"
+      },
+      "CreateFileSettings": {
+        "title": "CreateFileSettings",
+        "properties": {
+          "File": {
+            "type": "string"
+          },
+          "FileName": {
+            "type": "string"
+          },
+          "SessionId": {
+            "type": "string",
+            "nullable": false
+          },
+          "FileReference": {
+            "type": "string"
+          },
+          "UniqueRequestId": {
+            "type": "string"
+          }
+        },
+        "description": "Upload file for importing",
+        "type": "object"
+      },
+      "UpdateFileSettings": {
+        "title": "UpdateFileSettings",
+        "properties": {
+          "FileId": {
+            "type": "string",
+            "nullable": false
+          },
+          "SessionId": {
+            "type": "string",
+            "nullable": false
+          },
+          "FileSettings": {
+            "$ref": "#/components/schemas/FileChangeableSettings"
+          },
+          "UniqueRequestId": {
+            "type": "string"
+          }
+        },
+        "description": "Update settings for a file",
+        "type": "object"
+      },
+      "FileChangeableSettings": {
+        "title": "FileChangeableSettings",
+        "properties": {
+          "DrawingScale": {
+            "$ref": "#/components/schemas/Ratio"
+          },
+          "MeasurementUnit": {
+            "type": "string"
+          }
+        },
+        "description": "FileChangeableSettings",
+        "type": "object"
+      },
+      "Ratio": {
+        "title": "Ratio",
+        "properties": {
+          "From": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": false
+          },
+          "To": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": false
+          }
+        },
+        "description": "Ratio",
+        "type": "object"
+      },
+      "DeleteFileIdentity": {
+        "title": "DeleteFileIdentity",
+        "properties": {
+          "FileId": {
+            "type": "string",
+            "nullable": false
+          },
+          "SessionId": {
+            "type": "string",
+            "nullable": false
+          }
+        },
+        "description": "Remove file from import session",
+        "type": "object"
+      },
+      "UpdateModelSettings": {
+        "title": "UpdateModelSettings",
+        "properties": {
+          "SessionId": {
+            "type": "string",
+            "nullable": false
+          },
+          "FileId": {
+            "type": "string",
+            "nullable": false
+          },
+          "LayerChanges": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/IdentifiableLayer"
+            }
+          },
+          "UniqueRequestId": {
+            "type": "string"
+          },
+          "GroupPartAsDrawn": {
+            "type": "boolean",
+            "nullable": false
+          }
+        },
+        "description": "Update a files Cut/Ignore/Attach/Not Assigned settings",
+        "type": "object"
+      },
+      "IdentifiableLayer": {
+        "title": "IdentifiableLayer",
+        "properties": {
+          "UIIdentifier": {
+            "type": "string",
+            "nullable": false
+          },
+          "Visible": {
+            "type": "boolean",
+            "nullable": false
+          },
+          "ColourHex": {
+            "type": "string"
+          },
+          "LayerName": {
+            "type": "string"
+          },
+          "LineType": {
+            "type": "string"
+          },
+          "Instruction": {
+            "$ref": "#/components/schemas/Assignment"
+          }
+        },
+        "description": "IdentifiableLayer",
+        "type": "object"
+      },
+      "Assignment": {
+        "title": "Assignment",
+        "properties": {
+          "Name": {
+            "type": "string"
+          },
+          "AssignmentType": {
+            "type": "string"
+          }
+        },
+        "description": "Assignment",
+        "type": "object"
+      },
+      "RetrieveModelIdentity": {
+        "title": "RetrieveModelIdentity",
+        "properties": {
+          "FileId": {
+            "type": "string",
+            "nullable": false
+          },
+          "SessionId": {
+            "type": "string",
+            "nullable": false
+          }
+        },
+        "description": "Get layers generated by file processing -  Allows setting of Layer options Cut/Ignore/Attach/Not Assigned",
+        "type": "object"
+      },
+      "RetrieveResultIdentity": {
+        "title": "RetrieveResultIdentity",
+        "properties": {
+          "FileId": {
+            "type": "string",
+            "nullable": false
+          },
+          "SessionId": {
+            "type": "string",
+            "nullable": false
+          },
+          "UniqueRequestId": {
+            "type": "string"
+          }
+        },
+        "description": "Fetch parts list and part renders",
+        "type": "object"
+      },
+      "CancelSessionRequest": {
+        "title": "CancelSessionRequest",
+        "properties": {
+          "SessionId": {
+            "type": "string",
+            "nullable": false
+          }
+        },
+        "description": "Cancel the import session and remove all data",
+        "type": "object"
+      },
+      "CompleteSessionRequest": {
+        "title": "CompleteSessionRequest",
+        "properties": {
+          "SessionId": {
+            "type": "string",
+            "nullable": false
+          },
+          "FileOptions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CompletedSessionFileOptions"
+            }
+          }
+        },
+        "description": "Submit all changes and receive part geometry for submission",
+        "type": "object"
+      },
+      "CompletedSessionFileOptions": {
+        "title": "CompletedSessionFileOptions",
+        "properties": {
+          "UniqueId": {
+            "type": "string"
+          },
+          "FileId": {
+            "type": "string",
+            "nullable": false
+          },
+          "Parts": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PartCompleteData"
+            }
+          }
+        },
+        "description": "CompletedSessionFileOptions",
+        "type": "object"
+      },
+      "PartCompleteData": {
+        "title": "PartCompleteData",
+        "properties": {
+          "Id": {
+            "type": "string",
+            "nullable": false
+          },
+          "Name": {
+            "type": "string"
+          },
+          "IsSelected": {
+            "type": "boolean",
+            "nullable": false
+          },
+          "Quantity": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": false
+          },
+          "Priority": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": false
+          }
+        },
+        "description": "PartCompleteData",
+        "type": "object"
+      },
+      "Register": {
+        "title": "Register",
+        "properties": {
+          "UserName": {
+            "type": "string"
+          },
+          "FirstName": {
+            "type": "string"
+          },
+          "LastName": {
+            "type": "string"
+          },
+          "DisplayName": {
+            "type": "string"
+          },
+          "Email": {
+            "type": "string"
+          },
+          "Password": {
+            "type": "string"
+          },
+          "ConfirmPassword": {
+            "type": "string"
+          },
+          "AutoLogin": {
+            "type": "boolean"
+          },
+          "ErrorView": {
+            "type": "string"
+          },
+          "Meta": {
+            "$ref": "#/components/schemas/Dictionary_String_String_"
+          }
+        },
+        "description": "Sign Up",
+        "type": "object"
+      },
+      "ClientKey": {
+        "title": "ClientKey",
+        "properties": {
+          "ApiKey": {
+            "type": "string"
+          },
+          "ClientRef": {
+            "type": "string"
+          },
+          "Expired": {
+            "type": "boolean",
+            "nullable": false
+          },
+          "IsActive": {
+            "type": "boolean",
+            "nullable": false
+          },
+          "Expires": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "CancelledDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "Parallelism": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": false
+          },
+          "IsTrial": {
+            "type": "boolean",
+            "nullable": false
+          },
+          "KeyType": {
+            "type": "string"
+          }
+        },
+        "description": "ClientKey",
+        "type": "object"
+      },
+      "FairnessConfigResponse": {
+        "title": "FairnessConfigResponse",
+        "properties": {
+          "FairnessEnabled": {
+            "type": "boolean",
+            "nullable": false
+          },
+          "OverageEnabled": {
+            "type": "boolean",
+            "nullable": false
+          },
+          "DefaultLineageWeight": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": false
+          },
+          "BurstPercent": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": false
+          }
+        },
+        "description": "FairnessConfigResponse",
+        "type": "object"
+      },
+      "List_ClientKey_": {
+        "title": "List<ClientKey>",
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/ClientKey"
+        }
+      },
+      "List_String_": {
+        "title": "List<String>",
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
+      },
+      "SuccessfulNest": {
+        "title": "SuccessfulNest",
+        "properties": {
+          "Id": {
+            "type": "string",
+            "nullable": false
+          },
+          "NestApiKeyId": {
+            "type": "string"
+          },
+          "NestingTime": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": false
+          },
+          "CreatedDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": false
+          },
+          "CompletedDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "NumberOfParts": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": false
+          },
+          "NumberOfNests": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": false
+          }
+        },
+        "description": "SuccessfulNest",
+        "type": "object"
+      },
+      "List_SuccessfulNest_": {
+        "title": "List<SuccessfulNest>",
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/SuccessfulNest"
+        }
+      },
+      "FailedNest": {
+        "title": "FailedNest",
+        "properties": {
+          "Id": {
+            "type": "string",
+            "nullable": false
+          },
+          "NestApiKeyId": {
+            "type": "string"
+          },
+          "NestingTime": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": false
+          },
+          "CreatedDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": false
+          },
+          "ErrorDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "NumberOfParts": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": false
+          },
+          "NumberOfNests": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": false
+          },
+          "ErrorReason": {
+            "type": "string"
+          }
+        },
+        "description": "FailedNest",
+        "type": "object"
+      },
+      "List_FailedNest_": {
+        "title": "List<FailedNest>",
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/FailedNest"
+        }
+      },
+      "NestingStatusResponse": {
+        "title": "NestingStatusResponse",
+        "properties": {
+          "RequestId": {
+            "type": "string",
+            "nullable": false
+          },
+          "Status": {
+            "type": "string"
+          },
+          "ResultIdentity": {
+            "type": "string"
+          },
+          "Error": {
+            "type": "string"
+          },
+          "CompletedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "description": "NestingStatusResponse",
+        "type": "object"
+      },
+      "RenderResponse": {
+        "title": "RenderResponse",
+        "properties": {
+          "Base64EncodedRendering": {
+            "type": "string"
+          },
+          "RenderFormat": {
+            "type": "string"
+          },
+          "ResultIdentity": {
+            "type": "string",
+            "nullable": false
+          },
+          "xDimension": {
+            "type": "string"
+          },
+          "yDimension": {
+            "type": "string"
+          }
+        },
+        "description": "RenderResponse",
+        "type": "object"
+      },
+      "ReportSourceResponse": {
+        "title": "ReportSourceResponse",
+        "properties": {
+          "NestData": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/NestData"
+            }
+          },
+          "OverallNestingEfficiency": {
+            "type": "number",
+            "format": "double",
+            "nullable": false
+          },
+          "OverallSheetUtilization": {
+            "type": "number",
+            "format": "double",
+            "nullable": false
+          },
+          "NumberOfNests": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": false
+          },
+          "NumberOfSheets": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": false
+          },
+          "NumberOfPlacedParts": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": false
+          },
+          "AreaOfSheetsM2": {
+            "type": "number",
+            "format": "double",
+            "nullable": false
+          },
+          "AreaOfPlacedPartsM2": {
+            "type": "number",
+            "format": "double",
+            "nullable": false
+          },
+          "UnplacedParts": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UnplacedPartData"
+            }
+          },
+          "PlacedParts": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PartData"
+            }
+          },
+          "MaterialRequirements": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MaterialRequirement"
+            }
+          },
+          "CutLengthOfAllPlacedPartsMM": {
+            "type": "number",
+            "format": "double",
+            "nullable": false
+          },
+          "ResultIdentity": {
+            "type": "string"
+          }
+        },
+        "description": "ReportSourceResponse",
+        "type": "object"
+      },
+      "NestData": {
+        "title": "NestData",
+        "properties": {
+          "Base64EncodedNestRendering": {
+            "type": "string"
+          },
+          "NestedPartsData": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/NestedPartData"
+            }
+          },
+          "NestEfficiency": {
+            "type": "number",
+            "format": "double",
+            "nullable": false
+          },
+          "SheetUtilization": {
+            "type": "number",
+            "format": "double",
+            "nullable": false
+          },
+          "NestingXDimMM": {
+            "type": "number",
+            "format": "double",
+            "nullable": false
+          },
+          "NestingYDimMM": {
+            "type": "number",
+            "format": "double",
+            "nullable": false
+          },
+          "SheetDetails": {
+            "$ref": "#/components/schemas/SheetInfo"
+          },
+          "PlacedPartsAreaM2": {
+            "type": "number",
+            "format": "double",
+            "nullable": false
+          },
+          "Multiplicity": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": false
+          },
+          "CutLengthOfPlacedPartsMM": {
+            "type": "number",
+            "format": "double",
+            "nullable": false
+          },
+          "InnerCutLengthOfPlacedPartsMM": {
+            "type": "number",
+            "format": "double",
+            "nullable": false
+          },
+          "OuterCutLengthOfPlacedPartsMM": {
+            "type": "number",
+            "format": "double",
+            "nullable": false
+          },
+          "NumberOfRemnants": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": false
+          },
+          "TotalAreaOfRemnantsMM2": {
+            "type": "number",
+            "format": "double",
+            "nullable": false
+          }
+        },
+        "description": "NestData",
+        "type": "object"
+      },
+      "NestedPartData": {
+        "title": "NestedPartData",
+        "properties": {
+          "PartIDInNestPreview": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "Base64EncodedPartPreviewRendering": {
+            "type": "string"
+          },
+          "PartData": {
+            "$ref": "#/components/schemas/PartData"
+          },
+          "QuantityInNest": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": false
+          },
+          "QuantityProducedInNest": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": false
+          },
+          "QuantityInEntireNesting": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": false
+          }
+        },
+        "description": "NestedPartData",
+        "type": "object"
+      },
+      "PartData": {
+        "title": "PartData",
+        "properties": {
+          "PartIdentifier": {
+            "type": "string"
+          },
+          "XDimMM": {
+            "type": "number",
+            "format": "double",
+            "nullable": false
+          },
+          "YDimMM": {
+            "type": "number",
+            "format": "double",
+            "nullable": false
+          },
+          "AreaMM2": {
+            "type": "number",
+            "format": "double",
+            "nullable": false
+          },
+          "CutLengthMM": {
+            "type": "number",
+            "format": "double",
+            "nullable": false
+          },
+          "InnerCutLengthMM": {
+            "type": "number",
+            "format": "double",
+            "nullable": false
+          },
+          "OuterCutLengthMM": {
+            "type": "number",
+            "format": "double",
+            "nullable": false
+          },
+          "NumberOfLoops": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": false
+          }
+        },
+        "description": "PartData",
+        "type": "object"
+      },
+      "SheetInfo": {
+        "title": "SheetInfo",
+        "properties": {
+          "SheetIdentifier": {
+            "type": "string"
+          },
+          "XDimMM": {
+            "type": "number",
+            "format": "double",
+            "nullable": false
+          },
+          "YDimMM": {
+            "type": "number",
+            "format": "double",
+            "nullable": false
+          },
+          "AreaM2": {
+            "type": "number",
+            "format": "double",
+            "nullable": false
+          }
+        },
+        "description": "SheetInfo",
+        "type": "object"
+      },
+      "UnplacedPartData": {
+        "title": "UnplacedPartData",
+        "properties": {
+          "UnplacedQuantity": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": false
+          },
+          "PartIdentifier": {
+            "type": "string"
+          },
+          "XDimMM": {
+            "type": "number",
+            "format": "double",
+            "nullable": false
+          },
+          "YDimMM": {
+            "type": "number",
+            "format": "double",
+            "nullable": false
+          },
+          "AreaMM2": {
+            "type": "number",
+            "format": "double",
+            "nullable": false
+          },
+          "CutLengthMM": {
+            "type": "number",
+            "format": "double",
+            "nullable": false
+          },
+          "InnerCutLengthMM": {
+            "type": "number",
+            "format": "double",
+            "nullable": false
+          },
+          "OuterCutLengthMM": {
+            "type": "number",
+            "format": "double",
+            "nullable": false
+          },
+          "NumberOfLoops": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": false
+          }
+        },
+        "description": "UnplacedPartData",
+        "type": "object"
+      },
+      "MaterialRequirement": {
+        "title": "MaterialRequirement",
+        "properties": {
+          "Quantity": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": false
+          },
+          "SheetIdentifier": {
+            "type": "string"
+          },
+          "XDimMM": {
+            "type": "number",
+            "format": "double",
+            "nullable": false
+          },
+          "YDimMM": {
+            "type": "number",
+            "format": "double",
+            "nullable": false
+          },
+          "AreaM2": {
+            "type": "number",
+            "format": "double",
+            "nullable": false
+          }
+        },
+        "description": "MaterialRequirement",
+        "type": "object"
+      },
+      "ApiNestingResult": {
+        "title": "ApiNestingResult",
+        "properties": {
+          "RequestId": {
+            "type": "string",
+            "nullable": false
+          }
+        },
+        "description": "ApiNestingResult",
+        "type": "object"
+      },
+      "Nesting1DResponse": {
+        "title": "Nesting1DResponse",
+        "properties": {
+          "ResponseStatus": {
+            "type": "string"
+          },
+          "StatusReport": {
+            "type": "string"
+          },
+          "Result": {
+            "$ref": "#/components/schemas/Nesting1DResult"
+          }
+        },
+        "description": "Nesting1DResponse",
+        "type": "object"
+      },
+      "Nesting1DResult": {
+        "title": "Nesting1DResult",
+        "properties": {
+          "NumberOfUniqueNests": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": false
+          },
+          "Nests": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Nesting1DNest"
+            }
+          }
+        },
+        "description": "Nesting1DResult",
+        "type": "object"
+      },
+      "Nesting1DNest": {
+        "title": "Nesting1DNest",
+        "properties": {
+          "Multiplicity": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": false
+          },
+          "PlacedLengths": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Nesting1DPlacedLength"
+            }
+          }
+        },
+        "description": "Nesting1DNest",
+        "type": "object"
+      },
+      "Nesting1DPlacedLength": {
+        "title": "Nesting1DPlacedLength",
+        "properties": {
+          "Quantity": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": false
+          },
+          "Length": {
+            "type": "number",
+            "format": "double",
+            "nullable": false
+          },
+          "PlacedX": {
+            "type": "number",
+            "format": "double",
+            "nullable": false
+          }
+        },
+        "description": "Nesting1DPlacedLength",
+        "type": "object"
+      },
+      "NestingStarted": {
+        "title": "NestingStarted",
+        "properties": {
+          "Success": {
+            "type": "boolean",
+            "nullable": false
+          },
+          "ErrorReason": {
+            "type": "string"
+          }
+        },
+        "description": "NestingStarted",
+        "type": "object"
+      },
+      "NestApiExport": {
+        "title": "NestApiExport",
+        "properties": {
+          "Success": {
+            "type": "boolean",
+            "nullable": false
+          },
+          "Error": {
+            "type": "string"
+          }
+        },
+        "description": "NestApiExport",
+        "type": "object"
+      },
+      "ApiKeyValidUntil": {
+        "title": "ApiKeyValidUntil",
+        "properties": {
+          "Expires": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": false
+          }
+        },
+        "description": "ApiKeyValidUntil",
+        "type": "object"
+      },
+      "ValidateApiKeyResponse": {
+        "title": "ValidateApiKeyResponse",
+        "properties": {
+          "Valid": {
+            "type": "boolean",
+            "nullable": false
+          },
+          "UserId": {
+            "type": "string"
+          }
+        },
+        "description": "ValidateApiKeyResponse",
+        "type": "object"
+      },
+      "KeyFairnessWeightResponse": {
+        "title": "KeyFairnessWeightResponse",
+        "properties": {
+          "ApiKeyId": {
+            "type": "string"
+          },
+          "LineageWeight": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "description": "KeyFairnessWeightResponse",
+        "type": "object"
+      },
+      "FairnessUsageResponse": {
+        "title": "FairnessUsageResponse",
+        "properties": {
+          "FairnessEnabled": {
+            "type": "boolean",
+            "nullable": false
+          },
+          "OverageEnabled": {
+            "type": "boolean",
+            "nullable": false
+          },
+          "IncludedMinutes": {
+            "type": "number",
+            "format": "double",
+            "nullable": false
+          },
+          "SharedBurstMinutes": {
+            "type": "number",
+            "format": "double",
+            "nullable": false
+          },
+          "Keys": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FairnessKeyUsage"
+            }
+          }
+        },
+        "description": "FairnessUsageResponse",
+        "type": "object"
+      },
+      "FairnessKeyUsage": {
+        "title": "FairnessKeyUsage",
+        "properties": {
+          "ApiKeyId": {
+            "type": "string"
+          },
+          "Weight": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": false
+          },
+          "ConsumedMinutes": {
+            "type": "number",
+            "format": "double",
+            "nullable": false
+          },
+          "ReservedMinutes": {
+            "type": "number",
+            "format": "double",
+            "nullable": false
+          },
+          "OverageMinutes": {
+            "type": "number",
+            "format": "double",
+            "nullable": false
+          },
+          "EffectiveFloorMinutes": {
+            "type": "number",
+            "format": "double",
+            "nullable": false
+          },
+          "Sizing": {
+            "type": "string"
+          }
+        },
+        "description": "FairnessKeyUsage",
+        "type": "object"
+      },
+      "CachedNestingExportResponse": {
+        "title": "CachedNestingExportResponse",
+        "properties": {
+          "Ready": {
+            "type": "boolean",
+            "nullable": false
+          },
+          "Error": {
+            "type": "string"
+          },
+          "RequestId": {
+            "type": "string",
+            "nullable": false
+          },
+          "ResultId": {
+            "type": "string",
+            "nullable": false
+          },
+          "ResponseType": {
+            "type": "string"
+          },
+          "PayloadJson": {
+            "type": "string"
+          },
+          "CreatedUtc": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "ExpiresUtc": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "description": "CachedNestingExportResponse",
+        "type": "object"
+      },
+      "AuthenticateResponse": {
+        "title": "AuthenticateResponse",
+        "properties": {
+          "UserId": {
+            "type": "string"
+          },
+          "SessionId": {
+            "type": "string"
+          },
+          "UserName": {
+            "type": "string"
+          },
+          "DisplayName": {
+            "type": "string"
+          },
+          "ReferrerUrl": {
+            "type": "string"
+          },
+          "BearerToken": {
+            "type": "string"
+          },
+          "RefreshToken": {
+            "type": "string"
+          },
+          "RefreshTokenExpiry": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "ProfileUrl": {
+            "type": "string"
+          },
+          "Roles": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "Permissions": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "AuthProvider": {
+            "type": "string"
+          },
+          "ResponseStatus": {
+            "$ref": "#/components/schemas/ResponseStatus"
+          },
+          "Meta": {
+            "$ref": "#/components/schemas/Dictionary_String_String_"
+          }
+        },
+        "description": "AuthenticateResponse",
+        "type": "object"
+      },
+      "ResponseStatus": {
+        "title": "ResponseStatus",
+        "properties": {
+          "ErrorCode": {
+            "type": "string"
+          },
+          "Message": {
+            "type": "string"
+          },
+          "StackTrace": {
+            "type": "string"
+          },
+          "Errors": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ResponseError"
+            }
+          },
+          "Meta": {
+            "$ref": "#/components/schemas/Dictionary_String_String_"
+          }
+        },
+        "description": "ResponseStatus",
+        "type": "object"
+      },
+      "ResponseError": {
+        "title": "ResponseError",
+        "properties": {
+          "ErrorCode": {
+            "type": "string"
+          },
+          "FieldName": {
+            "type": "string"
+          },
+          "Message": {
+            "type": "string"
+          },
+          "Meta": {
+            "$ref": "#/components/schemas/Dictionary_String_String_"
+          }
+        },
+        "description": "ResponseError",
+        "type": "object"
+      },
+      "List_Assignment_": {
+        "title": "List<Assignment>",
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/Assignment"
+        }
+      },
+      "ImportSessionResult": {
+        "title": "ImportSessionResult",
+        "properties": {
+          "SessionId": {
+            "type": "string",
+            "nullable": false
+          },
+          "Settings": {
+            "$ref": "#/components/schemas/ImportSessionSettings"
+          },
+          "EngineType": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": false
+          },
+          "MessageType": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": false
+          },
+          "MaxFileSizeInMb": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": false
+          }
+        },
+        "description": "ImportSessionResult",
+        "type": "object"
+      },
+      "CancelRequestResponse": {
+        "title": "CancelRequestResponse",
+        "properties": {
+          "Tag": {
+            "type": "string"
+          },
+          "Elapsed": {
+            "type": "string",
+            "nullable": false
+          },
+          "Meta": {
+            "$ref": "#/components/schemas/Dictionary_String_String_"
+          },
+          "ResponseStatus": {
+            "$ref": "#/components/schemas/ResponseStatus"
+          }
+        },
+        "description": "CancelRequestResponse",
+        "type": "object"
+      },
+      "FileUploadResult": {
+        "title": "FileUploadResult",
+        "properties": {
+          "FileId": {
+            "type": "string",
+            "nullable": false
+          },
+          "FileReference": {
+            "type": "string"
+          },
+          "Error": {
+            "type": "string"
+          }
+        },
+        "description": "FileUploadResult",
+        "type": "object"
+      },
+      "FileUpdatedResult": {
+        "title": "FileUpdatedResult",
+        "properties": {
+          "FileId": {
+            "type": "string",
+            "nullable": false
+          },
+          "Settings": {
+            "$ref": "#/components/schemas/FileChangeableSettings"
+          }
+        },
+        "description": "FileUpdatedResult",
+        "type": "object"
+      },
+      "FileDeleteResult": {
+        "title": "FileDeleteResult",
+        "properties": {
+          "WasSuccessful": {
+            "type": "boolean",
+            "nullable": false
+          },
+          "ErrorMessage": {
+            "type": "string"
+          },
+          "DeletedTime": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": false
+          }
+        },
+        "description": "FileDeleteResult",
+        "type": "object"
+      },
+      "ModelUpdateResult": {
+        "title": "ModelUpdateResult",
+        "properties": {
+          "Successful": {
+            "type": "boolean",
+            "nullable": false
+          }
+        },
+        "description": "ModelUpdateResult",
+        "type": "object"
+      },
+      "ModelRetrievedResult": {
+        "title": "ModelRetrievedResult",
+        "properties": {
+          "UIIdentifier": {
+            "type": "string",
+            "nullable": false
+          },
+          "Base64SVG": {
+            "type": "string"
+          },
+          "Layers": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/IdentifiableLayer"
+            }
+          },
+          "SessionId": {
+            "type": "string",
+            "nullable": false
+          },
+          "FileId": {
+            "type": "string",
+            "nullable": false
+          }
+        },
+        "description": "ModelRetrievedResult",
+        "type": "object"
+      },
+      "ResultRetrievedResult": {
+        "title": "ResultRetrievedResult",
+        "properties": {
+          "Result": {
+            "$ref": "#/components/schemas/IdentifiableImportResult"
+          }
+        },
+        "description": "ResultRetrievedResult",
+        "type": "object"
+      },
+      "IdentifiableImportResult": {
+        "title": "IdentifiableImportResult",
+        "properties": {
+          "UIIdentifier": {
+            "type": "string"
+          },
+          "Parts": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ImporterPartData"
+            }
+          },
+          "FileId": {
+            "type": "string",
+            "nullable": false
+          },
+          "SessionId": {
+            "type": "string",
+            "nullable": false
+          },
+          "UserId": {
+            "type": "string",
+            "nullable": false
+          },
+          "Base64Svg": {
+            "type": "string"
+          },
+          "Status": {
+            "type": "string"
+          }
+        },
+        "description": "IdentifiableImportResult",
+        "type": "object"
+      },
+      "ImporterPartData": {
+        "title": "ImporterPartData",
+        "properties": {
+          "X": {
+            "type": "number",
+            "format": "double",
+            "nullable": false
+          },
+          "Y": {
+            "type": "number",
+            "format": "double",
+            "nullable": false
+          },
+          "Labels": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "IsSelected": {
+            "type": "boolean",
+            "nullable": false
+          },
+          "Quantity": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": false
+          },
+          "Name": {
+            "type": "string"
+          },
+          "Base64EncodedPng": {
+            "type": "string"
+          },
+          "PartId": {
+            "type": "string",
+            "nullable": false
+          },
+          "AreaMeasurementUnits": {
+            "type": "string"
+          },
+          "Area": {
+            "type": "number",
+            "format": "double",
+            "nullable": false
+          },
+          "Priority": {
+            "type": "number",
+            "format": "double",
+            "nullable": false
+          }
+        },
+        "description": "ImporterPartData",
+        "type": "object"
+      },
+      "FinaliseSessionResult": {
+        "title": "FinaliseSessionResult",
+        "properties": {
+          "NestingParts": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RenderedPart"
+            }
+          }
+        },
+        "description": "FinaliseSessionResult",
+        "type": "object"
+      },
+      "RenderedPart": {
+        "title": "RenderedPart",
+        "properties": {
+          "Base64EncodedRender": {
+            "type": "string"
+          },
+          "Identifier": {
+            "type": "string"
+          },
+          "GeometryDefinitionType": {
+            "type": "string"
+          },
+          "Quantity": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": false
+          },
+          "AllowableRotation": {
+            "type": "string"
+          },
+          "AllowableTilt": {
+            "type": "number",
+            "format": "double",
+            "nullable": false
+          },
+          "AllowMirror": {
+            "type": "boolean",
+            "nullable": false
+          },
+          "PartSpacingOverride": {
+            "type": "number",
+            "format": "double"
+          },
+          "Priority": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": false
+          },
+          "EncodedPartJson": {
+            "type": "string"
+          },
+          "InitialRotationAngleFollowingImportCCW": {
+            "type": "number",
+            "format": "double",
+            "nullable": false
+          },
+          "CustomRotationStepAngle": {
+            "type": "number",
+            "format": "double",
+            "nullable": false
+          },
+          "AllowCommonCutIfEnabled": {
+            "type": "boolean",
+            "nullable": false
+          },
+          "FillerPartQuantity": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": false
+          },
+          "NestAsRectangle": {
+            "type": "boolean",
+            "nullable": false
+          },
+          "CommonCutMaxBlockSize": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": false
+          }
+        },
+        "description": "RenderedPart",
+        "type": "object"
+      },
+      "RegisterResponse": {
+        "title": "RegisterResponse",
+        "properties": {
+          "UserId": {
+            "type": "string"
+          },
+          "SessionId": {
+            "type": "string"
+          },
+          "UserName": {
+            "type": "string"
+          },
+          "ReferrerUrl": {
+            "type": "string"
+          },
+          "BearerToken": {
+            "type": "string"
+          },
+          "RefreshToken": {
+            "type": "string"
+          },
+          "RefreshTokenExpiry": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "Roles": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "Permissions": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "RedirectUrl": {
+            "type": "string"
+          },
+          "ResponseStatus": {
+            "$ref": "#/components/schemas/ResponseStatus"
+          },
+          "Meta": {
+            "$ref": "#/components/schemas/Dictionary_String_String_"
+          }
+        },
+        "description": "RegisterResponse",
+        "type": "object"
       }
     }
   }
