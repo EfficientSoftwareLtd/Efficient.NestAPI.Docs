@@ -11,9 +11,6 @@
     "light": "#07C983",
     "dark": "#0D9373"
   },
-  "topAnchor": {
-    "name": "⚠️ Staging Documentation — may contain unreleased features"
-  },
   "navigation": [
     {
       "group": "Getting Started",
@@ -67,7 +64,7 @@
     }
   ],
   "api": {
-    "baseUrl": "https://dev.api.nestapi.com",
+    "baseUrl": "https://api.nestapi.com",
     "auth": {
       "method": "key",
       "name": "Authorization",
