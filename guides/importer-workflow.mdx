@@ -1,0 +1,77 @@
+---
+title: "Importer workflow"
+description: "Session-based file import: create a session, upload files, review and assign layers, retrieve geometry."
+---
+
+The importer turns CAD files into clean, nestable geometry through a **session**. Unlike a
+one-shot nesting request, a session is stateful: you upload files, inspect what was found,
+assign which layers mean what (cut, engrave, ignore…), and pull back the resulting geometry —
+which you can then feed to `POST /nesting/geometry`.
+
+## When to use the importer
+
+- Your files carry **layers** that need mapping (e.g. an "ENGRAVE" layer vs. the cut path).
+- You want a human (or your UI) to **review** import results before nesting.
+- You're building an **interactive import** experience in your product.
+
+If you just have clean DXF and want a layout, submit directly to `POST /nesting` instead.
+
+## Session lifecycle
+
+<Steps>
+  <Step title="Create a session">
+    `POST /importer/Session` (`CreateImportSession`) with your `ImportSessionSettings`.
+    Returns a session identity used by every subsequent call.
+
+    <Tip>
+    Multiple end users sharing one API key? Pass the optional **`X-End-User-Id`** header on
+    session creation. Importer layer assignments are then stored and reloaded per end user;
+    omit it and they're indexed by API key/account only.
+    </Tip>
+  </Step>
+  <Step title="Add files">
+    `POST /importer/File` (`CreateFileSettings`) to add each file to the session. Update a
+    file's settings with `PUT /importer/File`, or remove it with `DELETE /importer/File`.
+  </Step>
+  <Step title="Review layers &amp; assignments">
+    `GET /importer/Assignments` (`GetAssignmentTypes`) lists the assignment types a layer can
+    be given. Apply assignments through the file/model settings so the importer knows which
+    layers are cut paths, which are engraving, and which to ignore.
+  </Step>
+  <Step title="Inspect the model">
+    `GET /importer/Model` (`RetrieveModelIdentity`) returns the interpreted model;
+    `PUT /importer/Model` (`UpdateModelSettings`) adjusts model-level settings.
+  </Step>
+  <Step title="Retrieve results">
+    `GET /importer/Result` (`RetrieveResultIdentity`) returns the imported geometry, ready to
+    nest via `POST /nesting/geometry`.
+  </Step>
+  <Step title="Complete or cancel">
+    `PUT /importer/Session/Complete` finalises the session. To abandon it, use
+    `DELETE /importer/Session/Cancel` (or `DELETE /importer/Session`).
+  </Step>
+</Steps>
+
+## Keeping a session alive
+
+Long interactive sessions can be kept warm with `KeepSessionAlive` so they aren't reclaimed
+mid-edit. Complete or cancel sessions you're done with rather than leaving them to expire.
+
+## Endpoint summary
+
+| Endpoint | Method | Purpose |
+|----------|--------|---------|
+| `/importer/Session` | POST | Create a session |
+| `/importer/Session` | DELETE | Cancel session settings |
+| `/importer/Session/Cancel` | DELETE | Cancel the session |
+| `/importer/Session/Complete` | PUT | Complete the session |
+| `/importer/File` | POST / PUT / DELETE | Add / update / remove a file |
+| `/importer/Model` | GET / PUT | Retrieve / update the model |
+| `/importer/Result` | GET | Retrieve imported geometry |
+| `/importer/Assignments` | GET | List layer assignment types |
+
+## Next
+
+<Card title="Nest the imported geometry" icon="layer-group" href="/guides/nesting-workflow">
+  Feed the retrieved geometry to `POST /nesting/geometry`.
+</Card>

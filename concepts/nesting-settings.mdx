@@ -1,0 +1,41 @@
+---
+title: "Nesting settings"
+description: "The knobs that control how parts are placed: spacing, rotations, and material handling."
+---
+
+Settings travel inside the `Request` object of a nesting call and control **how** parts are
+placed. The exact field names and defaults are in the **Nesting** section of the
+[API Reference](/api-reference); this page explains the concepts behind the common ones.
+
+## Spacing
+
+The gap kept between neighbouring parts, and between parts and the sheet edge. Set this from
+your process (kerf width, heat-affected zone, safe handling margin). Too small risks parts
+touching; too large wastes material.
+
+## Rotations
+
+Which orientations the nester may try when placing a part. Allowing more rotations usually
+improves utilisation but can conflict with **directional material** (grain, brushed finish,
+corrugation), where you may want to restrict rotation to preserve appearance or strength.
+
+## Material and grain
+
+Directional stock is respected by constraining rotations so parts keep a consistent
+orientation relative to the sheet.
+
+## Common cutting
+
+An advanced option where adjacent parts **share a cut line**, eliminating the gap between
+them to save material and cutting time. See [common cutting](/concepts/common-cutting).
+
+## Where settings live
+
+Settings are part of the endpoint's `Request` payload (e.g. `Base64NestingRequest.Settings`),
+not top-level request fields. The top-level fields are `Request`, `ResultsWebhookUri`, and
+`AutomaticallyStartNesting` — see the [nesting workflow](/guides/nesting-workflow).
+
+<Note>
+Field names, valid ranges, and defaults are defined by the request models in the
+[API Reference](/api-reference). Treat this page as orientation, not a field list.
+</Note>

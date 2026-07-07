@@ -1,0 +1,39 @@
+---
+title: "Quote nesting"
+description: "Fast material-usage estimates for quoting, without producing full production output."
+---
+
+Quote nesting answers a narrower question than a full nest: **how much material will this
+job need?** It's tuned for speed so you can price a job quickly, rather than to produce
+final cutting output.
+
+## Endpoints
+
+| Endpoint | Input |
+|----------|-------|
+| `POST /nesting/quotenesting` | Base64 DXF quote parts and sheets (`QuoteNestingRequest`) |
+| `POST /nesting/geometryquotenesting` | Geometry quote parts and sheets (`QuoteNestingRequest`) |
+
+Both follow the same [async model](/guides/nesting-workflow): submit, receive a `RequestId`,
+and get the `ApiNestingResult` via your `ResultsWebhookUri` (or fetch it by `RequestId`).
+Both are also available under `/v1`.
+
+## Quote vs. production nesting
+
+| | Quote nesting | Production nesting |
+|--|---------------|--------------------|
+| Goal | Material-usage estimate for pricing | Cut-ready layout |
+| Speed | Optimised for fast turnaround | Optimised for layout quality |
+| Export | `GET /nesting/exportquotenest` | `GET /nesting/export` |
+
+## Exporting a quote nest
+
+```bash
+curl "https://dev.api.nestapi.com/nesting/exportquotenest?RequestId=THE_REQUEST_ID" \
+  -H "Authorization: Bearer YOUR_API_KEY"
+```
+
+<Tip>
+Use quote nesting in estimating flows where you need a number fast, and full
+[nesting](/guides/nesting-workflow) once the job is won and you need production output.
+</Tip>

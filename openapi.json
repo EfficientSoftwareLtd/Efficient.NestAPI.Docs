@@ -1,0 +1,13 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "NestAPI",
+    "version": "1.0.0",
+    "description": "Placeholder spec. This file is overwritten on every API deployment by the pipeline step that fetches /openapi, converts it to OpenAPI 3.0, and commits it here. Do not hand-edit."
+  },
+  "servers": [
+    { "url": "https://dev.api.nestapi.com", "description": "Staging" }
+  ],
+  "paths": {},
+  "components": {}
+}

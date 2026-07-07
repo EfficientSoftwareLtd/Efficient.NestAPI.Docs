@@ -1,0 +1,115 @@
+---
+title: "Nesting workflow"
+description: "The asynchronous submit → RequestId → result model, with SignalR and delayed start."
+---
+
+Nesting is **asynchronous**. You submit a request, get a `RequestId` back immediately, and
+receive the finished layout later — either pushed to your webhook or streamed over SignalR.
+This page explains the full lifecycle and the two ways to receive results.
+
+## The lifecycle
+
+<Steps>
+  <Step title="Submit">
+    `POST` to a nesting endpoint with your parts, sheets, settings, and a `ResultsWebhookUri`.
+    The API validates the request and returns a `RequestId`.
+  </Step>
+  <Step title="Nest">
+    The job is queued and processed by a nester. Compute time scales with part count and
+    complexity — from seconds to minutes.
+  </Step>
+  <Step title="Deliver">
+    On completion the `ApiNestingResult` is delivered to your webhook (and/or streamed over
+    SignalR). You can also poll for it with the `RequestId`.
+  </Step>
+</Steps>
+
+## Choosing an endpoint
+
+All nesting endpoints share the same async model; they differ in how you describe the parts:
+
+| Endpoint | Input | Use when |
+|----------|-------|----------|
+| `POST /nesting` | Base64-encoded **DXF** files | You have DXF geometry |
+| `POST /nesting/geometry` | **Encoded geometry** (from the importer or `SimpleGeometry`) | You already have geometry, not files |
+| `POST /nesting/parametric` | **Parametric** part definitions | Parts are defined by parameters |
+| `POST /nesting/mynesting` | **MyNesting XML** | You have a MyNesting document |
+| `POST /nesting/quotenesting` | DXF, quote mode | You need a fast quote, not production output |
+| `POST /nesting/geometryquotenesting` | Geometry, quote mode | Quoting from geometry |
+| `POST /nesting/1D` | 1D / linear stock | Cutting bar, tube, or profile |
+
+Every route is also exposed additively under **`/v1`** (e.g. `/v1/nesting`). The `/v1` path
+is the documented, canonical one; the unversioned path is kept and frozen as the implicit
+v1 for existing callers. See the reference for the request body of each.
+
+## Common request fields
+
+The DXF, geometry, and parametric requests share three top-level fields:
+
+| Field | Type | Notes |
+|-------|------|-------|
+| `Request` | object | The payload: parts, sheets, and settings. Shape depends on the endpoint. |
+| `ResultsWebhookUri` | URI | Where the result is `POST`ed on completion. |
+| `AutomaticallyStartNesting` | boolean | `true` (default): start immediately. `false`: wait for a delayed start (see below). |
+
+## Receiving results — two options
+
+### Option A: Webhook (simplest)
+
+Set `AutomaticallyStartNesting: true` and provide `ResultsWebhookUri`. When the nest
+finishes, NestAPI `POST`s the `ApiNestingResult` to that URL. This is the recommended
+default for server-to-server integrations. See [Webhooks](/guides/webhooks).
+
+### Option B: SignalR + delayed start (live progress)
+
+To show live progress, connect **before** the nest runs:
+
+<Steps>
+  <Step title="Submit with start disabled">
+    Send your request with `AutomaticallyStartNesting: false`. You receive a `RequestId`,
+    but nesting does not begin yet.
+  </Step>
+  <Step title="Connect to SignalR">
+    Open a SignalR connection and subscribe using the `RequestId`, so no progress events are
+    missed.
+  </Step>
+  <Step title="Start the nest">
+    Call `POST /nesting/delayedstart` (`ReadyForNesting`) with the `RequestId`. The nester
+    begins and streams progress over your SignalR connection.
+  </Step>
+</Steps>
+
+<Note>
+Delayed start exists to close the race where a fast nest could complete before your client
+finished connecting. Use it whenever you rely on live progress.
+</Note>
+
+## Fetching results and status
+
+Even with webhooks you can query a job by `RequestId`:
+
+| Endpoint | Returns |
+|----------|---------|
+| `POST /nesting/result/` | The `ApiNestingResult` for a completed job |
+| `GET /nesting/render/` | A rendered image of the nest |
+| `GET /nesting/successes` | Recently successful nests |
+| `GET /nesting/failures` | Recently failed nests |
+
+## Exporting
+
+Once complete, generate production output from the nest:
+
+| Endpoint | Output |
+|----------|--------|
+| `GET /nesting/export` | Standard nest export (DXF + reports) |
+| `GET /nesting/exportquotenest` | Export for a quote nest |
+
+See [export types](/concepts/export-types) for details.
+
+## Errors
+
+| Status | Meaning |
+|--------|---------|
+| `400` | Invalid request — check file encoding and required fields. |
+| `401` | API key missing or invalid. |
+| `200` | Request accepted; `RequestId` returned for tracking. |

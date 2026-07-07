@@ -1,0 +1,32 @@
+---
+title: "Common cutting"
+description: "Letting adjacent parts share a cut line to save material and cutting time."
+---
+
+**Common cutting** (also called shared-edge or common-line cutting) places parts so that
+adjacent straight edges lie on the **same cut line**. Instead of cutting two parallel edges
+with a gap between them, the machine makes **one** cut that serves both parts.
+
+## Why use it
+
+- **Less waste** — the material that would sit between two parts is removed.
+- **Faster cutting** — fewer total cut lengths and fewer pierces.
+- **Denser nests** — parts pack tighter on the sheet.
+
+## Trade-offs
+
+- Requires **straight, matching edges** to align — not every part pair qualifies.
+- Shared cuts can affect **edge quality** and **part separation**, so it suits some
+  processes better than others.
+- It constrains placement, which the nester balances against overall utilisation.
+
+## Using it
+
+Common cutting is controlled through the [nesting settings](/concepts/nesting-settings) in
+the request payload. Enable it when your process and parts suit shared edges; leave it off
+when edge quality or handling matters more than the material saving.
+
+<Note>
+For the exact setting that toggles common cutting and any related tolerances, see the
+request models in the **Nesting** section of the [API Reference](/api-reference).
+</Note>

@@ -1,0 +1,63 @@
+---
+title: "Introduction"
+description: "Nesting-as-a-service for CAD/CAM and sheet-fabrication software."
+---
+
+## What is NestAPI?
+
+NestAPI is a hosted **nesting engine** you call over HTTPS. Send it the parts you need to
+cut and the sheets (stock material) you have, and it returns an optimised layout that packs
+the parts onto the sheets with minimal waste — ready to drive a laser, plasma, waterjet,
+router, or punch.
+
+It is built for teams who want production-grade nesting inside their own product without
+building and maintaining a nesting engine themselves:
+
+- **CAD/CAM and MES vendors** embedding nesting in their software
+- **Sheet-metal, joinery, glass, and composites fabricators** automating job preparation
+- **Quoting and estimating tools** that need fast material-usage figures
+
+## What you can do
+
+<CardGroup cols={2}>
+  <Card title="Nest from DXF" icon="file-dxf" href="/guides/nesting-workflow">
+    Submit base64-encoded DXF files and receive a packed layout.
+  </Card>
+  <Card title="Nest from geometry" icon="draw-polygon" href="/guides/geometry-types">
+    Submit encoded or parametric geometry instead of files.
+  </Card>
+  <Card title="Quote nesting" icon="calculator" href="/guides/quote-nesting">
+    Get fast material-usage estimates for quoting.
+  </Card>
+  <Card title="1D / linear nesting" icon="ruler-horizontal" href="/guides/1d-nesting">
+    Optimise cuts of bar, tube, and profile stock.
+  </Card>
+  <Card title="Webhook results" icon="webhook" href="/guides/webhooks">
+    Receive results asynchronously when a nest completes.
+  </Card>
+</CardGroup>
+
+## How it works, in one minute
+
+1. **Authenticate** with an API key (`Authorization: Bearer <key>`).
+2. **Submit** a nesting request — files or geometry, plus your sheets and settings.
+3. The API returns a **`RequestId`** immediately; nesting runs asynchronously.
+4. **Receive the result** at your webhook URL, or stream progress over SignalR.
+5. **Fetch exports** (DXF, reports, and more) for the completed nest.
+
+<Note>
+Nesting is asynchronous by design — real layouts can take seconds to minutes. You never
+hold a request open waiting; you get a `RequestId` and the result is delivered when ready.
+See the [nesting workflow](/guides/nesting-workflow).
+</Note>
+
+## Next steps
+
+<CardGroup cols={2}>
+  <Card title="Authentication" icon="key" href="/authentication">
+    Create a key and make your first authenticated call.
+  </Card>
+  <Card title="Quickstart" icon="rocket" href="/quickstart">
+    Submit a DXF nest end-to-end in a few minutes.
+  </Card>
+</CardGroup>

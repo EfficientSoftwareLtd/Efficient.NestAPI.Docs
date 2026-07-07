@@ -1,0 +1,8 @@
+# Mintlify / node
+node_modules/
+.mintlify/
+
+# Pipeline intermediates (the converted openapi.json IS committed; the raw swagger is not)
+swagger2.json
+*.log
+.DS_Store

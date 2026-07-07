@@ -1,0 +1,43 @@
+---
+title: "Parts and sheets"
+description: "The two things every nest needs: what to cut, and what to cut it from."
+---
+
+Every nesting request is built from two collections:
+
+- **Parts** — the shapes you need to cut, each with a **quantity**.
+- **Sheets** — the stock material available to cut from, each with a **size** and often a
+  **quantity** or availability.
+
+The nester's job is to place the parts onto the sheets efficiently, honouring your
+[settings](/concepts/nesting-settings).
+
+## Parts
+
+A part is a closed outline (optionally with internal features) plus how many you need.
+Depending on the endpoint, parts are provided as:
+
+- **DXF** (base64) — `POST /nesting`
+- **Encoded geometry** or `SimpleGeometry` — `POST /nesting/geometry`
+- **Parametric** definitions — `POST /nesting/parametric`
+
+Quantities let one request produce many placements of the same part. See
+[geometry types](/guides/geometry-types) for choosing a format.
+
+## Sheets
+
+A sheet describes a piece of stock: its dimensions and how many are available. Providing
+multiple sheet sizes lets the nester choose the best stock for the job. Grain or directional
+material is handled through [rotation settings](/concepts/nesting-settings).
+
+## Results
+
+A completed nest reports, per sheet, **which parts were placed where**, along with
+material-usage figures (used area, waste, utilisation). Parts that could not be placed on the
+supplied stock are reported so you can add stock and re-nest.
+
+<Note>
+For the exact `Parts`, `Sheets`, and quantity fields of each endpoint, see the **Nesting**
+section of the [API Reference](/api-reference) — the shape depends on which geometry format
+you submit.
+</Note>

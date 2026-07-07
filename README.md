@@ -1,20 +1,54 @@
-# Introduction 
-TODO: Give a short introduction of your project. Let this section explain the objectives or the motivation behind this project. 
+# Efficient.NestAPI.Docs
 
-# Getting Started
-TODO: Guide users through getting your code up and running on their own system. In this section you can talk about:
-1.	Installation process
-2.	Software dependencies
-3.	Latest releases
-4.	API references
+Source for the NestAPI developer documentation site, published with [Mintlify](https://mintlify.com).
 
-# Build and Test
-TODO: Describe and show how to build your code and run the tests. 
+The site combines **hand-written guides** (the `.mdx` files in this repo) with an
+**auto-generated API reference** built from `openapi.json`.
 
-# Contribute
-TODO: Explain how other users and developers can contribute to make your code better. 
+## Branches / environments
 
-If you want to learn more about creating good readme files then refer the following [guidelines](https://docs.microsoft.com/en-us/azure/devops/repos/git/create-a-readme?view=azure-devops). You can also seek inspiration from the below readme files:
-- [ASP.NET Core](https://github.com/aspnet/Home)
-- [Visual Studio Code](https://github.com/Microsoft/vscode)
-- [Chakra Core](https://github.com/Microsoft/ChakraCore)
+| Branch        | API base URL                  | Docs URL                       |
+|---------------|-------------------------------|--------------------------------|
+| `development` | `https://dev.api.nestapi.com` | `https://dev-docs.nestapi.com` |
+| `master`      | `https://api.nestapi.com`     | `https://docs.nestapi.com`     |
+
+Each branch is a separate Mintlify project. Mintlify auto-deploys on push.
+
+### Differences between the two `mint.json` files
+
+`mint.json` on this (`development`) branch is the staging config. When promoting content to
+`master`, the only two differences are:
+
+1. Remove the `"topAnchor"` staging banner.
+2. Change `"api.baseUrl"` from `https://dev.api.nestapi.com` to `https://api.nestapi.com`.
+
+Everything else (navigation, groups, colours) is identical, so promote by merging
+`development` → `master` and keeping `master`'s `mint.json` overrides for those two fields.
+
+## `openapi.json` is generated — do not hand-edit
+
+`openapi.json` is produced automatically by the API deployment pipeline:
+
+1. The API pipeline fetches the live Swagger 2.0 spec from `/openapi` after each deploy.
+2. Converts it to OpenAPI 3.0 with the `swagger2openapi` npm package.
+3. Sets the `servers` URL to the matching environment.
+4. Commits it to the corresponding branch of this repo.
+
+Only endpoints tagged `nesting`, `importer`, `public`, or `account` appear — the API's
+spec filter (`RemoveNonDocumentedEndpoints`) strips everything else. To add or remove an
+endpoint from the reference, change its `[Tag(...)]` in the API repo, not this repo.
+
+See `DOCUMENTATION_SITE_PLAN.md` in the API repo (`src/docs/`) for the full design.
+
+## Local preview
+
+```bash
+npm i -g mintlify
+mintlify dev
+```
+
+## Writing guides
+
+Guides live at the repo root and under `guides/`, `concepts/`, and `account/`. Add new pages
+to the `navigation` array in `mint.json`. Prose is authored by the dev/support team on the
+`development` branch and promoted to `master` when ready for customers.

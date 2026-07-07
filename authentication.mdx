@@ -1,0 +1,81 @@
+---
+title: "Authentication"
+description: "Every request is authenticated with an API key sent as a Bearer token."
+---
+
+NestAPI uses **API keys**. Every request must include your key in the `Authorization`
+header as a Bearer token:
+
+```http
+Authorization: Bearer YOUR_API_KEY
+```
+
+## Getting a key
+
+You can obtain keys in two ways:
+
+- **Dashboard** — create and manage keys from your NestAPI account.
+- **API** — if you hold an Admin-class key, manage keys programmatically via the
+  [account endpoints](/account/api-keys).
+
+<Card title="Sign up for a trial" icon="rocket" href="https://api.nestapi.com/trial">
+  New to NestAPI? Start a trial to get a key.
+</Card>
+
+## Making an authenticated request
+
+<CodeGroup>
+
+```bash cURL
+curl https://dev.api.nestapi.com/public/whoAmI \
+  -X POST \
+  -H "Authorization: Bearer YOUR_API_KEY"
+```
+
+```javascript Node
+const res = await fetch("https://dev.api.nestapi.com/public/whoAmI", {
+  method: "POST",
+  headers: { Authorization: `Bearer ${process.env.NESTAPI_KEY}` },
+});
+console.log(await res.json());
+```
+
+```csharp C#
+using var http = new HttpClient();
+http.DefaultRequestHeaders.Authorization =
+    new AuthenticationHeaderValue("Bearer", apiKey);
+var res = await http.PostAsync("https://dev.api.nestapi.com/public/whoAmI", null);
+```
+
+</CodeGroup>
+
+`POST /public/whoAmI` echoes back the identity behind the key — a quick way to confirm a
+key is valid and see which account it belongs to.
+
+## Verifying a key
+
+Two account endpoints help you check a key's state:
+
+| Endpoint | Purpose |
+|----------|---------|
+| `GET /auth/validate` | Confirms the key is active and returns basic identity info. |
+| `GET /apiKey/validUntil` | Returns the key's expiry date (or `31/12/9999` if it never expires). |
+
+## Key classes
+
+| Class | Can do |
+|-------|--------|
+| **Usage** | Submit nesting and importer requests. The default. |
+| **Admin** | Everything a Usage key can, plus manage keys (create, regenerate, delete) and fairness. |
+
+## Security
+
+<Warning>
+Treat API keys like passwords. Never embed them in client-side code or commit them to
+source control. For browser-based apps, restrict a key to specific origins with the
+[allowed-origins endpoints](/account/api-keys) and keep long-lived keys server-side.
+</Warning>
+
+- Rotate keys periodically with `PUT /apiAdmin/keys` (regenerate).
+- Set an expiry when creating a key for time-boxed integrations.
+- Disable a compromised key immediately with `DELETE /apiAdmin/keys`.

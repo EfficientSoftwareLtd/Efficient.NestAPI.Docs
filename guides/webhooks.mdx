@@ -1,0 +1,75 @@
+---
+title: "Webhooks"
+description: "How nesting results are delivered to your endpoint, and how to secure it."
+---
+
+When a nest completes, NestAPI delivers the result by making an HTTP `POST` to the
+`ResultsWebhookUri` you supplied when you submitted the request. This is the recommended way
+to receive results for server-to-server integrations.
+
+## The payload
+
+The body of the webhook `POST` is the **`ApiNestingResult`** — the same object returned by
+`POST /nesting/result/`. It carries the completed layout, per-sheet placements, and
+material-usage figures for the job.
+
+The result is tied to the `RequestId` you received when you submitted, so you can correlate
+each webhook delivery with the request that produced it.
+
+## Your endpoint's responsibilities
+
+<Steps>
+  <Step title="Respond quickly with 2xx">
+    Acknowledge receipt fast. Do heavy processing (rendering, storage, downstream jobs)
+    out of band, after you've responded, rather than holding the request open.
+  </Step>
+  <Step title="Be idempotent">
+    Treat delivery as at-least-once. Key your processing on the `RequestId` so a repeated
+    delivery of the same result is a no-op.
+  </Step>
+  <Step title="Return a stable, reachable URL">
+    The URL must be publicly reachable over HTTPS from NestAPI. For local development, use a
+    tunnelling service.
+  </Step>
+</Steps>
+
+## Securing your webhook
+
+<Warning>
+Because your webhook URL receives production data, treat it as a sensitive endpoint. Do not
+expose it more widely than necessary.
+</Warning>
+
+Recommended measures:
+
+- **Use HTTPS** so the payload is encrypted in transit.
+- **Use an unguessable URL** — include a long random token in the path or query string and
+  reject any request that doesn't carry it (e.g. `.../hooks/nestapi/9f2c…`).
+- **Confirm out of band.** On receiving a webhook, you can independently re-fetch the result
+  with its `RequestId` via `POST /nesting/result/` using your API key. This confirms the
+  result is genuine before you act on it — useful until signed webhooks are available.
+- **Allowlist by source** if your infrastructure supports restricting inbound callers.
+
+## Retries and missed deliveries
+
+Deliveries can be retried, so design your handler to tolerate duplicates (see idempotency
+above). If your endpoint is unreachable when a nest completes, you are not left blind — you
+can always fetch the result on demand:
+
+```bash
+curl "https://dev.api.nestapi.com/nesting/result/" \
+  -X POST \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{ "RequestId": "THE_REQUEST_ID" }'
+```
+
+Or, for jobs where you'd rather not run a public endpoint at all, use
+[SignalR with delayed start](/guides/nesting-workflow#option-b-signalr-delayed-start-live-progress)
+to stream the result over a connection you initiate.
+
+## Not receiving webhooks?
+
+- Confirm `ResultsWebhookUri` was set on the request and is publicly reachable over HTTPS.
+- Check your endpoint returns `2xx` quickly and doesn't time out.
+- Fall back to polling `POST /nesting/result/` with the `RequestId`.

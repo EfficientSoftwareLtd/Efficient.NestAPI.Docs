@@ -1,0 +1,41 @@
+---
+title: "1D nesting"
+description: "Optimise linear cutting of bar, tube, and profile stock."
+---
+
+1D (linear) nesting solves the **cutting-stock problem** for one-dimensional material: given
+a set of required lengths and the stock lengths you have, work out how to cut them with the
+least waste. Use it for bar, tube, extrusion, and profile.
+
+## Endpoint
+
+`POST /nesting/1D` accepts a **`Nesting1DRequest`** and returns a **`Nesting1DResponse`**
+(also available at `/v1/nesting/1D`).
+
+Unlike the 2D endpoints, the 1D request is self-contained — you submit the lengths and stock
+and receive the optimised cutting plan in the response.
+
+```bash
+curl https://dev.api.nestapi.com/nesting/1D \
+  -X POST \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "Request": {
+      "RequiredLengths": [ /* lengths + quantities */ ],
+      "StockLengths":    [ /* available stock + quantities */ ],
+      "Settings":        { /* kerf, trim, etc. */ }
+    }
+  }'
+```
+
+<Tip>
+See the **Nesting** section of the [API Reference](/api-reference) for the full
+`Nesting1DRequest` and `Nesting1DResponse` shapes.
+</Tip>
+
+## When to use it
+
+- Cutting **linear** material (bar, tube, profile) rather than sheet.
+- Minimising **offcut waste** across a batch of required lengths.
+- Fast, synchronous results in the response body.
