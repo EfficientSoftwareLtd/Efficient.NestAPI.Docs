@@ -5,6 +5,49 @@
     "version": "1.0"
   },
   "paths": {
+    "/admin/keys/{ApiKeyId}": {
+      "delete": {
+        "tags": [
+          "account"
+        ],
+        "summary": "Revoke an API key",
+        "description": "Admin only. Cancels one of the account's keys.",
+        "operationId": "RevokeApiKey",
+        "parameters": [
+          {
+            "name": "ApiKeyId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClientKey"
+                }
+              }
+            }
+          }
+        },
+        "deprecated": false,
+        "security": [
+          {
+            "Bearer": []
+          }
+        ]
+      },
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/Accept"
+        }
+      ]
+    },
     "/admin/fairness/config": {
       "get": {
         "tags": [
@@ -105,34 +148,24 @@
         }
       ]
     },
-    "/apikeys/{KeyId}/origins": {
+    "/admin/keys": {
       "get": {
         "tags": [
           "account"
         ],
-        "summary": "List allowed origins for an API key",
-        "description": "List allowed origins for an API key",
-        "operationId": "GetKeyAllowedOrigins",
-        "parameters": [
-          {
-            "name": "KeyId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
+        "summary": "List the account's API keys",
+        "description": "Admin only (an Admin API key or the account owner). Returns every key on the account with its type and fairness weight.",
+        "operationId": "ListApiKeys",
         "responses": {
           "200": {
             "description": "Success",
             "content": {
               "application/json": {
                 "schema": {
-                  "title": "List<String>",
+                  "title": "List<ClientKey>",
                   "type": "array",
                   "items": {
-                    "type": "string"
+                    "$ref": "#/components/schemas/ClientKey"
                   }
                 }
               }
@@ -150,23 +183,59 @@
         "tags": [
           "account"
         ],
-        "summary": "Add an allowed browser Origin (CORS) to an API key. Provide a full absolute origin — scheme, host and (non-default) port — e.g. https://app.example.com. Origins are matched exactly, so register each distinct origin you call the API from. For local development, add your dev server's localhost origin (e.g. http://localhost:3000); the scheme and port must match exactly (http://localhost:3000 is different from https://localhost:3000 and from http://localhost:5173).",
-        "description": "Add an allowed browser Origin (CORS) to an API key. Provide a full absolute origin — scheme, host and (non-default) port — e.g. https://app.example.com. Origins are matched exactly, so register each distinct origin you call the API from. For local development, add your dev server's localhost origin (e.g. http://localhost:3000); the scheme and port must match exactly (http://localhost:3000 is different from https://localhost:3000 and from http://localhost:5173).",
-        "operationId": "AddKeyAllowedOrigin",
+        "summary": "Create an API key",
+        "description": "Admin only. Programmatically issue a key to one of your customers. Defaults to a Usage key; set KeyType=Admin to mint another admin key. Subject to the plan's active-key cap.",
+        "operationId": "CreateApiKey",
         "parameters": [
           {
-            "name": "KeyId",
-            "in": "path",
-            "required": true,
+            "name": "Reference",
+            "in": "query",
             "schema": {
               "type": "string"
             }
           },
           {
-            "name": "Origin",
+            "name": "Expires",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "Email",
             "in": "query",
             "schema": {
               "type": "string"
+            }
+          },
+          {
+            "name": "Parallelism",
+            "in": "query",
+            "x-nullable": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "KeyType",
+            "in": "query",
+            "x-nullable": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "Usage",
+                "Admin"
+              ]
+            }
+          },
+          {
+            "name": "Trial",
+            "in": "query",
+            "x-nullable": false,
+            "schema": {
+              "type": "boolean"
             }
           }
         ],
@@ -174,7 +243,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/AddKeyAllowedOrigin"
+                "$ref": "#/components/schemas/CreateApiKey"
               }
             }
           }
@@ -185,11 +254,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "title": "List<String>",
-                  "type": "array",
-                  "items": {
-                    "type": "string"
-                  }
+                  "$ref": "#/components/schemas/ClientKey"
                 }
               }
             }
@@ -202,41 +267,27 @@
           }
         ]
       },
-      "delete": {
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/Accept"
+        }
+      ]
+    },
+    "/v1/user/profile": {
+      "get": {
         "tags": [
           "account"
         ],
-        "summary": "Remove an allowed origin from an API key",
-        "description": "Remove an allowed origin from an API key",
-        "operationId": "RemoveKeyAllowedOrigin",
-        "parameters": [
-          {
-            "name": "KeyId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "Origin",
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
+        "summary": "Get your account profile",
+        "description": "Get your account profile",
+        "operationId": "FetchUserProfile",
         "responses": {
           "200": {
             "description": "Success",
             "content": {
               "application/json": {
                 "schema": {
-                  "title": "List<String>",
-                  "type": "array",
-                  "items": {
-                    "type": "string"
-                  }
+                  "$ref": "#/components/schemas/PublicUserProfile"
                 }
               }
             }
@@ -1103,6 +1154,391 @@
         }
       ]
     },
+    "/v1/status": {
+      "get": {
+        "tags": [
+          "account"
+        ],
+        "summary": "Get your account's subscription status",
+        "description": "Returns your account's trial/payment state and current nesting balance.",
+        "operationId": "CheckSubscriptionStatus",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserSubscriptionStatus"
+                }
+              }
+            }
+          }
+        },
+        "deprecated": false,
+        "security": [
+          {
+            "Bearer": []
+          }
+        ]
+      },
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/Accept"
+        }
+      ]
+    },
+    "/v1/nesting": {
+      "post": {
+        "tags": [
+          "nesting"
+        ],
+        "summary": "NestingRequest based on geometry imported from the provided base64 encoded files.",
+        "description": "This endpoint requires calling with your ApiKey <br /><b>Request</b><br /> <b>Base64NestingRequest</b> <br /> Refer to Model link in body section of this endpoint's api doc below (Next to Example Value) <br /><b>ResultsWebhookUri</b><br /> Web hook uri to POST the result to",
+        "operationId": "DxfNestingRequest",
+        "parameters": [
+          {
+            "name": "Request",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "ResultsWebhookUri",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "AutomaticallyStartNesting",
+            "in": "query",
+            "x-nullable": false,
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DxfNestingRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Nesting request accepted. Returns a RequestId for tracking.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiNestingResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request — check file encoding or missing required fields.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiNestingResult"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "API key is missing or invalid.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiNestingResult"
+                }
+              }
+            }
+          }
+        },
+        "deprecated": false,
+        "security": [
+          {
+            "Bearer": []
+          }
+        ]
+      },
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/Accept"
+        }
+      ]
+    },
+    "/apikeys/{KeyId}/origins": {
+      "get": {
+        "tags": [
+          "account"
+        ],
+        "summary": "List allowed origins for an API key",
+        "description": "List allowed origins for an API key",
+        "operationId": "GetKeyAllowedOrigins",
+        "parameters": [
+          {
+            "name": "KeyId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "List<String>",
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "deprecated": false,
+        "security": [
+          {
+            "Bearer": []
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "account"
+        ],
+        "summary": "Add an allowed browser Origin (CORS) to an API key. Provide a full absolute origin — scheme, host and (non-default) port — e.g. https://app.example.com. Origins are matched exactly, so register each distinct origin you call the API from. For local development, add your dev server's localhost origin (e.g. http://localhost:3000); the scheme and port must match exactly (http://localhost:3000 is different from https://localhost:3000 and from http://localhost:5173).",
+        "description": "Add an allowed browser Origin (CORS) to an API key. Provide a full absolute origin — scheme, host and (non-default) port — e.g. https://app.example.com. Origins are matched exactly, so register each distinct origin you call the API from. For local development, add your dev server's localhost origin (e.g. http://localhost:3000); the scheme and port must match exactly (http://localhost:3000 is different from https://localhost:3000 and from http://localhost:5173).",
+        "operationId": "AddKeyAllowedOrigin",
+        "parameters": [
+          {
+            "name": "KeyId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Origin",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddKeyAllowedOrigin"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "List<String>",
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "deprecated": false,
+        "security": [
+          {
+            "Bearer": []
+          }
+        ]
+      },
+      "delete": {
+        "tags": [
+          "account"
+        ],
+        "summary": "Remove an allowed origin from an API key",
+        "description": "Remove an allowed origin from an API key",
+        "operationId": "RemoveKeyAllowedOrigin",
+        "parameters": [
+          {
+            "name": "KeyId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Origin",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "List<String>",
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "deprecated": false,
+        "security": [
+          {
+            "Bearer": []
+          }
+        ]
+      },
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/Accept"
+        }
+      ]
+    },
+    "/admin/keys/{ApiKeyId}/regenerate": {
+      "post": {
+        "tags": [
+          "account"
+        ],
+        "summary": "Regenerate an API key",
+        "description": "Admin only. Rotates one of the account's keys: cancels the old secret and issues a new one, carrying the key's reference, expiry, type, parallelism, fairness weight and allowed origins forward. The old key stops working immediately, so update integrations with the returned key.",
+        "operationId": "RegenerateApiKey",
+        "parameters": [
+          {
+            "name": "ApiKeyId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegenerateApiKey"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClientKey"
+                }
+              }
+            }
+          }
+        },
+        "deprecated": false,
+        "security": [
+          {
+            "Bearer": []
+          }
+        ]
+      },
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/Accept"
+        }
+      ]
+    },
+    "/admin/keys/{ApiKeyId}/type": {
+      "patch": {
+        "tags": [
+          "account"
+        ],
+        "summary": "Set a key's Admin/Usage type",
+        "description": "Admin only. Change a key's capability class — e.g. downgrade a key you handed to a customer from Admin to Usage.",
+        "operationId": "SetApiKeyType",
+        "parameters": [
+          {
+            "name": "ApiKeyId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "KeyType",
+            "in": "query",
+            "x-nullable": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "Usage",
+                "Admin"
+              ]
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SetApiKeyType"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClientKey"
+                }
+              }
+            }
+          }
+        },
+        "deprecated": false,
+        "security": [
+          {
+            "Bearer": []
+          }
+        ]
+      },
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/Accept"
+        }
+      ]
+    },
     "/admin/keys/{ApiKeyId}/weight": {
       "patch": {
         "tags": [
@@ -1264,92 +1700,6 @@
         }
       ]
     },
-    "/v1/nesting": {
-      "post": {
-        "tags": [
-          "nesting"
-        ],
-        "summary": "NestingRequest based on geometry imported from the provided base64 encoded files.",
-        "description": "This endpoint requires calling with your ApiKey <br /><b>Request</b><br /> <b>Base64NestingRequest</b> <br /> Refer to Model link in body section of this endpoint's api doc below (Next to Example Value) <br /><b>ResultsWebhookUri</b><br /> Web hook uri to POST the result to",
-        "operationId": "DxfNestingRequest",
-        "parameters": [
-          {
-            "name": "Request",
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "ResultsWebhookUri",
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "AutomaticallyStartNesting",
-            "in": "query",
-            "x-nullable": false,
-            "schema": {
-              "type": "boolean"
-            }
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/DxfNestingRequest"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Nesting request accepted. Returns a RequestId for tracking.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiNestingResult"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Invalid request — check file encoding or missing required fields.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiNestingResult"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "API key is missing or invalid.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiNestingResult"
-                }
-              }
-            }
-          }
-        },
-        "deprecated": false,
-        "security": [
-          {
-            "Bearer": []
-          }
-        ]
-      },
-      "parameters": [
-        {
-          "$ref": "#/components/parameters/Accept"
-        }
-      ]
-    },
     "/public/alive": {
       "get": {
         "tags": [
@@ -1385,9 +1735,6 @@
       "description": "API key and account management"
     },
     {
-      "name": "admin"
-    },
-    {
       "name": "ApiAdmin"
     },
     {
@@ -1411,8 +1758,8 @@
   ],
   "servers": [
     {
-      "description": "Staging",
-      "url": "https://dev.api.nestapi.com"
+      "url": "https://dev.api.nestapi.com",
+      "description": "Staging"
     }
   ],
   "components": {
@@ -1513,42 +1860,6 @@
           }
         },
         "description": "CreateApiKey",
-        "type": "object"
-      },
-      "GetKeyAllowedOrigins": {
-        "title": "GetKeyAllowedOrigins",
-        "properties": {
-          "KeyId": {
-            "type": "string"
-          }
-        },
-        "description": "List allowed origins for an API key",
-        "type": "object"
-      },
-      "AddKeyAllowedOrigin": {
-        "title": "AddKeyAllowedOrigin",
-        "properties": {
-          "KeyId": {
-            "type": "string"
-          },
-          "Origin": {
-            "type": "string"
-          }
-        },
-        "description": "Add an allowed browser Origin (CORS) to an API key. Provide a full absolute origin — scheme, host and (non-default) port — e.g. https://app.example.com. Origins are matched exactly, so register each distinct origin you call the API from. For local development, add your dev server's localhost origin (e.g. http://localhost:3000); the scheme and port must match exactly (http://localhost:3000 is different from https://localhost:3000 and from http://localhost:5173).",
-        "type": "object"
-      },
-      "RemoveKeyAllowedOrigin": {
-        "title": "RemoveKeyAllowedOrigin",
-        "properties": {
-          "KeyId": {
-            "type": "string"
-          },
-          "Origin": {
-            "type": "string"
-          }
-        },
-        "description": "Remove an allowed origin from an API key",
         "type": "object"
       },
       "FetchUserProfile": {
@@ -2967,6 +3278,12 @@
         "description": "Nesting1DRequestLength",
         "type": "object"
       },
+      "GetApiValidUntil": {
+        "title": "GetApiValidUntil",
+        "properties": {},
+        "description": "GetApiValidUntil",
+        "type": "object"
+      },
       "ReadyForNesting": {
         "title": "ReadyForNesting",
         "properties": {
@@ -3013,122 +3330,16 @@
         "description": "GenerateNestApiExport",
         "type": "object"
       },
-      "GetApiValidUntil": {
-        "title": "GetApiValidUntil",
-        "properties": {},
-        "description": "GetApiValidUntil",
-        "type": "object"
-      },
       "ValidateApiKey": {
         "title": "ValidateApiKey",
         "properties": {},
         "description": "Validates the caller's API key is active and returns basic identity info",
         "type": "object"
       },
-      "FetchKeys": {
-        "title": "FetchKeys",
+      "CheckSubscriptionStatus": {
+        "title": "CheckSubscriptionStatus",
         "properties": {},
-        "description": "Get a list of active API keys",
-        "type": "object"
-      },
-      "CreateKey": {
-        "title": "CreateKey",
-        "properties": {
-          "Reference": {
-            "type": "string"
-          },
-          "Expires": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "Email": {
-            "type": "string"
-          },
-          "Parallelism": {
-            "type": "integer",
-            "format": "int32",
-            "nullable": false
-          },
-          "KeyType": {
-            "type": "string"
-          },
-          "Trial": {
-            "type": "boolean",
-            "nullable": false
-          }
-        },
-        "description": "Create a new api key",
-        "type": "object"
-      },
-      "DeleteKey": {
-        "title": "DeleteKey",
-        "properties": {
-          "ApiKey": {
-            "type": "string"
-          }
-        },
-        "description": "Disable an active api key",
-        "type": "object"
-      },
-      "RegenerateKey": {
-        "title": "RegenerateKey",
-        "properties": {
-          "ApiKey": {
-            "type": "string"
-          }
-        },
-        "description": "Regenerate an active api key",
-        "type": "object"
-      },
-      "SetApiKeyType": {
-        "title": "SetApiKeyType",
-        "properties": {
-          "ApiKeyId": {
-            "type": "string"
-          },
-          "KeyType": {
-            "type": "string"
-          }
-        },
-        "description": "SetApiKeyType",
-        "type": "object"
-      },
-      "SetKeyFairnessWeight": {
-        "title": "SetKeyFairnessWeight",
-        "properties": {
-          "ApiKeyId": {
-            "type": "string"
-          },
-          "LineageWeight": {
-            "type": "integer",
-            "format": "int32"
-          }
-        },
-        "description": "SetKeyFairnessWeight",
-        "type": "object"
-      },
-      "GetFairnessUsage": {
-        "title": "GetFairnessUsage",
-        "properties": {},
-        "description": "GetFairnessUsage",
-        "type": "object"
-      },
-      "FetchCachedNestingExport": {
-        "title": "FetchCachedNestingExport",
-        "properties": {
-          "RequestId": {
-            "type": "string",
-            "nullable": false
-          },
-          "ResultId": {
-            "type": "string",
-            "nullable": false
-          },
-          "ResponseType": {
-            "type": "string"
-          }
-        },
-        "description": "FetchCachedNestingExport",
+        "description": "Check users subscription status",
         "type": "object"
       },
       "DxfNestingRequest": {
@@ -3358,6 +3569,158 @@
           }
         },
         "description": "Assembly<Base64Part>",
+        "type": "object"
+      },
+      "GetKeyAllowedOrigins": {
+        "title": "GetKeyAllowedOrigins",
+        "properties": {
+          "KeyId": {
+            "type": "string"
+          }
+        },
+        "description": "List allowed origins for an API key",
+        "type": "object"
+      },
+      "AddKeyAllowedOrigin": {
+        "title": "AddKeyAllowedOrigin",
+        "properties": {
+          "KeyId": {
+            "type": "string"
+          },
+          "Origin": {
+            "type": "string"
+          }
+        },
+        "description": "Add an allowed browser Origin (CORS) to an API key. Provide a full absolute origin — scheme, host and (non-default) port — e.g. https://app.example.com. Origins are matched exactly, so register each distinct origin you call the API from. For local development, add your dev server's localhost origin (e.g. http://localhost:3000); the scheme and port must match exactly (http://localhost:3000 is different from https://localhost:3000 and from http://localhost:5173).",
+        "type": "object"
+      },
+      "RemoveKeyAllowedOrigin": {
+        "title": "RemoveKeyAllowedOrigin",
+        "properties": {
+          "KeyId": {
+            "type": "string"
+          },
+          "Origin": {
+            "type": "string"
+          }
+        },
+        "description": "Remove an allowed origin from an API key",
+        "type": "object"
+      },
+      "FetchKeys": {
+        "title": "FetchKeys",
+        "properties": {},
+        "description": "Get a list of active API keys",
+        "type": "object"
+      },
+      "CreateKey": {
+        "title": "CreateKey",
+        "properties": {
+          "Reference": {
+            "type": "string"
+          },
+          "Expires": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "Email": {
+            "type": "string"
+          },
+          "Parallelism": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": false
+          },
+          "KeyType": {
+            "type": "string"
+          },
+          "Trial": {
+            "type": "boolean",
+            "nullable": false
+          }
+        },
+        "description": "Create a new api key",
+        "type": "object"
+      },
+      "DeleteKey": {
+        "title": "DeleteKey",
+        "properties": {
+          "ApiKey": {
+            "type": "string"
+          }
+        },
+        "description": "Disable an active api key",
+        "type": "object"
+      },
+      "RegenerateKey": {
+        "title": "RegenerateKey",
+        "properties": {
+          "ApiKey": {
+            "type": "string"
+          }
+        },
+        "description": "Regenerate an active api key",
+        "type": "object"
+      },
+      "RegenerateApiKey": {
+        "title": "RegenerateApiKey",
+        "properties": {
+          "ApiKeyId": {
+            "type": "string"
+          }
+        },
+        "description": "RegenerateApiKey",
+        "type": "object"
+      },
+      "SetApiKeyType": {
+        "title": "SetApiKeyType",
+        "properties": {
+          "ApiKeyId": {
+            "type": "string"
+          },
+          "KeyType": {
+            "type": "string"
+          }
+        },
+        "description": "SetApiKeyType",
+        "type": "object"
+      },
+      "SetKeyFairnessWeight": {
+        "title": "SetKeyFairnessWeight",
+        "properties": {
+          "ApiKeyId": {
+            "type": "string"
+          },
+          "LineageWeight": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "description": "SetKeyFairnessWeight",
+        "type": "object"
+      },
+      "GetFairnessUsage": {
+        "title": "GetFairnessUsage",
+        "properties": {},
+        "description": "GetFairnessUsage",
+        "type": "object"
+      },
+      "FetchCachedNestingExport": {
+        "title": "FetchCachedNestingExport",
+        "properties": {
+          "RequestId": {
+            "type": "string",
+            "nullable": false
+          },
+          "ResultId": {
+            "type": "string",
+            "nullable": false
+          },
+          "ResponseType": {
+            "type": "string"
+          }
+        },
+        "description": "FetchCachedNestingExport",
         "type": "object"
       },
       "Authenticate": {
@@ -3835,12 +4198,45 @@
           "$ref": "#/components/schemas/ClientKey"
         }
       },
-      "List_String_": {
-        "title": "List<String>",
-        "type": "array",
-        "items": {
-          "type": "string"
-        }
+      "PublicUserProfile": {
+        "title": "PublicUserProfile",
+        "properties": {
+          "Id": {
+            "type": "string"
+          },
+          "RequiresPayment": {
+            "type": "boolean",
+            "nullable": false
+          },
+          "ExternalId": {
+            "type": "string"
+          },
+          "FirstName": {
+            "type": "string"
+          },
+          "LastName": {
+            "type": "string"
+          },
+          "Locked": {
+            "type": "boolean",
+            "nullable": false
+          },
+          "LockedDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "LastAttemptedLoginDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "NestCount": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": false
+          }
+        },
+        "description": "PublicUserProfile",
+        "type": "object"
       },
       "SuccessfulNest": {
         "title": "SuccessfulNest",
@@ -4397,6 +4793,18 @@
         "description": "Nesting1DPlacedLength",
         "type": "object"
       },
+      "ApiKeyValidUntil": {
+        "title": "ApiKeyValidUntil",
+        "properties": {
+          "Expires": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": false
+          }
+        },
+        "description": "ApiKeyValidUntil",
+        "type": "object"
+      },
       "NestingStarted": {
         "title": "NestingStarted",
         "properties": {
@@ -4425,18 +4833,6 @@
         "description": "NestApiExport",
         "type": "object"
       },
-      "ApiKeyValidUntil": {
-        "title": "ApiKeyValidUntil",
-        "properties": {
-          "Expires": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": false
-          }
-        },
-        "description": "ApiKeyValidUntil",
-        "type": "object"
-      },
       "ValidateApiKeyResponse": {
         "title": "ValidateApiKeyResponse",
         "properties": {
@@ -4450,6 +4846,85 @@
         },
         "description": "ValidateApiKeyResponse",
         "type": "object"
+      },
+      "UserSubscriptionStatus": {
+        "title": "UserSubscriptionStatus",
+        "properties": {
+          "HasHadTrail": {
+            "type": "boolean",
+            "nullable": false
+          },
+          "IsOnTrial": {
+            "type": "boolean",
+            "nullable": false
+          },
+          "HasTrialRequest": {
+            "type": "boolean",
+            "nullable": false
+          },
+          "RequiresPayment": {
+            "type": "boolean",
+            "nullable": false
+          },
+          "NestingAccountBalance": {
+            "$ref": "#/components/schemas/NestingAccountBalance"
+          }
+        },
+        "description": "UserSubscriptionStatus",
+        "type": "object"
+      },
+      "NestingAccountBalance": {
+        "title": "NestingAccountBalance",
+        "properties": {
+          "UserId": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": false
+          },
+          "StartDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": false
+          },
+          "EndDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": false
+          },
+          "RemainingAllowanceSeconds": {
+            "type": "number",
+            "format": "double",
+            "nullable": false
+          },
+          "RemainingAllowance": {
+            "description": "Allowance in minutes",
+            "type": "number",
+            "format": "double",
+            "nullable": false
+          },
+          "RemainingCredit": {
+            "type": "number",
+            "format": "double",
+            "nullable": false
+          },
+          "IsOnTrial": {
+            "type": "boolean",
+            "nullable": false
+          },
+          "PaidUntil": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "description": "NestingAccountBalance",
+        "type": "object"
+      },
+      "List_String_": {
+        "title": "List<String>",
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
       },
       "KeyFairnessWeightResponse": {
         "title": "KeyFairnessWeightResponse",
