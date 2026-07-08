@@ -49,7 +49,7 @@
   },
   "navbar": {
     "links": [
-      { "label": "Sign Up for Trial", "href": "https://api.nestapi.com/trial" }
+      { "label": "Sign Up for Trial", "href": "https://app.nestapi.com/" }
     ]
   }
 }
