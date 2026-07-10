@@ -1735,10 +1735,16 @@
       "description": "API key and account management"
     },
     {
+      "name": "admin"
+    },
+    {
       "name": "ApiAdmin"
     },
     {
       "name": "auth"
+    },
+    {
+      "name": "billing"
     },
     {
       "name": "fairness",
@@ -1752,14 +1758,23 @@
       "description": "Submit nesting jobs, retrieve results and exports"
     },
     {
+      "name": "plan"
+    },
+    {
+      "name": "proxy"
+    },
+    {
       "name": "public",
       "description": "Health check and public utility endpoints"
+    },
+    {
+      "name": "subscriptionstatus"
     }
   ],
   "servers": [
     {
-      "url": "https://dev.api.nestapi.com",
-      "description": "Staging"
+      "description": "Staging",
+      "url": "https://dev.api.nestapi.com"
     }
   ],
   "components": {
@@ -1788,6 +1803,133 @@
       "Object": {
         "properties": {},
         "description": "Object",
+        "type": "object"
+      },
+      "GetAccountBalanceLogs": {
+        "title": "GetAccountBalanceLogs",
+        "properties": {
+          "UserId": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": false
+          }
+        },
+        "description": "Check that admin user is authorized",
+        "type": "object"
+      },
+      "RejectOrAcceptTrialRequest": {
+        "title": "RejectOrAcceptTrialRequest",
+        "properties": {
+          "Id": {
+            "type": "string",
+            "nullable": false
+          },
+          "Action": {
+            "type": "string"
+          },
+          "TicketId": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": false
+          }
+        },
+        "description": "Accept or reject trials request",
+        "type": "object"
+      },
+      "GetUserEmail": {
+        "title": "GetUserEmail",
+        "properties": {
+          "UserId": {
+            "type": "string",
+            "nullable": false
+          }
+        },
+        "description": "Get users email",
+        "type": "object"
+      },
+      "GetErrorFile": {
+        "title": "GetErrorFile",
+        "properties": {
+          "Id": {
+            "type": "string",
+            "nullable": false
+          }
+        },
+        "description": "Get related file for an error",
+        "type": "object"
+      },
+      "SetTrialStatus": {
+        "title": "SetTrialStatus",
+        "properties": {
+          "ExternalId": {
+            "type": "string",
+            "nullable": false
+          },
+          "TrialStatus": {
+            "type": "boolean",
+            "nullable": false
+          }
+        },
+        "description": "Set trial status of user in the system",
+        "type": "object"
+      },
+      "EnableDisableUser": {
+        "title": "EnableDisableUser",
+        "properties": {
+          "SetTo": {
+            "type": "boolean",
+            "nullable": false
+          },
+          "ExternalId": {
+            "type": "string"
+          }
+        },
+        "description": "Enable or disable user",
+        "type": "object"
+      },
+      "UpdateAllowance": {
+        "title": "UpdateAllowance",
+        "properties": {
+          "ExternalId": {
+            "type": "string"
+          },
+          "SetToMinutes": {
+            "type": "number",
+            "format": "double",
+            "nullable": false
+          },
+          "StartDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": false
+          },
+          "EndDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": false
+          }
+        },
+        "description": "Update nesting allowance",
+        "type": "object"
+      },
+      "DisableAPIKey": {
+        "title": "DisableAPIKey",
+        "properties": {
+          "ApiKey": {
+            "type": "string"
+          }
+        },
+        "description": "Disable API key",
+        "type": "object"
+      },
+      "RegenAPIKey": {
+        "title": "RegenAPIKey",
+        "properties": {
+          "ApiKey": {
+            "type": "string"
+          }
+        },
+        "description": "Regenerate API key",
         "type": "object"
       },
       "RevokeApiKey": {
@@ -1825,6 +1967,174 @@
           }
         },
         "description": "SetFairnessConfig",
+        "type": "object"
+      },
+      "AdminLoggedInCheck": {
+        "title": "AdminLoggedInCheck",
+        "properties": {},
+        "description": "Check that admin user is authorized",
+        "type": "object"
+      },
+      "GetAllNestingRequestsForAllUsers": {
+        "title": "GetAllNestingRequestsForAllUsers",
+        "properties": {},
+        "description": "Fetch all nesting for all users",
+        "type": "object"
+      },
+      "CreateOrUpdatePurchaseOption": {
+        "title": "CreateOrUpdatePurchaseOption",
+        "properties": {
+          "File": {
+            "type": "string"
+          },
+          "Id": {
+            "type": "string"
+          },
+          "Name": {
+            "type": "string"
+          },
+          "Description": {
+            "type": "string"
+          },
+          "AllowanceMinutes": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": false
+          },
+          "AdditionalPerNestCost": {
+            "type": "number",
+            "format": "double",
+            "nullable": false
+          },
+          "MaxPartCount": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": false
+          },
+          "MaxSheetCount": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": false
+          },
+          "MaxRunTime": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": false
+          },
+          "MaxActiveApiKeys": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": false
+          },
+          "Cost": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": false
+          },
+          "CurrencyCode": {
+            "type": "string"
+          },
+          "DisplayOrder": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": false
+          },
+          "RenewalPeriodType": {
+            "type": "string"
+          },
+          "ExternalUserId": {
+            "type": "string"
+          },
+          "PaymentGracePeriodDays": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": false
+          },
+          "InvoicePaymentTermsDays": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": false
+          },
+          "AllowedPaymentMethod": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "Parallelism": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": false
+          },
+          "ImporterParallelism": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": false
+          },
+          "FairnessEnabled": {
+            "type": "boolean",
+            "nullable": false
+          },
+          "OverageEnabled": {
+            "type": "boolean",
+            "nullable": false
+          },
+          "DefaultLineageWeight": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": false
+          },
+          "BurstPercent": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": false
+          }
+        },
+        "description": "Create or update purchase options ",
+        "type": "object"
+      },
+      "DeletePurchaseOption": {
+        "title": "DeletePurchaseOption",
+        "properties": {
+          "Id": {
+            "type": "string",
+            "nullable": false
+          },
+          "ExternalUserId": {
+            "type": "string"
+          }
+        },
+        "description": "Delete purchase option",
+        "type": "object"
+      },
+      "GetAvailablePurchaseOptions": {
+        "title": "GetAvailablePurchaseOptions",
+        "properties": {
+          "ExternalUserId": {
+            "type": "string"
+          }
+        },
+        "description": "Fetch all purchase options for any user or specific user",
+        "type": "object"
+      },
+      "GetUserList": {
+        "title": "GetUserList",
+        "properties": {},
+        "description": "Get list of users in the system",
+        "type": "object"
+      },
+      "GetErrorList": {
+        "title": "GetErrorList",
+        "properties": {},
+        "description": "Get list of errors",
+        "type": "object"
+      },
+      "GetUserProfile": {
+        "title": "GetUserProfile",
+        "properties": {
+          "ExternalId": {
+            "type": "string"
+          }
+        },
+        "description": "Get profile of user in the system",
         "type": "object"
       },
       "ListApiKeys": {
@@ -3607,6 +3917,22 @@
         "description": "Remove an allowed origin from an API key",
         "type": "object"
       },
+      "RequestApiTrial": {
+        "title": "RequestApiTrial",
+        "properties": {
+          "Description": {
+            "type": "string"
+          },
+          "CompanyName": {
+            "type": "string"
+          },
+          "Website": {
+            "type": "string"
+          }
+        },
+        "description": "Request subscription trial",
+        "type": "object"
+      },
       "FetchKeys": {
         "title": "FetchKeys",
         "properties": {},
@@ -3699,10 +4025,42 @@
         "description": "SetKeyFairnessWeight",
         "type": "object"
       },
+      "GetAdminPlanIcon": {
+        "title": "GetAdminPlanIcon",
+        "properties": {
+          "PlanId": {
+            "type": "string",
+            "nullable": false
+          },
+          "UserId": {
+            "type": "string"
+          }
+        },
+        "description": "Image for plan",
+        "type": "object"
+      },
       "GetFairnessUsage": {
         "title": "GetFairnessUsage",
         "properties": {},
         "description": "GetFairnessUsage",
+        "type": "object"
+      },
+      "FetchProxyMessage": {
+        "title": "FetchProxyMessage",
+        "properties": {
+          "RequestId": {
+            "type": "string",
+            "nullable": false
+          },
+          "ResultIdentity": {
+            "type": "string"
+          },
+          "Type": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "description": "FetchProxyMessage",
         "type": "object"
       },
       "FetchCachedNestingExport": {
@@ -3770,6 +4128,731 @@
         "title": "Alive",
         "properties": {},
         "description": "Endpoint to check if the api is alive",
+        "type": "object"
+      },
+      "GetPlanIcon": {
+        "title": "GetPlanIcon",
+        "properties": {
+          "PlanId": {
+            "type": "string",
+            "nullable": false
+          },
+          "UserId": {
+            "type": "string",
+            "nullable": false
+          }
+        },
+        "description": "Image for plan",
+        "type": "object"
+      },
+      "ProxyMessage": {
+        "title": "ProxyMessage",
+        "properties": {},
+        "description": "ProxyMessage",
+        "type": "object"
+      },
+      "UpdatePaymentEmailContact": {
+        "title": "UpdatePaymentEmailContact",
+        "properties": {
+          "Email": {
+            "type": "string"
+          }
+        },
+        "description": "UpdatePaymentEmailContact",
+        "type": "object"
+      },
+      "PurchaseAdditionalCredit": {
+        "title": "PurchaseAdditionalCredit",
+        "properties": {
+          "Amount": {
+            "type": "number",
+            "format": "double",
+            "nullable": false
+          },
+          "TopUpPaymentMethod": {
+            "type": "string"
+          }
+        },
+        "description": "PurchaseAdditionalCredit",
+        "type": "object"
+      },
+      "AutoTopUpSettings": {
+        "title": "AutoTopUpSettings",
+        "properties": {
+          "TopUpWhenCreditBelow": {
+            "type": "number",
+            "format": "double",
+            "nullable": false
+          },
+          "AutoTopUp": {
+            "type": "boolean",
+            "nullable": false
+          },
+          "AutoToUpToAmount": {
+            "type": "number",
+            "format": "double",
+            "nullable": false
+          }
+        },
+        "description": "AutoTopUpSettings",
+        "type": "object"
+      },
+      "GetAccountStatus": {
+        "title": "GetAccountStatus",
+        "properties": {},
+        "description": "GetAccountStatus",
+        "type": "object"
+      },
+      "GetInvoiceForTransaction": {
+        "title": "GetInvoiceForTransaction",
+        "properties": {
+          "TransactionId": {
+            "type": "string"
+          }
+        },
+        "description": "GetInvoiceForTransaction",
+        "type": "object"
+      },
+      "CreateInvoiceTransaction": {
+        "title": "CreateInvoiceTransaction",
+        "properties": {
+          "PlanId": {
+            "type": "string",
+            "nullable": false
+          },
+          "InitialAccountCredit": {
+            "type": "number",
+            "format": "double",
+            "nullable": false
+          },
+          "InvoiceRequestDetails": {
+            "$ref": "#/components/schemas/InvoiceRequestDetails"
+          }
+        },
+        "description": "CreateInvoiceTransaction",
+        "type": "object"
+      },
+      "InvoiceRequestDetails": {
+        "title": "InvoiceRequestDetails",
+        "properties": {
+          "AddressLineOne": {
+            "type": "string"
+          },
+          "City": {
+            "type": "string"
+          },
+          "State": {
+            "type": "string"
+          },
+          "PostalCode": {
+            "type": "string"
+          },
+          "Country": {
+            "type": "string"
+          },
+          "PurchaseOrderNumber": {
+            "type": "string"
+          },
+          "CompanyName": {
+            "type": "string"
+          },
+          "TaxNumber": {
+            "type": "string"
+          }
+        },
+        "description": "InvoiceRequestDetails",
+        "type": "object"
+      },
+      "CreateCardCheckoutTransaction": {
+        "title": "CreateCardCheckoutTransaction",
+        "properties": {},
+        "description": "CreateCardCheckoutTransaction",
+        "type": "object"
+      },
+      "CreateCheckoutTransaction": {
+        "title": "CreateCheckoutTransaction",
+        "properties": {
+          "PlanId": {
+            "type": "string",
+            "nullable": false
+          },
+          "InitialAccountCredit": {
+            "type": "number",
+            "format": "double",
+            "nullable": false
+          }
+        },
+        "description": "CreateCheckoutTransaction",
+        "type": "object"
+      },
+      "FetchAvailablePlans": {
+        "title": "FetchAvailablePlans",
+        "properties": {},
+        "description": "FetchAvailablePlans",
+        "type": "object"
+      },
+      "BillingWebhookRequest_NestApiCustomData_": {
+        "title": "BillingWebhookRequest`1",
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/BillingWebhookData_NestApiCustomData_"
+          },
+          "event_id": {
+            "type": "string"
+          },
+          "event_type": {
+            "type": "string"
+          },
+          "notification_id": {
+            "type": "string"
+          },
+          "occurred_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "description": "BillingWebhookRequest<NestApiCustomData>",
+        "type": "object"
+      },
+      "BillingWebhookData_NestApiCustomData_": {
+        "title": "BillingWebhookData`1",
+        "properties": {
+          "address_id": {
+            "type": "string"
+          },
+          "billed_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "billing_details": {
+            "type": "string"
+          },
+          "billing_period": {
+            "$ref": "#/components/schemas/BillingPeriod"
+          },
+          "business_id": {
+            "type": "string"
+          },
+          "checkout": {
+            "$ref": "#/components/schemas/BillingCheckout"
+          },
+          "collection_mode": {
+            "type": "string"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "currency_code": {
+            "type": "string"
+          },
+          "current_billing_period": {
+            "$ref": "#/components/schemas/BillingPeriod"
+          },
+          "custom_data": {
+            "$ref": "#/components/schemas/NestApiCustomData"
+          },
+          "customer_id": {
+            "type": "string"
+          },
+          "details": {
+            "$ref": "#/components/schemas/PaddleBillingDetails_NestApiCustomData_"
+          },
+          "discount_id": {
+            "type": "string"
+          },
+          "first_billed_at": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "invoice_id": {
+            "type": "string"
+          },
+          "invoice_number": {
+            "type": "string"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BillingItem_NestApiCustomData_"
+            }
+          },
+          "next_billed_at": {
+            "type": "string"
+          },
+          "occurred_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "paused_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "payments": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PaddleInvoicePayment"
+            }
+          },
+          "receipt_data": {
+            "type": "string"
+          },
+          "subscription_id": {
+            "type": "string"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "description": "BillingWebhookData<NestApiCustomData>",
+        "type": "object"
+      },
+      "BillingPeriod": {
+        "title": "BillingPeriod",
+        "properties": {
+          "ends_at": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": false
+          },
+          "starts_at": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": false
+          }
+        },
+        "description": "BillingPeriod",
+        "type": "object"
+      },
+      "BillingCheckout": {
+        "title": "BillingCheckout",
+        "properties": {
+          "url": {
+            "$ref": "#/components/schemas/Uri"
+          }
+        },
+        "description": "BillingCheckout",
+        "type": "object"
+      },
+      "NestApiCustomData": {
+        "title": "NestApiCustomData",
+        "properties": {
+          "externaluserid": {
+            "type": "string",
+            "nullable": false
+          },
+          "userpaymentplanid": {
+            "type": "string",
+            "nullable": false
+          }
+        },
+        "description": "NestApiCustomData",
+        "type": "object"
+      },
+      "PaddleBillingDetails_NestApiCustomData_": {
+        "title": "PaddleBillingDetails`1",
+        "properties": {
+          "adjusted_totals": {
+            "$ref": "#/components/schemas/BillingTotals"
+          },
+          "line_items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BillingLineItem_NestApiCustomData_"
+            }
+          },
+          "payout_totals": {
+            "type": "string"
+          },
+          "tax_rates_used": {
+            "$ref": "#/components/schemas/BillingTaxRates"
+          },
+          "totals": {
+            "$ref": "#/components/schemas/BillingTotals"
+          }
+        },
+        "description": "PaddleBillingDetails<NestApiCustomData>",
+        "type": "object"
+      },
+      "BillingTotals": {
+        "title": "BillingTotals",
+        "properties": {
+          "credit": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "credit_to_balance": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "currency_code": {
+            "type": "string"
+          },
+          "discount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "earnings": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "fee": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "grand_total": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "subtotal": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "tax": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "total": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "description": "BillingTotals",
+        "type": "object"
+      },
+      "BillingLineItem_NestApiCustomData_": {
+        "title": "BillingLineItem`1",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "price_id": {
+            "type": "string"
+          },
+          "product": {
+            "$ref": "#/components/schemas/BillingProduct_NestApiCustomData_"
+          },
+          "quantity": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": false
+          },
+          "tax_rate": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": false
+          },
+          "totals": {
+            "$ref": "#/components/schemas/BillingTotals"
+          },
+          "unit_totals": {
+            "$ref": "#/components/schemas/BillingUnitTotals"
+          }
+        },
+        "description": "BillingLineItem<NestApiCustomData>",
+        "type": "object"
+      },
+      "BillingProduct_NestApiCustomData_": {
+        "title": "BillingProduct`1",
+        "properties": {
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "custom_data": {
+            "$ref": "#/components/schemas/NestApiCustomData"
+          },
+          "description": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "image_url": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "tax_category": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "description": "BillingProduct<NestApiCustomData>",
+        "type": "object"
+      },
+      "BillingUnitTotals": {
+        "title": "BillingUnitTotals",
+        "properties": {
+          "discount": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": false
+          },
+          "subtotal": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": false
+          },
+          "tax": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": false
+          },
+          "total": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": false
+          }
+        },
+        "description": "BillingUnitTotals",
+        "type": "object"
+      },
+      "BillingTaxRates": {
+        "title": "BillingTaxRates",
+        "properties": {
+          "tax_rate": {
+            "type": "number",
+            "format": "double",
+            "nullable": false
+          },
+          "totals": {
+            "$ref": "#/components/schemas/BillingTotals"
+          }
+        },
+        "description": "BillingTaxRates",
+        "type": "object"
+      },
+      "BillingItem_NestApiCustomData_": {
+        "title": "BillingItem`1",
+        "properties": {
+          "price": {
+            "$ref": "#/components/schemas/BillingItemPrice_NestApiCustomData_"
+          },
+          "price_id": {
+            "type": "string"
+          },
+          "product": {
+            "$ref": "#/components/schemas/BillingItemProduct_NestApiCustomData_"
+          },
+          "proration": {
+            "type": "boolean"
+          },
+          "quantity": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": false
+          }
+        },
+        "description": "BillingItem<NestApiCustomData>",
+        "type": "object"
+      },
+      "BillingItemPrice_NestApiCustomData_": {
+        "title": "BillingItemPrice`1",
+        "properties": {
+          "billing_cycle": {
+            "$ref": "#/components/schemas/BillingCycle"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "custom_data": {
+            "$ref": "#/components/schemas/NestApiCustomData"
+          },
+          "description": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "product_id": {
+            "type": "string"
+          },
+          "quantity": {
+            "$ref": "#/components/schemas/BillingQuantity"
+          },
+          "status": {
+            "type": "string"
+          },
+          "tax_mode": {
+            "type": "string"
+          },
+          "trial_period": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": false
+          },
+          "type": {
+            "type": "string"
+          },
+          "unit_price": {
+            "$ref": "#/components/schemas/BillingUnitPrices"
+          },
+          "unit_price_overrides": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BillingUnitPrices"
+            }
+          },
+          "unit_totals": {
+            "$ref": "#/components/schemas/BillingUnitPriceTotals"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "description": "BillingItemPrice<NestApiCustomData>",
+        "type": "object"
+      },
+      "BillingCycle": {
+        "title": "BillingCycle",
+        "properties": {
+          "frequency": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": false
+          },
+          "interval": {
+            "type": "string"
+          }
+        },
+        "description": "BillingCycle",
+        "type": "object"
+      },
+      "BillingQuantity": {
+        "title": "BillingQuantity",
+        "properties": {
+          "maximum": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": false
+          },
+          "minimum": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": false
+          }
+        },
+        "description": "BillingQuantity",
+        "type": "object"
+      },
+      "BillingUnitPrices": {
+        "title": "BillingUnitPrices",
+        "properties": {
+          "amount": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": false
+          },
+          "currency_code": {
+            "type": "string"
+          }
+        },
+        "description": "BillingUnitPrices",
+        "type": "object"
+      },
+      "BillingUnitPriceTotals": {
+        "title": "BillingUnitPriceTotals",
+        "properties": {
+          "total": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": false
+          },
+          "tax": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": false
+          },
+          "subtotal": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": false
+          },
+          "discount": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": false
+          }
+        },
+        "description": "BillingUnitPriceTotals",
+        "type": "object"
+      },
+      "BillingItemProduct_NestApiCustomData_": {
+        "title": "BillingItemProduct`1",
+        "properties": {
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "custom_data": {
+            "$ref": "#/components/schemas/NestApiCustomData"
+          },
+          "description": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "image_url": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "seller_id": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": false
+          },
+          "status": {
+            "type": "string"
+          },
+          "tax_category": {
+            "type": "string"
+          },
+          "trial_dates": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "description": "BillingItemProduct<NestApiCustomData>",
+        "type": "object"
+      },
+      "PaddleInvoicePayment": {
+        "title": "PaddleInvoicePayment",
+        "properties": {
+          "amount": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": false
+          }
+        },
+        "description": "PaddleInvoicePayment",
         "type": "object"
       },
       "GetAssignmentTypes": {
@@ -4125,6 +5208,369 @@
         "description": "Sign Up",
         "type": "object"
       },
+      "AccountBalanceLog": {
+        "title": "AccountBalanceLog",
+        "properties": {
+          "UniqueId": {
+            "type": "string",
+            "nullable": false
+          },
+          "EventId": {
+            "type": "string"
+          },
+          "ChangeDescription": {
+            "type": "string"
+          },
+          "Change": {
+            "type": "number",
+            "format": "double",
+            "nullable": false
+          },
+          "CurrencyCode": {
+            "type": "string"
+          },
+          "Cost": {
+            "type": "number",
+            "format": "double",
+            "nullable": false
+          },
+          "CreatedDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": false
+          }
+        },
+        "description": "AccountBalanceLog",
+        "type": "object"
+      },
+      "List_AccountBalanceLog_": {
+        "title": "List<AccountBalanceLog>",
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/AccountBalanceLog"
+        }
+      },
+      "NestApiUsers": {
+        "title": "NestApiUsers",
+        "properties": {
+          "Users": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/NestApiUserOverview"
+            }
+          }
+        },
+        "description": "NestApiUsers",
+        "type": "object"
+      },
+      "NestApiUserOverview": {
+        "title": "NestApiUserOverview",
+        "properties": {
+          "Id": {
+            "type": "string"
+          },
+          "ExternalAuthId": {
+            "type": "string"
+          },
+          "FirstName": {
+            "type": "string"
+          },
+          "Surname": {
+            "type": "string"
+          },
+          "TeamName": {
+            "type": "string"
+          },
+          "PaymentUserId": {
+            "type": "string"
+          },
+          "UserHasBeenThroughPayment": {
+            "type": "boolean",
+            "nullable": false
+          },
+          "CreatedDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": false
+          },
+          "LastModifiedDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": false
+          },
+          "UserEmail": {
+            "type": "string"
+          },
+          "ExternalDataLoaded": {
+            "type": "boolean",
+            "nullable": false
+          },
+          "PastDue": {
+            "type": "boolean",
+            "nullable": false
+          }
+        },
+        "description": "NestApiUserOverview",
+        "type": "object"
+      },
+      "UserProfile": {
+        "title": "UserProfile",
+        "properties": {
+          "TrialDetails": {
+            "$ref": "#/components/schemas/TrialDetails"
+          },
+          "IsOnTrial": {
+            "type": "boolean",
+            "nullable": false
+          },
+          "Id": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": false
+          },
+          "RemainingCredit": {
+            "type": "number",
+            "format": "double",
+            "nullable": false
+          },
+          "RemainingAllowance": {
+            "type": "number",
+            "format": "double",
+            "nullable": false
+          },
+          "ExternalId": {
+            "type": "string"
+          },
+          "FirstName": {
+            "type": "string"
+          },
+          "LastName": {
+            "type": "string"
+          },
+          "ApiKeys": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ApiKey"
+            }
+          },
+          "ApiKeyNestingRequests": {
+            "$ref": "#/components/schemas/Dictionary_String_List_NestingRecord__"
+          },
+          "Nests": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/NestingRecord"
+            }
+          },
+          "AccountBalance": {
+            "$ref": "#/components/schemas/NestingAccountBalance"
+          },
+          "Locked": {
+            "type": "boolean",
+            "nullable": false
+          },
+          "LockedDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "LastAttemptedLoginDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "UserEmail": {
+            "type": "string"
+          }
+        },
+        "description": "UserProfile",
+        "type": "object"
+      },
+      "TrialDetails": {
+        "title": "TrialDetails",
+        "properties": {
+          "AcceptUrl": {
+            "type": "string"
+          },
+          "RejectUrl": {
+            "type": "string"
+          },
+          "ProjectDescription": {
+            "type": "string"
+          },
+          "CompanyName": {
+            "type": "string"
+          },
+          "Website": {
+            "type": "string"
+          }
+        },
+        "description": "TrialDetails",
+        "type": "object"
+      },
+      "ApiKey": {
+        "title": "ApiKey",
+        "properties": {
+          "Id": {
+            "type": "string"
+          },
+          "UserAuthId": {
+            "type": "string"
+          },
+          "Environment": {
+            "type": "string"
+          },
+          "KeyType": {
+            "type": "string"
+          },
+          "CreatedDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": false
+          },
+          "ExpiryDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "CancelledDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "Notes": {
+            "type": "string"
+          },
+          "RefId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "RefIdStr": {
+            "type": "string"
+          },
+          "Meta": {
+            "$ref": "#/components/schemas/Dictionary_String_String_"
+          }
+        },
+        "description": "ApiKey",
+        "type": "object"
+      },
+      "NestingRecord": {
+        "title": "NestingRecord",
+        "properties": {
+          "Id": {
+            "type": "string",
+            "nullable": false
+          },
+          "NestingTime": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": false
+          },
+          "NestApiKeyId": {
+            "type": "string"
+          },
+          "NestApiKeyLineageId": {
+            "type": "string"
+          },
+          "UserId": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": false
+          },
+          "CreatedDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": false
+          },
+          "ErrorDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "CompletedDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "NumberOfParts": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": false
+          },
+          "NumberOfNests": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": false
+          },
+          "WebhookUrl": {
+            "type": "string"
+          },
+          "ErrorReason": {
+            "type": "string"
+          }
+        },
+        "description": "NestingRecord",
+        "type": "object"
+      },
+      "List_NestingRecord_": {
+        "title": "List<NestingRecord>",
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/NestingRecord"
+        }
+      },
+      "Dictionary_String_List_NestingRecord__": {
+        "title": "Dictionary<String,List<NestingRecord>>",
+        "additionalProperties": {
+          "type": "array",
+          "items": {
+            "$ref": "#/components/schemas/NestingRecord"
+          }
+        },
+        "description": "Dictionary<String,List<NestingRecord>>",
+        "type": "object"
+      },
+      "NestingAccountBalance": {
+        "title": "NestingAccountBalance",
+        "properties": {
+          "UserId": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": false
+          },
+          "StartDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": false
+          },
+          "EndDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": false
+          },
+          "RemainingAllowanceSeconds": {
+            "type": "number",
+            "format": "double",
+            "nullable": false
+          },
+          "RemainingAllowance": {
+            "description": "Allowance in minutes",
+            "type": "number",
+            "format": "double",
+            "nullable": false
+          },
+          "RemainingCredit": {
+            "type": "number",
+            "format": "double",
+            "nullable": false
+          },
+          "IsOnTrial": {
+            "type": "boolean",
+            "nullable": false
+          },
+          "PaidUntil": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "description": "NestingAccountBalance",
+        "type": "object"
+      },
       "ClientKey": {
         "title": "ClientKey",
         "properties": {
@@ -4190,6 +5636,193 @@
         },
         "description": "FairnessConfigResponse",
         "type": "object"
+      },
+      "PurchaseOptionResponse": {
+        "title": "PurchaseOptionResponse",
+        "properties": {
+          "Id": {
+            "type": "string",
+            "nullable": false
+          },
+          "Name": {
+            "type": "string"
+          },
+          "Description": {
+            "type": "string"
+          },
+          "AllowanceMinutes": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": false
+          },
+          "AdditionalPerNestCost": {
+            "type": "number",
+            "format": "double",
+            "nullable": false
+          },
+          "MaxPartCount": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": false
+          },
+          "MaxSheetCount": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": false
+          },
+          "MaxRunTime": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": false
+          },
+          "MaxActiveApiKeys": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": false
+          },
+          "Cost": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": false
+          },
+          "CurrencyCode": {
+            "type": "string"
+          },
+          "DisplayOrder": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": false
+          },
+          "RenewalPeriod": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": false
+          },
+          "RenewalPeriodType": {
+            "type": "string"
+          },
+          "ExternalUserId": {
+            "type": "string"
+          },
+          "IsActive": {
+            "type": "boolean",
+            "nullable": false
+          },
+          "ExternalCustomerId": {
+            "type": "string"
+          },
+          "PaymentGracePeriodDays": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": false
+          },
+          "InvoicePaymentTermsDays": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": false
+          },
+          "AllowedPaymentMethod": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "Icon": {
+            "type": "string"
+          },
+          "IconType": {
+            "type": "string"
+          },
+          "AdminIconPath": {
+            "type": "string"
+          },
+          "Parallelism": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": false
+          },
+          "ImporterParallelism": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": false
+          },
+          "FairnessEnabled": {
+            "type": "boolean",
+            "nullable": false
+          },
+          "OverageEnabled": {
+            "type": "boolean",
+            "nullable": false
+          },
+          "DefaultLineageWeight": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": false
+          },
+          "BurstPercent": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": false
+          }
+        },
+        "description": "PurchaseOptionResponse",
+        "type": "object"
+      },
+      "List_PurchaseOptionResponse_": {
+        "title": "List<PurchaseOptionResponse>",
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/PurchaseOptionResponse"
+        }
+      },
+      "ErrorLog": {
+        "title": "ErrorLog",
+        "properties": {
+          "ApiKey": {
+            "type": "string"
+          },
+          "Exception": {
+            "type": "string"
+          },
+          "StackTrace": {
+            "type": "string"
+          },
+          "InnerException": {
+            "type": "string"
+          },
+          "InnerStackTrace": {
+            "type": "string"
+          },
+          "Context": {
+            "type": "string"
+          },
+          "UserId": {
+            "type": "string"
+          },
+          "FilePath": {
+            "type": "string"
+          },
+          "Id": {
+            "type": "string",
+            "nullable": false
+          },
+          "CreatedDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": false
+          },
+          "ExternalId": {
+            "type": "string",
+            "nullable": false
+          }
+        },
+        "description": "ErrorLog",
+        "type": "object"
+      },
+      "List_ErrorLog_": {
+        "title": "List<ErrorLog>",
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/ErrorLog"
+        }
       },
       "List_ClientKey_": {
         "title": "List<ClientKey>",
@@ -4873,58 +6506,26 @@
         "description": "UserSubscriptionStatus",
         "type": "object"
       },
-      "NestingAccountBalance": {
-        "title": "NestingAccountBalance",
-        "properties": {
-          "UserId": {
-            "type": "integer",
-            "format": "int32",
-            "nullable": false
-          },
-          "StartDate": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": false
-          },
-          "EndDate": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": false
-          },
-          "RemainingAllowanceSeconds": {
-            "type": "number",
-            "format": "double",
-            "nullable": false
-          },
-          "RemainingAllowance": {
-            "description": "Allowance in minutes",
-            "type": "number",
-            "format": "double",
-            "nullable": false
-          },
-          "RemainingCredit": {
-            "type": "number",
-            "format": "double",
-            "nullable": false
-          },
-          "IsOnTrial": {
-            "type": "boolean",
-            "nullable": false
-          },
-          "PaidUntil": {
-            "type": "string",
-            "format": "date-time"
-          }
-        },
-        "description": "NestingAccountBalance",
-        "type": "object"
-      },
       "List_String_": {
         "title": "List<String>",
         "type": "array",
         "items": {
           "type": "string"
         }
+      },
+      "TrialRequestStatus": {
+        "title": "TrialRequestStatus",
+        "properties": {
+          "Success": {
+            "type": "boolean",
+            "nullable": false
+          },
+          "Error": {
+            "type": "string"
+          }
+        },
+        "description": "TrialRequestStatus",
+        "type": "object"
       },
       "KeyFairnessWeightResponse": {
         "title": "KeyFairnessWeightResponse",
@@ -5144,6 +6745,122 @@
         },
         "description": "ResponseError",
         "type": "object"
+      },
+      "CheckoutTransaction": {
+        "title": "CheckoutTransaction",
+        "properties": {
+          "Id": {
+            "type": "string"
+          },
+          "Name": {
+            "type": "string"
+          }
+        },
+        "description": "CheckoutTransaction",
+        "type": "object"
+      },
+      "CheckoutPurchaseOption": {
+        "title": "CheckoutPurchaseOption",
+        "properties": {
+          "Id": {
+            "type": "string",
+            "nullable": false
+          },
+          "Name": {
+            "type": "string"
+          },
+          "Description": {
+            "type": "string"
+          },
+          "AllowanceMinutes": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": false
+          },
+          "AdditionalPerNestCost": {
+            "type": "number",
+            "format": "double",
+            "nullable": false
+          },
+          "MaxPartCount": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": false
+          },
+          "MaxSheetCount": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": false
+          },
+          "MaxRunTime": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": false
+          },
+          "MaxActiveApiKeys": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": false
+          },
+          "Cost": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": false
+          },
+          "CurrencyCode": {
+            "type": "string"
+          },
+          "DisplayOrder": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": false
+          },
+          "RenewalPeriodType": {
+            "type": "string"
+          },
+          "ExternalUserId": {
+            "type": "string"
+          },
+          "IsActive": {
+            "type": "boolean",
+            "nullable": false
+          },
+          "ExternalCustomerId": {
+            "type": "string"
+          },
+          "IsConsumptionPlan": {
+            "type": "boolean",
+            "nullable": false
+          },
+          "RequiredInitialCredit": {
+            "type": "number",
+            "format": "double",
+            "nullable": false
+          },
+          "PaymentGracePeriodDays": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": false
+          },
+          "InvoicePaymentTermsDays": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": false
+          },
+          "AllowedPaymentMethod": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "description": "CheckoutPurchaseOption",
+        "type": "object"
+      },
+      "List_CheckoutPurchaseOption_": {
+        "title": "List<CheckoutPurchaseOption>",
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/CheckoutPurchaseOption"
+        }
       },
       "List_Assignment_": {
         "title": "List<Assignment>",
