@@ -1773,8 +1773,8 @@
   ],
   "servers": [
     {
-      "description": "Staging",
-      "url": "https://dev.api.nestapi.com"
+      "url": "https://dev.api.nestapi.com",
+      "description": "Staging"
     }
   ],
   "components": {
@@ -2396,6 +2396,16 @@
           },
           "MeasurementUnitsOfImportGeometry": {
             "type": "string"
+          },
+          "FromScale": {
+            "type": "number",
+            "format": "double",
+            "nullable": false
+          },
+          "ToScale": {
+            "type": "number",
+            "format": "double",
+            "nullable": false
           }
         },
         "description": "ImportSettings",
@@ -4966,13 +4976,13 @@
         "title": "Ratio",
         "properties": {
           "From": {
-            "type": "integer",
-            "format": "int32",
+            "type": "number",
+            "format": "double",
             "nullable": false
           },
           "To": {
-            "type": "integer",
-            "format": "int32",
+            "type": "number",
+            "format": "double",
             "nullable": false
           }
         },
