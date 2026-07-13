@@ -1773,8 +1773,8 @@
   ],
   "servers": [
     {
-      "url": "https://dev.api.nestapi.com",
-      "description": "Staging"
+      "description": "Staging",
+      "url": "https://dev.api.nestapi.com"
     }
   ],
   "components": {
