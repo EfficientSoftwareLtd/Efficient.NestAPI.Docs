@@ -5576,6 +5576,14 @@
           "PaidUntil": {
             "type": "string",
             "format": "date-time"
+          },
+          "IsPaidPlan": {
+            "type": "boolean",
+            "nullable": false
+          },
+          "HasActiveSubscription": {
+            "type": "boolean",
+            "nullable": false
           }
         },
         "description": "NestingAccountBalance",
