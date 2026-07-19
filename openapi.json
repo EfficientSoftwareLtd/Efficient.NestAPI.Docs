@@ -386,7 +386,7 @@
           "nesting"
         ],
         "summary": "Get the status of a nesting request by RequestId",
-        "description": "Returns the current status (Running, Completed, Failed) and the ResultIdentity if available.",
+        "description": "Returns the current status (Queued, Running, Completed, Failed) and the ResultIdentity if available.",
         "operationId": "FetchNestingStatus",
         "parameters": [
           {
@@ -1773,8 +1773,8 @@
   ],
   "servers": [
     {
-      "url": "https://dev.api.nestapi.com",
-      "description": "Staging"
+      "description": "Staging",
+      "url": "https://dev.api.nestapi.com"
     }
   ],
   "components": {
