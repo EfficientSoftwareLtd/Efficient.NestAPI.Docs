@@ -1812,9 +1812,40 @@
             "type": "integer",
             "format": "int32",
             "nullable": false
+          },
+          "Skip": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "Take": {
+            "type": "integer",
+            "format": "int32"
           }
         },
         "description": "Check that admin user is authorized",
+        "type": "object"
+      },
+      "GetAccountNests": {
+        "title": "GetAccountNests",
+        "properties": {
+          "UserId": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": false
+          },
+          "ApiKeyId": {
+            "type": "string"
+          },
+          "Skip": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "Take": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "description": "Paged nest reports for a customer account",
         "type": "object"
       },
       "RejectOrAcceptTrialRequest": {
@@ -5260,6 +5291,90 @@
           "$ref": "#/components/schemas/AccountBalanceLog"
         }
       },
+      "PagedResult_NestingRecord_": {
+        "title": "PagedResult`1",
+        "properties": {
+          "Results": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/NestingRecord"
+            }
+          },
+          "Total": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": false
+          },
+          "Skip": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": false
+          },
+          "Take": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": false
+          }
+        },
+        "description": "PagedResult<NestingRecord>",
+        "type": "object"
+      },
+      "NestingRecord": {
+        "title": "NestingRecord",
+        "properties": {
+          "Id": {
+            "type": "string",
+            "nullable": false
+          },
+          "NestingTime": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": false
+          },
+          "NestApiKeyId": {
+            "type": "string"
+          },
+          "NestApiKeyLineageId": {
+            "type": "string"
+          },
+          "UserId": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": false
+          },
+          "CreatedDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": false
+          },
+          "ErrorDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "CompletedDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "NumberOfParts": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": false
+          },
+          "NumberOfNests": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": false
+          },
+          "WebhookUrl": {
+            "type": "string"
+          },
+          "ErrorReason": {
+            "type": "string"
+          }
+        },
+        "description": "NestingRecord",
+        "type": "object"
+      },
       "NestApiUsers": {
         "title": "NestApiUsers",
         "properties": {
@@ -5372,6 +5487,11 @@
               "$ref": "#/components/schemas/NestingRecord"
             }
           },
+          "NestCount": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": false
+          },
           "AccountBalance": {
             "$ref": "#/components/schemas/NestingAccountBalance"
           },
@@ -5459,62 +5579,6 @@
           }
         },
         "description": "ApiKey",
-        "type": "object"
-      },
-      "NestingRecord": {
-        "title": "NestingRecord",
-        "properties": {
-          "Id": {
-            "type": "string",
-            "nullable": false
-          },
-          "NestingTime": {
-            "type": "integer",
-            "format": "int32",
-            "nullable": false
-          },
-          "NestApiKeyId": {
-            "type": "string"
-          },
-          "NestApiKeyLineageId": {
-            "type": "string"
-          },
-          "UserId": {
-            "type": "integer",
-            "format": "int32",
-            "nullable": false
-          },
-          "CreatedDate": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": false
-          },
-          "ErrorDate": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "CompletedDate": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "NumberOfParts": {
-            "type": "integer",
-            "format": "int64",
-            "nullable": false
-          },
-          "NumberOfNests": {
-            "type": "integer",
-            "format": "int64",
-            "nullable": false
-          },
-          "WebhookUrl": {
-            "type": "string"
-          },
-          "ErrorReason": {
-            "type": "string"
-          }
-        },
-        "description": "NestingRecord",
         "type": "object"
       },
       "List_NestingRecord_": {
