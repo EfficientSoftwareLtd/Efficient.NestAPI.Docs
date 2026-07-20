@@ -273,6 +273,182 @@
         }
       ]
     },
+    "/admin/keys/{ApiKeyId}/regenerate": {
+      "post": {
+        "tags": [
+          "account"
+        ],
+        "summary": "Regenerate an API key",
+        "description": "Admin only. Rotates one of the account's keys: cancels the old secret and issues a new one, carrying the key's reference, expiry, type, parallelism, fairness weight and allowed origins forward. The old key stops working immediately, so update integrations with the returned key.",
+        "operationId": "RegenerateApiKey",
+        "parameters": [
+          {
+            "name": "ApiKeyId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegenerateApiKey"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClientKey"
+                }
+              }
+            }
+          }
+        },
+        "deprecated": false,
+        "security": [
+          {
+            "Bearer": []
+          }
+        ]
+      },
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/Accept"
+        }
+      ]
+    },
+    "/admin/keys/{ApiKeyId}/type": {
+      "patch": {
+        "tags": [
+          "account"
+        ],
+        "summary": "Set a key's Admin/Usage type",
+        "description": "Admin only. Change a key's capability class — e.g. downgrade a key you handed to a customer from Admin to Usage.",
+        "operationId": "SetApiKeyType",
+        "parameters": [
+          {
+            "name": "ApiKeyId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "KeyType",
+            "in": "query",
+            "x-nullable": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "Usage",
+                "Admin"
+              ]
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SetApiKeyType"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClientKey"
+                }
+              }
+            }
+          }
+        },
+        "deprecated": false,
+        "security": [
+          {
+            "Bearer": []
+          }
+        ]
+      },
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/Accept"
+        }
+      ]
+    },
+    "/admin/keys/{ApiKeyId}/weight": {
+      "patch": {
+        "tags": [
+          "fairness"
+        ],
+        "summary": "Set a key's fairness weight",
+        "description": "Admin only. Sets the per-customer fairness weight for one of your keys; omit LineageWeight (null) to clear the override and fall back to the plan default.",
+        "operationId": "SetKeyFairnessWeight",
+        "parameters": [
+          {
+            "name": "ApiKeyId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "LineageWeight",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SetKeyFairnessWeight"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KeyFairnessWeightResponse"
+                }
+              }
+            }
+          }
+        },
+        "deprecated": false,
+        "security": [
+          {
+            "Bearer": []
+          }
+        ]
+      },
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/Accept"
+        }
+      ]
+    },
     "/v1/user/profile": {
       "get": {
         "tags": [
@@ -1423,182 +1599,6 @@
         }
       ]
     },
-    "/admin/keys/{ApiKeyId}/regenerate": {
-      "post": {
-        "tags": [
-          "account"
-        ],
-        "summary": "Regenerate an API key",
-        "description": "Admin only. Rotates one of the account's keys: cancels the old secret and issues a new one, carrying the key's reference, expiry, type, parallelism, fairness weight and allowed origins forward. The old key stops working immediately, so update integrations with the returned key.",
-        "operationId": "RegenerateApiKey",
-        "parameters": [
-          {
-            "name": "ApiKeyId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/RegenerateApiKey"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Success",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ClientKey"
-                }
-              }
-            }
-          }
-        },
-        "deprecated": false,
-        "security": [
-          {
-            "Bearer": []
-          }
-        ]
-      },
-      "parameters": [
-        {
-          "$ref": "#/components/parameters/Accept"
-        }
-      ]
-    },
-    "/admin/keys/{ApiKeyId}/type": {
-      "patch": {
-        "tags": [
-          "account"
-        ],
-        "summary": "Set a key's Admin/Usage type",
-        "description": "Admin only. Change a key's capability class — e.g. downgrade a key you handed to a customer from Admin to Usage.",
-        "operationId": "SetApiKeyType",
-        "parameters": [
-          {
-            "name": "ApiKeyId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "KeyType",
-            "in": "query",
-            "x-nullable": false,
-            "schema": {
-              "type": "string",
-              "enum": [
-                "Usage",
-                "Admin"
-              ]
-            }
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/SetApiKeyType"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Success",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ClientKey"
-                }
-              }
-            }
-          }
-        },
-        "deprecated": false,
-        "security": [
-          {
-            "Bearer": []
-          }
-        ]
-      },
-      "parameters": [
-        {
-          "$ref": "#/components/parameters/Accept"
-        }
-      ]
-    },
-    "/admin/keys/{ApiKeyId}/weight": {
-      "patch": {
-        "tags": [
-          "fairness"
-        ],
-        "summary": "Set a key's fairness weight",
-        "description": "Admin only. Sets the per-customer fairness weight for one of your keys; omit LineageWeight (null) to clear the override and fall back to the plan default.",
-        "operationId": "SetKeyFairnessWeight",
-        "parameters": [
-          {
-            "name": "ApiKeyId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "LineageWeight",
-            "in": "query",
-            "schema": {
-              "type": "integer",
-              "format": "int32"
-            }
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/SetKeyFairnessWeight"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Success",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/KeyFairnessWeightResponse"
-                }
-              }
-            }
-          }
-        },
-        "deprecated": false,
-        "security": [
-          {
-            "Bearer": []
-          }
-        ]
-      },
-      "parameters": [
-        {
-          "$ref": "#/components/parameters/Accept"
-        }
-      ]
-    },
     "/usage/fairness": {
       "get": {
         "tags": [
@@ -1963,6 +1963,30 @@
         "description": "Regenerate API key",
         "type": "object"
       },
+      "AdminFetchUserProfile": {
+        "title": "AdminFetchUserProfile",
+        "properties": {
+          "UserId": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": false
+          }
+        },
+        "description": "AdminFetchUserProfile",
+        "type": "object"
+      },
+      "AdminCheckSubscriptionStatus": {
+        "title": "AdminCheckSubscriptionStatus",
+        "properties": {
+          "UserId": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": false
+          }
+        },
+        "description": "AdminCheckSubscriptionStatus",
+        "type": "object"
+      },
       "RevokeApiKey": {
         "title": "RevokeApiKey",
         "properties": {
@@ -2201,6 +2225,131 @@
           }
         },
         "description": "CreateApiKey",
+        "type": "object"
+      },
+      "AdminSuccessfulNestsRequest": {
+        "title": "AdminSuccessfulNestsRequest",
+        "properties": {
+          "UserId": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": false
+          }
+        },
+        "description": "AdminSuccessfulNestsRequest",
+        "type": "object"
+      },
+      "AdminFailingNestsRequest": {
+        "title": "AdminFailingNestsRequest",
+        "properties": {
+          "UserId": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": false
+          }
+        },
+        "description": "AdminFailingNestsRequest",
+        "type": "object"
+      },
+      "RegenerateApiKey": {
+        "title": "RegenerateApiKey",
+        "properties": {
+          "ApiKeyId": {
+            "type": "string"
+          }
+        },
+        "description": "RegenerateApiKey",
+        "type": "object"
+      },
+      "SetApiKeyType": {
+        "title": "SetApiKeyType",
+        "properties": {
+          "ApiKeyId": {
+            "type": "string"
+          },
+          "KeyType": {
+            "type": "string"
+          }
+        },
+        "description": "SetApiKeyType",
+        "type": "object"
+      },
+      "AdminGetFairnessUsage": {
+        "title": "AdminGetFairnessUsage",
+        "properties": {
+          "UserId": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": false
+          }
+        },
+        "description": "AdminGetFairnessUsage",
+        "type": "object"
+      },
+      "AdminGetFairnessConfig": {
+        "title": "AdminGetFairnessConfig",
+        "properties": {
+          "UserId": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": false
+          }
+        },
+        "description": "AdminGetFairnessConfig",
+        "type": "object"
+      },
+      "AdminSetFairnessConfig": {
+        "title": "AdminSetFairnessConfig",
+        "properties": {
+          "UserId": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": false
+          },
+          "FairnessEnabled": {
+            "type": "boolean"
+          },
+          "OverageEnabled": {
+            "type": "boolean"
+          },
+          "DefaultLineageWeight": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "BurstPercent": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "description": "AdminSetFairnessConfig",
+        "type": "object"
+      },
+      "SetKeyFairnessWeight": {
+        "title": "SetKeyFairnessWeight",
+        "properties": {
+          "ApiKeyId": {
+            "type": "string"
+          },
+          "LineageWeight": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "description": "SetKeyFairnessWeight",
+        "type": "object"
+      },
+      "GetAdminPlanIcon": {
+        "title": "GetAdminPlanIcon",
+        "properties": {
+          "PlanId": {
+            "type": "string",
+            "nullable": false
+          },
+          "UserId": {
+            "type": "string"
+          }
+        },
+        "description": "Image for plan",
         "type": "object"
       },
       "FetchUserProfile": {
@@ -3958,6 +4107,76 @@
         "description": "Remove an allowed origin from an API key",
         "type": "object"
       },
+      "AdminGetKeyAllowedOrigins": {
+        "title": "AdminGetKeyAllowedOrigins",
+        "properties": {
+          "UserId": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": false
+          },
+          "KeyId": {
+            "type": "string"
+          }
+        },
+        "description": "AdminGetKeyAllowedOrigins",
+        "type": "object"
+      },
+      "AdminAddKeyAllowedOrigin": {
+        "title": "AdminAddKeyAllowedOrigin",
+        "properties": {
+          "UserId": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": false
+          },
+          "KeyId": {
+            "type": "string"
+          },
+          "Origin": {
+            "type": "string"
+          }
+        },
+        "description": "AdminAddKeyAllowedOrigin",
+        "type": "object"
+      },
+      "AdminRemoveKeyAllowedOrigin": {
+        "title": "AdminRemoveKeyAllowedOrigin",
+        "properties": {
+          "UserId": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": false
+          },
+          "KeyId": {
+            "type": "string"
+          },
+          "Origin": {
+            "type": "string"
+          }
+        },
+        "description": "AdminRemoveKeyAllowedOrigin",
+        "type": "object"
+      },
+      "AdminSetKeyFairnessWeight": {
+        "title": "AdminSetKeyFairnessWeight",
+        "properties": {
+          "UserId": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": false
+          },
+          "ApiKeyId": {
+            "type": "string"
+          },
+          "LineageWeight": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "description": "AdminSetKeyFairnessWeight",
+        "type": "object"
+      },
       "RequestApiTrial": {
         "title": "RequestApiTrial",
         "properties": {
@@ -4027,57 +4246,6 @@
           }
         },
         "description": "Regenerate an active api key",
-        "type": "object"
-      },
-      "RegenerateApiKey": {
-        "title": "RegenerateApiKey",
-        "properties": {
-          "ApiKeyId": {
-            "type": "string"
-          }
-        },
-        "description": "RegenerateApiKey",
-        "type": "object"
-      },
-      "SetApiKeyType": {
-        "title": "SetApiKeyType",
-        "properties": {
-          "ApiKeyId": {
-            "type": "string"
-          },
-          "KeyType": {
-            "type": "string"
-          }
-        },
-        "description": "SetApiKeyType",
-        "type": "object"
-      },
-      "SetKeyFairnessWeight": {
-        "title": "SetKeyFairnessWeight",
-        "properties": {
-          "ApiKeyId": {
-            "type": "string"
-          },
-          "LineageWeight": {
-            "type": "integer",
-            "format": "int32"
-          }
-        },
-        "description": "SetKeyFairnessWeight",
-        "type": "object"
-      },
-      "GetAdminPlanIcon": {
-        "title": "GetAdminPlanIcon",
-        "properties": {
-          "PlanId": {
-            "type": "string",
-            "nullable": false
-          },
-          "UserId": {
-            "type": "string"
-          }
-        },
-        "description": "Image for plan",
         "type": "object"
       },
       "GetFairnessUsage": {
@@ -5653,6 +5821,72 @@
         "description": "NestingAccountBalance",
         "type": "object"
       },
+      "PublicUserProfile": {
+        "title": "PublicUserProfile",
+        "properties": {
+          "Id": {
+            "type": "string"
+          },
+          "RequiresPayment": {
+            "type": "boolean",
+            "nullable": false
+          },
+          "ExternalId": {
+            "type": "string"
+          },
+          "FirstName": {
+            "type": "string"
+          },
+          "LastName": {
+            "type": "string"
+          },
+          "Locked": {
+            "type": "boolean",
+            "nullable": false
+          },
+          "LockedDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "LastAttemptedLoginDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "NestCount": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": false
+          }
+        },
+        "description": "PublicUserProfile",
+        "type": "object"
+      },
+      "UserSubscriptionStatus": {
+        "title": "UserSubscriptionStatus",
+        "properties": {
+          "HasHadTrail": {
+            "type": "boolean",
+            "nullable": false
+          },
+          "IsOnTrial": {
+            "type": "boolean",
+            "nullable": false
+          },
+          "HasTrialRequest": {
+            "type": "boolean",
+            "nullable": false
+          },
+          "RequiresPayment": {
+            "type": "boolean",
+            "nullable": false
+          },
+          "NestingAccountBalance": {
+            "$ref": "#/components/schemas/NestingAccountBalance"
+          }
+        },
+        "description": "UserSubscriptionStatus",
+        "type": "object"
+      },
       "ClientKey": {
         "title": "ClientKey",
         "properties": {
@@ -5913,46 +6147,6 @@
           "$ref": "#/components/schemas/ClientKey"
         }
       },
-      "PublicUserProfile": {
-        "title": "PublicUserProfile",
-        "properties": {
-          "Id": {
-            "type": "string"
-          },
-          "RequiresPayment": {
-            "type": "boolean",
-            "nullable": false
-          },
-          "ExternalId": {
-            "type": "string"
-          },
-          "FirstName": {
-            "type": "string"
-          },
-          "LastName": {
-            "type": "string"
-          },
-          "Locked": {
-            "type": "boolean",
-            "nullable": false
-          },
-          "LockedDate": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "LastAttemptedLoginDate": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "NestCount": {
-            "type": "integer",
-            "format": "int32",
-            "nullable": false
-          }
-        },
-        "description": "PublicUserProfile",
-        "type": "object"
-      },
       "SuccessfulNest": {
         "title": "SuccessfulNest",
         "properties": {
@@ -6045,6 +6239,89 @@
         "items": {
           "$ref": "#/components/schemas/FailedNest"
         }
+      },
+      "FairnessUsageResponse": {
+        "title": "FairnessUsageResponse",
+        "properties": {
+          "FairnessEnabled": {
+            "type": "boolean",
+            "nullable": false
+          },
+          "OverageEnabled": {
+            "type": "boolean",
+            "nullable": false
+          },
+          "IncludedMinutes": {
+            "type": "number",
+            "format": "double",
+            "nullable": false
+          },
+          "SharedBurstMinutes": {
+            "type": "number",
+            "format": "double",
+            "nullable": false
+          },
+          "Keys": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FairnessKeyUsage"
+            }
+          }
+        },
+        "description": "FairnessUsageResponse",
+        "type": "object"
+      },
+      "FairnessKeyUsage": {
+        "title": "FairnessKeyUsage",
+        "properties": {
+          "ApiKeyId": {
+            "type": "string"
+          },
+          "Weight": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": false
+          },
+          "ConsumedMinutes": {
+            "type": "number",
+            "format": "double",
+            "nullable": false
+          },
+          "ReservedMinutes": {
+            "type": "number",
+            "format": "double",
+            "nullable": false
+          },
+          "OverageMinutes": {
+            "type": "number",
+            "format": "double",
+            "nullable": false
+          },
+          "EffectiveFloorMinutes": {
+            "type": "number",
+            "format": "double",
+            "nullable": false
+          },
+          "Sizing": {
+            "type": "string"
+          }
+        },
+        "description": "FairnessKeyUsage",
+        "type": "object"
+      },
+      "KeyFairnessWeightResponse": {
+        "title": "KeyFairnessWeightResponse",
+        "properties": {
+          "ApiKeyId": {
+            "type": "string"
+          },
+          "LineageWeight": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "description": "KeyFairnessWeightResponse",
+        "type": "object"
       },
       "NestingStatusResponse": {
         "title": "NestingStatusResponse",
@@ -6562,32 +6839,6 @@
         "description": "ValidateApiKeyResponse",
         "type": "object"
       },
-      "UserSubscriptionStatus": {
-        "title": "UserSubscriptionStatus",
-        "properties": {
-          "HasHadTrail": {
-            "type": "boolean",
-            "nullable": false
-          },
-          "IsOnTrial": {
-            "type": "boolean",
-            "nullable": false
-          },
-          "HasTrialRequest": {
-            "type": "boolean",
-            "nullable": false
-          },
-          "RequiresPayment": {
-            "type": "boolean",
-            "nullable": false
-          },
-          "NestingAccountBalance": {
-            "$ref": "#/components/schemas/NestingAccountBalance"
-          }
-        },
-        "description": "UserSubscriptionStatus",
-        "type": "object"
-      },
       "List_String_": {
         "title": "List<String>",
         "type": "array",
@@ -6607,89 +6858,6 @@
           }
         },
         "description": "TrialRequestStatus",
-        "type": "object"
-      },
-      "KeyFairnessWeightResponse": {
-        "title": "KeyFairnessWeightResponse",
-        "properties": {
-          "ApiKeyId": {
-            "type": "string"
-          },
-          "LineageWeight": {
-            "type": "integer",
-            "format": "int32"
-          }
-        },
-        "description": "KeyFairnessWeightResponse",
-        "type": "object"
-      },
-      "FairnessUsageResponse": {
-        "title": "FairnessUsageResponse",
-        "properties": {
-          "FairnessEnabled": {
-            "type": "boolean",
-            "nullable": false
-          },
-          "OverageEnabled": {
-            "type": "boolean",
-            "nullable": false
-          },
-          "IncludedMinutes": {
-            "type": "number",
-            "format": "double",
-            "nullable": false
-          },
-          "SharedBurstMinutes": {
-            "type": "number",
-            "format": "double",
-            "nullable": false
-          },
-          "Keys": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/FairnessKeyUsage"
-            }
-          }
-        },
-        "description": "FairnessUsageResponse",
-        "type": "object"
-      },
-      "FairnessKeyUsage": {
-        "title": "FairnessKeyUsage",
-        "properties": {
-          "ApiKeyId": {
-            "type": "string"
-          },
-          "Weight": {
-            "type": "integer",
-            "format": "int32",
-            "nullable": false
-          },
-          "ConsumedMinutes": {
-            "type": "number",
-            "format": "double",
-            "nullable": false
-          },
-          "ReservedMinutes": {
-            "type": "number",
-            "format": "double",
-            "nullable": false
-          },
-          "OverageMinutes": {
-            "type": "number",
-            "format": "double",
-            "nullable": false
-          },
-          "EffectiveFloorMinutes": {
-            "type": "number",
-            "format": "double",
-            "nullable": false
-          },
-          "Sizing": {
-            "type": "string"
-          }
-        },
-        "description": "FairnessKeyUsage",
         "type": "object"
       },
       "CachedNestingExportResponse": {
