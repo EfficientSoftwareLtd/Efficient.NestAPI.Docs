@@ -6,7 +6,7 @@ description: "Session-based file import: create a session, upload files, review 
 The importer turns CAD files into clean, nestable geometry through a **session**. Unlike a
 one-shot nesting request, a session is stateful: you upload files, inspect what was found,
 assign which layers mean what (cut, engrave, ignore…), and pull back the resulting geometry —
-which you can then feed to `POST /nesting/geometry`.
+which you can then feed to `POST /v1/nesting/geometry`.
 
 ## When to use the importer
 
@@ -14,7 +14,7 @@ which you can then feed to `POST /nesting/geometry`.
 - You want a human (or your UI) to **review** import results before nesting.
 - You're building an **interactive import** experience in your product.
 
-If you just have clean DXF and want a layout, submit directly to `POST /nesting` instead.
+If you just have clean DXF and want a layout, submit directly to `POST /v1/nesting` instead.
 
 ## Session lifecycle
 
@@ -44,7 +44,7 @@ If you just have clean DXF and want a layout, submit directly to `POST /nesting`
   </Step>
   <Step title="Retrieve results">
     `GET /importer/Result` (`RetrieveResultIdentity`) returns the imported geometry, ready to
-    nest via `POST /nesting/geometry`.
+    nest via `POST /v1/nesting/geometry`.
   </Step>
   <Step title="Complete or cancel">
     `PUT /importer/Session/Complete` finalises the session. To abandon it, use
@@ -73,5 +73,5 @@ mid-edit. Complete or cancel sessions you're done with rather than leaving them 
 ## Next
 
 <Card title="Nest the imported geometry" icon="layer-group" href="/guides/nesting-workflow">
-  Feed the retrieved geometry to `POST /nesting/geometry`.
+  Feed the retrieved geometry to `POST /v1/nesting/geometry`.
 </Card>

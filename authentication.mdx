@@ -18,7 +18,7 @@ You can obtain keys in two ways:
 - **API** — if you hold an Admin-class key, manage keys programmatically via the
   [account endpoints](/account/api-keys).
 
-<Card title="Sign up for a trial" icon="rocket" href="https://api.nestapi.com/trial">
+<Card title="Sign up for a trial" icon="rocket" href="https://app.nestapi.com/">
   New to NestAPI? Start a trial to get a key.
 </Card>
 
@@ -27,12 +27,12 @@ You can obtain keys in two ways:
 <CodeGroup>
 
 ```bash cURL
-curl https://dev.api.nestapi.com/auth/validate \
+curl https://dev.api.nestapi.com/v1/auth/validate \
   -H "Authorization: Bearer YOUR_API_KEY"
 ```
 
 ```javascript Node
-const res = await fetch("https://dev.api.nestapi.com/auth/validate", {
+const res = await fetch("https://dev.api.nestapi.com/v1/auth/validate", {
   headers: { Authorization: `Bearer ${process.env.NESTAPI_KEY}` },
 });
 console.log(await res.json());
@@ -42,12 +42,12 @@ console.log(await res.json());
 using var http = new HttpClient();
 http.DefaultRequestHeaders.Authorization =
     new AuthenticationHeaderValue("Bearer", apiKey);
-var res = await http.GetAsync("https://dev.api.nestapi.com/auth/validate");
+var res = await http.GetAsync("https://dev.api.nestapi.com/v1/auth/validate");
 ```
 
 </CodeGroup>
 
-`GET /auth/validate` confirms the key is active and returns basic identity info
+`GET /v1/auth/validate` confirms the key is active and returns basic identity info
 (`Valid`, `UserId`) — a quick way to check a key works.
 
 ## Verifying a key
@@ -56,15 +56,15 @@ Two account endpoints help you check a key's state:
 
 | Endpoint | Purpose |
 |----------|---------|
-| `GET /auth/validate` | Confirms the key is active and returns basic identity info. |
-| `GET /apiKey/validUntil` | Returns the key's expiry date (or `31/12/9999` if it never expires). |
+| `GET /v1/auth/validate` | Confirms the key is active and returns basic identity info. |
+| `GET /v1/apiKey/validUntil` | Returns the key's expiry date (or `31/12/9999` if it never expires). |
 
 ## Key classes
 
 | Class | Can do |
 |-------|--------|
 | **Usage** | Submit nesting and importer requests. The default. |
-| **Admin** | Everything a Usage key can, plus manage browser origins and fairness settings. |
+| **Admin** | Everything a Usage key can, plus [manage the account's keys](/account/api-keys), browser origins, and [fairness](/account/fairness). |
 
 ## Security
 
@@ -77,5 +77,5 @@ source control. For browser-based apps, restrict a key to specific origins with 
 - Rotate keys periodically, and set an expiry for time-boxed integrations.
 - Disable a compromised key immediately.
 
-Key creation, rotation, and disabling are done from your NestAPI **dashboard** — see
-[API keys](/account/api-keys).
+Key creation, rotation, and revocation can be driven either from your NestAPI **dashboard** or
+[through the API](/account/api-keys) with an Admin key.

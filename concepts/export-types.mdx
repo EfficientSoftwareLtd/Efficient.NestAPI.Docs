@@ -10,12 +10,12 @@ a completed job by its `RequestId`.
 
 | Endpoint | For | Output |
 |----------|-----|--------|
-| `GET /nesting/export` | A standard production nest | Nest export (geometry + reports) |
-| `GET /nesting/exportquotenest` | A [quote nest](/guides/quote-nesting) | Quote-oriented export |
-| `GET /nesting/render/` | Any completed nest | A rendered image of the layout |
+| `GET /v1/nesting/export` | A standard production nest | Nest export (geometry + reports) |
+| `GET /v1/nesting/exportquotenest` | A [quote nest](/guides/quote-nesting) | Quote-oriented export |
+| `GET /v1/nesting/render/` | Any completed nest | A rendered image of the layout |
 
 ```bash
-curl "https://dev.api.nestapi.com/nesting/export?RequestId=THE_REQUEST_ID" \
+curl "https://dev.api.nestapi.com/v1/nesting/export?RequestId=THE_REQUEST_ID" \
   -H "Authorization: Bearer YOUR_API_KEY"
 ```
 
@@ -27,9 +27,9 @@ per-sheet breakdown). Renders are useful for previews in your UI or for operator
 
 ## Choosing between them
 
-- Producing cut files for a **won job** → `GET /nesting/export`.
-- Backing up a **quote** with a layout → `GET /nesting/exportquotenest`.
-- Showing the nest in a **UI** → `GET /nesting/render/`.
+- Producing cut files for a **won job** → `GET /v1/nesting/export`.
+- Backing up a **quote** with a layout → `GET /v1/nesting/exportquotenest`.
+- Showing the nest in a **UI** → `GET /v1/nesting/render/`.
 
 <Note>
 For the precise export payload and any format parameters, see the **Nesting** section of the

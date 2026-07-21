@@ -6,7 +6,7 @@ description: "The ways to describe parts to NestAPI: DXF files, encoded geometry
 NestAPI accepts parts in several forms. They all end up as geometry the nester packs onto
 sheets — pick the one that matches the data you already have.
 
-## DXF files — `POST /nesting`
+## DXF files — `POST /v1/nesting`
 
 Submit base64-encoded **DXF** files as `Base64NestingRequest`. This is the most common path
 when your parts originate from CAD.
@@ -15,7 +15,7 @@ when your parts originate from CAD.
 - Layers in the DXF can carry meaning (cut vs. engrave); use the
   [importer](/guides/importer-workflow) first if layers need mapping and review.
 
-## Encoded geometry — `POST /nesting/geometry`
+## Encoded geometry — `POST /v1/nesting/geometry`
 
 Submit **`GeometryNestingRequest`** — geometry that's already been extracted, either from the
 [importer](/guides/importer-workflow) or defined directly as `SimpleGeometry`.
@@ -23,14 +23,14 @@ Submit **`GeometryNestingRequest`** — geometry that's already been extracted, 
 - Best when you already hold geometry and don't want to round-trip through files.
 - The natural follow-on to an importer session.
 
-## Parametric — `POST /nesting/parametric`
+## Parametric — `POST /v1/nesting/parametric`
 
 Submit **`ParametricNestingRequest`** — parts described by parameters rather than explicit
 outlines.
 
 - Best when parts are generated from a configurator or rules, not drawn.
 
-## MyNesting XML — `POST /nesting/mynesting`
+## MyNesting XML — `POST /v1/nesting/mynesting`
 
 Submit a **MyNesting XML** document as a string.
 
@@ -40,10 +40,10 @@ Submit a **MyNesting XML** document as a string.
 
 | You have… | Use |
 |-----------|-----|
-| DXF files | `POST /nesting` |
-| Geometry from the importer, or `SimpleGeometry` | `POST /nesting/geometry` |
-| Parameter-driven parts | `POST /nesting/parametric` |
-| A MyNesting XML document | `POST /nesting/mynesting` |
+| DXF files | `POST /v1/nesting` |
+| Geometry from the importer, or `SimpleGeometry` | `POST /v1/nesting/geometry` |
+| Parameter-driven parts | `POST /v1/nesting/parametric` |
+| A MyNesting XML document | `POST /v1/nesting/mynesting` |
 
 All of these share the same [async workflow](/guides/nesting-workflow) and the
 `ResultsWebhookUri` / `AutomaticallyStartNesting` fields. For the exact body of each

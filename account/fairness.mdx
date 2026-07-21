@@ -1,0 +1,109 @@
+---
+title: "Fairness"
+description: "Share your account's nesting minutes fairly across the customers you resell to."
+---
+
+If you resell NestAPI — one key per customer — a single heavy customer can consume the whole
+account's nesting minutes and starve everyone else. **Fairness** is a second admission gate
+that divides your included minutes across your keys, so each customer gets a guaranteed share.
+
+<Note>
+Fairness endpoints require an **Admin** key (or the account owner). Configuring it is a
+paid-plan feature, and it is **off by default** — until you enable it your minutes behave as a
+single shared pool. The usage breakdown is readable either way; while fairness is off the rows
+are informational only.
+</Note>
+
+## How the share is worked out
+
+Each API key on your account is treated as one customer, and carries a **weight**:
+
+- Your included minutes are split into a **reserved floor pool** and a **shared burst pool**,
+  in the proportion set by `BurstPercent` (default 10% burst, 90% floors).
+- Each key's **effective floor** is `weight ÷ Σ weights × floor pool` — minutes genuinely
+  reserved for it. A key always gets its floor even if every other key has drained the burst
+  pool, and an idle key's floor is not lent out to a greedier one.
+- Once a key is over its own floor, it may draw from the **shared burst pool**, first-come
+  first-served, until that pool is exhausted.
+- Beyond floor plus whatever burst remains, the nest either spills into **overage** or is
+  rejected, depending on whether overage is enabled.
+
+Give a customer a higher weight to hand them a larger guaranteed slice. Weights are always
+normalised against the total, so you can't over-allocate, and adding or removing a customer
+**rebalances everyone's share automatically** — there is nothing to recalculate by hand.
+
+<Tip>
+Weight and membership changes are **forward-looking**: shares are recomputed from current
+weights and what has already been used, so a change part-way through a period reshapes floors
+from that point on and never claws back minutes a customer has already spent.
+</Tip>
+
+## Periods
+
+Fairness accounting follows your plan's billing period. When the period renews, every key
+starts from zero — unused minutes are **forfeited rather than rolled over**. A nest that is
+still running across a renewal settles into the period it started in, so it is neither lost
+nor charged twice.
+
+## Configuration
+
+| Endpoint | Method | Purpose |
+|----------|--------|---------|
+| `/admin/fairness/config` | GET | Read the account's fairness configuration |
+| `/admin/fairness/config` | PATCH | Update it (only the fields you send are changed) |
+| `/admin/keys/{ApiKeyId}/weight` | PATCH | Set or clear one key's weight |
+
+| Setting | Meaning |
+|---------|---------|
+| `FairnessEnabled` | Turns the per-customer admission gate on or off. |
+| `OverageEnabled` | Lets a customer over its floor+burst share spill into overage rather than be rejected. |
+| `DefaultLineageWeight` | Weight applied to keys with no override (≥ 1). |
+| `BurstPercent` | Percentage of included minutes held back as the shared burst pool (0–100, default 10). Set `0` for strict proportional caps with no shared pool. |
+
+```bash
+curl https://dev.api.nestapi.com/admin/fairness/config \
+  -X PATCH \
+  -H "Authorization: Bearer YOUR_ADMIN_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{ "FairnessEnabled": true, "BurstPercent": 20 }'
+```
+
+### Weighting one customer
+
+```bash
+curl https://dev.api.nestapi.com/admin/keys/THE_KEY_ID/weight \
+  -X PATCH \
+  -H "Authorization: Bearer YOUR_ADMIN_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{ "LineageWeight": 3 }'
+```
+
+Send `"LineageWeight": null` to clear the override and fall back to the plan default.
+
+## Seeing where the minutes went
+
+`GET /usage/fairness` returns the current period's breakdown — one row per key, plus the
+account totals (`IncludedMinutes`, `SharedBurstMinutes`, and whether fairness and overage are
+on).
+
+```bash
+curl https://dev.api.nestapi.com/usage/fairness \
+  -H "Authorization: Bearer YOUR_ADMIN_KEY"
+```
+
+Each row reports:
+
+| Field | Meaning |
+|-------|---------|
+| `ApiKeyId` | The key — i.e. the customer this row is for. |
+| `Weight` | Weight in force (per-key override, else the plan default). |
+| `ConsumedMinutes` | Minutes settled within the included budget this period. |
+| `ReservedMinutes` | Minutes currently held for in-flight nests. |
+| `OverageMinutes` | Minutes run beyond the account's included budget, attributed to this key. |
+| `EffectiveFloorMinutes` | This key's guaranteed floor, on top of which it can draw burst. |
+| `Sizing` | Right-sizing hint: `undersized`, `oversized`, or `balanced`. |
+
+<Tip>
+`Sizing` is the field to drive off when tuning: `undersized` means the customer keeps hitting
+overage and needs more weight; `oversized` means it chronically forfeits share it never uses.
+</Tip>

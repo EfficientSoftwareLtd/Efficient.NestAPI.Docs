@@ -9,14 +9,14 @@ least waste. Use it for bar, tube, extrusion, and profile.
 
 ## Endpoint
 
-`POST /nesting/1D` accepts a **`Nesting1DRequest`** and returns a **`Nesting1DResponse`**
-(also available at `/v1/nesting/1D`).
+`POST /v1/nesting/1D` accepts a **`Nesting1DRequest`** and returns a **`Nesting1DResponse`**
+(also served unversioned at `/nesting/1D` for existing callers).
 
 Unlike the 2D endpoints, the 1D request is self-contained — you submit the lengths and stock
 and receive the optimised cutting plan in the response.
 
 ```bash
-curl https://dev.api.nestapi.com/nesting/1D \
+curl https://dev.api.nestapi.com/v1/nesting/1D \
   -X POST \
   -H "Authorization: Bearer YOUR_API_KEY" \
   -H "Content-Type: application/json" \

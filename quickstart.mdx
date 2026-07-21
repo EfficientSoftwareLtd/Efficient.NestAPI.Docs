@@ -11,7 +11,7 @@ takes a few minutes and assumes you already have an [API key](/authentication).
 <Step title="Confirm your key works">
 
 ```bash
-curl https://dev.api.nestapi.com/auth/validate \
+curl https://dev.api.nestapi.com/v1/auth/validate \
   -H "Authorization: Bearer YOUR_API_KEY"
 ```
 
@@ -31,11 +31,11 @@ See [Webhooks](/guides/webhooks) for the payload format and how to secure the en
 
 <Step title="Submit the nesting request">
 
-`POST /nesting` accepts base64-encoded DXF files together with the sheets to nest onto and
+`POST /v1/nesting` accepts base64-encoded DXF files together with the sheets to nest onto and
 the nesting settings. It returns a `RequestId` immediately.
 
 ```bash
-curl https://dev.api.nestapi.com/nesting \
+curl https://dev.api.nestapi.com/v1/nesting \
   -X POST \
   -H "Authorization: Bearer YOUR_API_KEY" \
   -H "Content-Type: application/json" \
@@ -51,7 +51,7 @@ curl https://dev.api.nestapi.com/nesting \
 ```
 
 `AutomaticallyStartNesting: true` starts the nest immediately. Set it to `false` if you
-want to connect to SignalR for live progress first, then call `/nesting/delayedstart` —
+want to connect to SignalR for live progress first, then call `/v1/nesting/delayedstart` —
 see the [nesting workflow](/guides/nesting-workflow).
 
 <Tip>
@@ -71,7 +71,7 @@ the layout, per-sheet placements, and material-usage figures.
 You can also fetch a result on demand once you have its `RequestId`:
 
 ```bash
-curl "https://dev.api.nestapi.com/nesting/result/" \
+curl "https://dev.api.nestapi.com/v1/nesting/result/" \
   -X POST \
   -H "Authorization: Bearer YOUR_API_KEY" \
   -H "Content-Type: application/json" \
@@ -85,7 +85,7 @@ curl "https://dev.api.nestapi.com/nesting/result/" \
 Turn the completed nest into production output — DXF and reports:
 
 ```bash
-curl "https://dev.api.nestapi.com/nesting/export?RequestId=THE_REQUEST_ID" \
+curl "https://dev.api.nestapi.com/v1/nesting/export?RequestId=THE_REQUEST_ID" \
   -H "Authorization: Bearer YOUR_API_KEY"
 ```
 

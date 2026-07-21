@@ -30,17 +30,19 @@ All nesting endpoints share the same async model; they differ in how you describ
 
 | Endpoint | Input | Use when |
 |----------|-------|----------|
-| `POST /nesting` | Base64-encoded **DXF** files | You have DXF geometry |
-| `POST /nesting/geometry` | **Encoded geometry** (from the importer or `SimpleGeometry`) | You already have geometry, not files |
-| `POST /nesting/parametric` | **Parametric** part definitions | Parts are defined by parameters |
-| `POST /nesting/mynesting` | **MyNesting XML** | You have a MyNesting document |
-| `POST /nesting/quotenesting` | DXF, quote mode | You need a fast quote, not production output |
-| `POST /nesting/geometryquotenesting` | Geometry, quote mode | Quoting from geometry |
-| `POST /nesting/1D` | 1D / linear stock | Cutting bar, tube, or profile |
+| `POST /v1/nesting` | Base64-encoded **DXF** files | You have DXF geometry |
+| `POST /v1/nesting/geometry` | **Encoded geometry** (from the importer or `SimpleGeometry`) | You already have geometry, not files |
+| `POST /v1/nesting/parametric` | **Parametric** part definitions | Parts are defined by parameters |
+| `POST /v1/nesting/mynesting` | **MyNesting XML** | You have a MyNesting document |
+| `POST /v1/nesting/quotenesting` | DXF, quote mode | You need a fast quote, not production output |
+| `POST /v1/nesting/geometryquotenesting` | Geometry, quote mode | Quoting from geometry |
+| `POST /v1/nesting/1D` | 1D / linear stock | Cutting bar, tube, or profile |
 
-Every route is also exposed additively under **`/v1`** (e.g. `/v1/nesting`). The `/v1` path
-is the documented, canonical one; the unversioned path is kept and frozen as the implicit
-v1 for existing callers. See the reference for the request body of each.
+<Note>
+**`/v1` is the canonical path.** Each nesting route is also still served unversioned (e.g.
+`/nesting`), frozen as the implicit v1 so existing integrations keep working. New code should
+use `/v1`; that is what the [API Reference](/api-reference) documents.
+</Note>
 
 ## Common request fields
 
@@ -74,7 +76,7 @@ To show live progress, connect **before** the nest runs:
     missed.
   </Step>
   <Step title="Start the nest">
-    Call `POST /nesting/delayedstart` (`ReadyForNesting`) with the `RequestId`. The nester
+    Call `POST /v1/nesting/delayedstart` (`ReadyForNesting`) with the `RequestId`. The nester
     begins and streams progress over your SignalR connection.
   </Step>
 </Steps>
@@ -90,10 +92,23 @@ Even with webhooks you can query a job by `RequestId`:
 
 | Endpoint | Returns |
 |----------|---------|
-| `POST /nesting/result/` | The `ApiNestingResult` for a completed job |
-| `GET /nesting/render/` | A rendered image of the nest |
-| `GET /nesting/successes` | Recently successful nests |
-| `GET /nesting/failures` | Recently failed nests |
+| `GET /v1/nesting/status` | The job's current status (see below) |
+| `POST /v1/nesting/result/` | The `ApiNestingResult` for a completed job |
+| `GET /v1/nesting/render/` | A rendered image of the nest |
+| `GET /v1/nesting/successes` | Nests completed successfully in the last 24 hours |
+| `GET /v1/nesting/failures` | Nests that failed in the last 24 hours |
+
+### Job status
+
+`GET /v1/nesting/status?RequestId=…` reports where a job has got to, and the
+`ResultIdentity` once one is available:
+
+| Status | Meaning |
+|--------|---------|
+| `Queued` | Accepted, waiting for a parallelism slot or a free nester. |
+| `Running` | Picked up and nesting now. |
+| `Completed` | Finished — fetch the result or an export. |
+| `Failed` | The nest errored; see `GET /v1/nesting/failures`. |
 
 ## Exporting
 
@@ -101,8 +116,9 @@ Once complete, generate production output from the nest:
 
 | Endpoint | Output |
 |----------|--------|
-| `GET /nesting/export` | Standard nest export (DXF + reports) |
-| `GET /nesting/exportquotenest` | Export for a quote nest |
+| `GET /v1/nesting/export` | Standard nest export (DXF + reports) |
+| `GET /v1/nesting/export/cached` | An export already generated via a SignalR result-generation request |
+| `GET /v1/nesting/exportquotenest` | Export for a quote nest |
 
 See [export types](/concepts/export-types) for details.
 

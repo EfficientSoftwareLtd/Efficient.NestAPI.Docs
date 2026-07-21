@@ -39,7 +39,7 @@
       },
       {
         "group": "Account",
-        "pages": ["account/api-keys", "account/profile"]
+        "pages": ["account/api-keys", "account/fairness", "account/profile"]
       },
       {
         "group": "API Reference",

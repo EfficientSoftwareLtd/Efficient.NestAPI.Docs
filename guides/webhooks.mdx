@@ -10,7 +10,7 @@ to receive results for server-to-server integrations.
 ## The payload
 
 The body of the webhook `POST` is the **`ApiNestingResult`** — the same object returned by
-`POST /nesting/result/`. It carries the completed layout, per-sheet placements, and
+`POST /v1/nesting/result/`. It carries the completed layout, per-sheet placements, and
 material-usage figures for the job.
 
 The result is tied to the `RequestId` you received when you submitted, so you can correlate
@@ -46,7 +46,7 @@ Recommended measures:
 - **Use an unguessable URL** — include a long random token in the path or query string and
   reject any request that doesn't carry it (e.g. `.../hooks/nestapi/9f2c…`).
 - **Confirm out of band.** On receiving a webhook, you can independently re-fetch the result
-  with its `RequestId` via `POST /nesting/result/` using your API key. This confirms the
+  with its `RequestId` via `POST /v1/nesting/result/` using your API key. This confirms the
   result is genuine before you act on it — useful until signed webhooks are available.
 - **Allowlist by source** if your infrastructure supports restricting inbound callers.
 
@@ -57,7 +57,7 @@ above). If your endpoint is unreachable when a nest completes, you are not left 
 can always fetch the result on demand:
 
 ```bash
-curl "https://dev.api.nestapi.com/nesting/result/" \
+curl "https://dev.api.nestapi.com/v1/nesting/result/" \
   -X POST \
   -H "Authorization: Bearer YOUR_API_KEY" \
   -H "Content-Type: application/json" \
@@ -72,4 +72,4 @@ to stream the result over a connection you initiate.
 
 - Confirm `ResultsWebhookUri` was set on the request and is publicly reachable over HTTPS.
 - Check your endpoint returns `2xx` quickly and doesn't time out.
-- Fall back to polling `POST /nesting/result/` with the `RequestId`.
+- Fall back to polling `POST /v1/nesting/result/` with the `RequestId`.
