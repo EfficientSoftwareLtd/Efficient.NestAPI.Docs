@@ -9,7 +9,7 @@ least waste. Use it for bar, tube, extrusion, and profile.
 
 ## Endpoint
 
-`POST /v1/nesting/1D` accepts a **`Nesting1DRequest`** and returns a **`Nesting1DResponse`**
+`POST /v1/nesting/1D` accepts a **`Nesting1DRequest`** and returns a **`Nesting1DApiResponse`**
 (also served unversioned at `/nesting/1D` for existing callers).
 
 Unlike the 2D endpoints, the 1D request is self-contained — you submit the lengths and stock
@@ -22,16 +22,80 @@ curl https://dev.api.nestapi.com/v1/nesting/1D \
   -H "Content-Type: application/json" \
   -d '{
     "Request": {
-      "RequiredLengths": [ /* lengths + quantities */ ],
-      "StockLengths":    [ /* available stock + quantities */ ],
-      "Settings":        { /* kerf, trim, etc. */ }
+      "SourceLength": 6000,
+      "SourceWidth": 0,
+      "CutGap": 3,
+      "SourceQuantity": 10,
+      "ComputationTime": 10,
+      "Lengths": [
+        { "Quantity": 5, "Length": 1200 },
+        { "Quantity": 2, "Length": 850 }
+      ]
     }
   }'
 ```
 
+| Field | Meaning |
+|-------|---------|
+| `SourceLength` | Length of one piece of stock. |
+| `SourceWidth` | Width of the stock. Use `0` for plain linear stock. |
+| `CutGap` | Kerf allowed between adjacent placements. |
+| `SourceQuantity` | How many pieces of stock are available. |
+| `ComputationTime` | Seconds the optimiser may run. Capped by your plan. |
+| `Lengths` | The required cuts, each `{ "Quantity": int, "Length": number }`. |
+
+## Response
+
+`Status` reports how the nest itself went — `Success`, `Warning`, or `Failure` — and `Result`
+carries the cutting plan. Each nest is one piece of stock: `Multiplicity` is how many identical
+pieces are cut that way, and `PlacedX` is where a placement starts along the bar.
+
+```json
+{
+  "status": "Success",
+  "result": {
+    "numberOfUniqueNests": 2,
+    "nests": [
+      {
+        "multiplicity": 3,
+        "placedLengths": [
+          { "quantity": 1, "length": 1200, "placedX": 0 },
+          { "quantity": 1, "length": 1200, "placedX": 1203 }
+        ]
+      }
+    ]
+  }
+}
+```
+
+If the optimiser runs but cannot produce a plan, you get `200` with `Status` of `Failure` and
+the reason in `StatusReport`.
+
+## Errors
+
+A rejected request returns the standard `ResponseStatus` error object with the reason in
+`Message`, and no `Status` — the optimiser never ran.
+
+```json
+{
+  "responseStatus": {
+    "errorCode": "BadRequest",
+    "message": "Nesting request is incomplete. Missing required section(s): Lengths.",
+    "errors": []
+  }
+}
+```
+
+| Status | Meaning |
+|--------|---------|
+| `200` | The optimiser ran. Check `Status` for the outcome. |
+| `400` | Invalid request — check required fields. |
+| `401` | API key missing or invalid. |
+| `500` | Rejected by account or plan policy — no allowance, lapsed subscription, or a limit such as `ComputationTime` exceeded. See `ResponseStatus.Message`. |
+
 <Tip>
 See the **Nesting** section of the [API Reference](/api-reference) for the full
-`Nesting1DRequest` and `Nesting1DResponse` shapes.
+`Nesting1DRequest` and `Nesting1DApiResponse` shapes.
 </Tip>
 
 ## When to use it
