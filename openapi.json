@@ -1044,7 +1044,7 @@
           "nesting"
         ],
         "summary": "1D Nesting Request",
-        "description": "This endpoint requires calling with your ApiKey <br />",
+        "description": "This endpoint requires calling with your ApiKey <br />Returns a <b>RequestId</b>. Poll <b>/nesting/status</b> and, once it reports Completed, fetch the cutting plan from <b>/nesting/1D/result</b> — or supply a <b>ResultsWebhookUri</b> to be called instead. A rejected request returns the standard <b>ResponseStatus</b> error object carrying the reason.",
         "operationId": "NestingRequest1D",
         "parameters": [
           {
@@ -1052,6 +1052,21 @@
             "in": "query",
             "schema": {
               "type": "string"
+            }
+          },
+          {
+            "name": "ResultsWebhookUri",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "AutomaticallyStartNesting",
+            "in": "query",
+            "x-nullable": false,
+            "schema": {
+              "type": "boolean"
             }
           }
         ],
@@ -1066,11 +1081,31 @@
         },
         "responses": {
           "200": {
-            "description": "Success",
+            "description": "Request accepted. Use RequestId to track it.",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Nesting1DResponse"
+                  "$ref": "#/components/schemas/ApiNestingResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request — see ResponseStatus.Message.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiNestingResult"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "API key is missing or invalid.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiNestingResult"
                 }
               }
             }
@@ -1682,6 +1717,68 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/CachedNestingExportResponse"
+                }
+              }
+            }
+          }
+        },
+        "deprecated": false,
+        "security": [
+          {
+            "Bearer": []
+          }
+        ]
+      },
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/Accept"
+        }
+      ]
+    },
+    "/v1/nesting/1D/result": {
+      "post": {
+        "tags": [
+          "nesting"
+        ],
+        "summary": "1D Nesting Result",
+        "description": "This endpoint requires calling with your ApiKey <br />Available once <b>/nesting/status</b> reports Completed for the RequestId. The plan is in <b>Result</b> with <b>Status</b> Success; a nest that ran but produced nothing reports Status Failure and a <b>StatusReport</b>.",
+        "operationId": "FetchNesting1DResult",
+        "parameters": [
+          {
+            "name": "RequestId",
+            "in": "query",
+            "x-nullable": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FetchNesting1DResult"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The cutting plan, or the reason the nest produced none.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Nesting1DApiResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "API key is missing or invalid.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Nesting1DApiResponse"
                 }
               }
             }
@@ -3215,9 +3312,16 @@
         "properties": {
           "Request": {
             "$ref": "#/components/schemas/Nesting1DRequest"
+          },
+          "ResultsWebhookUri": {
+            "$ref": "#/components/schemas/Uri"
+          },
+          "AutomaticallyStartNesting": {
+            "type": "boolean",
+            "nullable": false
           }
         },
-        "description": "Submit a 1D (linear) nesting request for bar, tube, or profile stock. Returns the optimised cutting plan synchronously in the response.",
+        "description": "Submit a 1D (linear) nesting request for bar, tube, or profile stock. Returns a RequestId; collect the cutting plan from /nesting/1D/result once /nesting/status reports Completed.",
         "type": "object"
       },
       "Nesting1DRequest": {
@@ -3526,6 +3630,25 @@
           }
         },
         "description": "Add an allowed browser Origin (CORS) to an API key. Provide a full absolute origin — scheme, host and (non-default) port — e.g. https://app.example.com. Origins are matched exactly, so register each distinct origin you call the API from. For local development, add your dev server's localhost origin (e.g. http://localhost:3000); the scheme and port must match exactly (http://localhost:3000 is different from https://localhost:3000 and from http://localhost:5173).",
+        "type": "object"
+      },
+      "FetchNesting1DResult": {
+        "title": "FetchNesting1DResult",
+        "properties": {
+          "RequestId": {
+            "type": "string",
+            "nullable": false
+          }
+        },
+        "description": "Fetch the cutting plan for a completed 1D nesting request.",
+        "type": "object"
+      },
+      "Dictionary_String_String_": {
+        "title": "Dictionary<String,String>",
+        "additionalProperties": {
+          "type": "string"
+        },
+        "description": "Dictionary<String,String>",
         "type": "object"
       },
       "NestingAccountBalance": {
@@ -4264,80 +4387,6 @@
         "description": "ApiNestingResult",
         "type": "object"
       },
-      "Nesting1DResponse": {
-        "title": "Nesting1DResponse",
-        "properties": {
-          "ResponseStatus": {
-            "type": "string"
-          },
-          "StatusReport": {
-            "type": "string"
-          },
-          "Result": {
-            "$ref": "#/components/schemas/Nesting1DResult"
-          }
-        },
-        "description": "Nesting1DResponse",
-        "type": "object"
-      },
-      "Nesting1DResult": {
-        "title": "Nesting1DResult",
-        "properties": {
-          "NumberOfUniqueNests": {
-            "type": "integer",
-            "format": "int32",
-            "nullable": false
-          },
-          "Nests": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/Nesting1DNest"
-            }
-          }
-        },
-        "description": "Nesting1DResult",
-        "type": "object"
-      },
-      "Nesting1DNest": {
-        "title": "Nesting1DNest",
-        "properties": {
-          "Multiplicity": {
-            "type": "integer",
-            "format": "int32",
-            "nullable": false
-          },
-          "PlacedLengths": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/Nesting1DPlacedLength"
-            }
-          }
-        },
-        "description": "Nesting1DNest",
-        "type": "object"
-      },
-      "Nesting1DPlacedLength": {
-        "title": "Nesting1DPlacedLength",
-        "properties": {
-          "Quantity": {
-            "type": "integer",
-            "format": "int32",
-            "nullable": false
-          },
-          "Length": {
-            "type": "number",
-            "format": "double",
-            "nullable": false
-          },
-          "PlacedX": {
-            "type": "number",
-            "format": "double",
-            "nullable": false
-          }
-        },
-        "description": "Nesting1DPlacedLength",
-        "type": "object"
-      },
       "ApiKeyValidUntil": {
         "title": "ApiKeyValidUntil",
         "properties": {
@@ -4426,6 +4475,127 @@
           }
         },
         "description": "CachedNestingExportResponse",
+        "type": "object"
+      },
+      "Nesting1DApiResponse": {
+        "title": "Nesting1DApiResponse",
+        "properties": {
+          "Status": {
+            "type": "string"
+          },
+          "StatusReport": {
+            "type": "string"
+          },
+          "Result": {
+            "$ref": "#/components/schemas/Nesting1DResult"
+          },
+          "ResponseStatus": {
+            "$ref": "#/components/schemas/ResponseStatus"
+          }
+        },
+        "description": "Nesting1DApiResponse",
+        "type": "object"
+      },
+      "Nesting1DResult": {
+        "title": "Nesting1DResult",
+        "properties": {
+          "NumberOfUniqueNests": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": false
+          },
+          "Nests": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Nesting1DNest"
+            }
+          }
+        },
+        "description": "Nesting1DResult",
+        "type": "object"
+      },
+      "Nesting1DNest": {
+        "title": "Nesting1DNest",
+        "properties": {
+          "Multiplicity": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": false
+          },
+          "PlacedLengths": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Nesting1DPlacedLength"
+            }
+          }
+        },
+        "description": "Nesting1DNest",
+        "type": "object"
+      },
+      "Nesting1DPlacedLength": {
+        "title": "Nesting1DPlacedLength",
+        "properties": {
+          "Quantity": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": false
+          },
+          "Length": {
+            "type": "number",
+            "format": "double",
+            "nullable": false
+          },
+          "PlacedX": {
+            "type": "number",
+            "format": "double",
+            "nullable": false
+          }
+        },
+        "description": "Nesting1DPlacedLength",
+        "type": "object"
+      },
+      "ResponseStatus": {
+        "title": "ResponseStatus",
+        "properties": {
+          "ErrorCode": {
+            "type": "string"
+          },
+          "Message": {
+            "type": "string"
+          },
+          "StackTrace": {
+            "type": "string"
+          },
+          "Errors": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ResponseError"
+            }
+          },
+          "Meta": {
+            "$ref": "#/components/schemas/Dictionary_String_String_"
+          }
+        },
+        "description": "ResponseStatus",
+        "type": "object"
+      },
+      "ResponseError": {
+        "title": "ResponseError",
+        "properties": {
+          "ErrorCode": {
+            "type": "string"
+          },
+          "FieldName": {
+            "type": "string"
+          },
+          "Message": {
+            "type": "string"
+          },
+          "Meta": {
+            "$ref": "#/components/schemas/Dictionary_String_String_"
+          }
+        },
+        "description": "ResponseError",
         "type": "object"
       }
     }
