@@ -1209,6 +1209,58 @@
         }
       ]
     },
+    "/v1/nesting/continue": {
+      "post": {
+        "tags": [
+          "nesting"
+        ],
+        "summary": "Advance a quote nest to the next sub-nest",
+        "description": "This endpoint requires calling with your ApiKey <br /><br />Stops the in-progress nest for this RequestId early and lets the server release the next one. This is the classic interactive 'continue to next nest' — only meaningful for a running quote nest.",
+        "operationId": "ContinueNesting",
+        "parameters": [
+          {
+            "name": "RequestId",
+            "in": "query",
+            "x-nullable": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ContinueNesting"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NestingContinued"
+                }
+              }
+            }
+          }
+        },
+        "deprecated": false,
+        "security": [
+          {
+            "Bearer": []
+          }
+        ]
+      },
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/Accept"
+        }
+      ]
+    },
     "/v1/nesting/exportquotenest": {
       "get": {
         "tags": [
@@ -3390,6 +3442,17 @@
         "description": "ReadyForNesting",
         "type": "object"
       },
+      "ContinueNesting": {
+        "title": "ContinueNesting",
+        "properties": {
+          "RequestId": {
+            "type": "string",
+            "nullable": false
+          }
+        },
+        "description": "ContinueNesting",
+        "type": "object"
+      },
       "DxfNestingRequest": {
         "title": "DxfNestingRequest",
         "properties": {
@@ -4411,6 +4474,20 @@
           }
         },
         "description": "NestingStarted",
+        "type": "object"
+      },
+      "NestingContinued": {
+        "title": "NestingContinued",
+        "properties": {
+          "Success": {
+            "type": "boolean",
+            "nullable": false
+          },
+          "ErrorReason": {
+            "type": "string"
+          }
+        },
+        "description": "NestingContinued",
         "type": "object"
       },
       "NestApiExport": {
