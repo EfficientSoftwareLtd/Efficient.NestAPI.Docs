@@ -1922,8 +1922,8 @@
   ],
   "servers": [
     {
-      "description": "Staging",
-      "url": "https://dev.api.nestapi.com"
+      "url": "https://dev.api.nestapi.com",
+      "description": "Staging"
     }
   ],
   "components": {
@@ -3755,6 +3755,13 @@
           "PaidUntil": {
             "type": "string",
             "format": "date-time"
+          },
+          "NodeSizeOverride": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "NodeSizeOverrideValue": {
+            "type": "string"
           },
           "IsPaidPlan": {
             "type": "boolean",
