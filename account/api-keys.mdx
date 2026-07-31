@@ -1,6 +1,6 @@
 ---
 title: "API keys"
-description: "Key classes, lifecycle, and browser-origin (CORS) control."
+description: "Key classes, programmatic lifecycle management, and browser-origin (CORS) control."
 ---
 
 An **API key** authenticates every request as a Bearer token (see [Authentication](/authentication)).
@@ -9,25 +9,86 @@ Keys come in two classes:
 | Class | Can do |
 |-------|--------|
 | **Usage** | Submit nesting requests. The default. |
-| **Admin** | Everything a Usage key can, plus manage browser origins and [fairness](/account/profile). |
-
-## Creating and managing keys
+| **Admin** | Everything a Usage key can, plus manage the account's keys, browser origins, and [fairness](/account/fairness). |
 
 <Note>
-Key lifecycle — **create, list, regenerate, and delete** — is currently managed from your
-**NestAPI dashboard**, not through the API. Use the dashboard to issue an Admin or Usage key,
-set its expiry and parallelism, and rotate or disable it. Programmatic, API-key-driven key
-management is on the roadmap; this page will document those endpoints when they ship.
+The management endpoints on this page require an **Admin** key (or the account owner signed
+in to the dashboard). A Usage key calling them is rejected.
 </Note>
+
+## Managing keys
+
+The full key lifecycle is API-callable, so you can issue a key per customer from your own
+onboarding flow rather than working through the dashboard.
+
+| Endpoint | Method | Purpose |
+|----------|--------|---------|
+| `/admin/keys` | GET | List every key on the account, with its type and fairness weight |
+| `/admin/keys` | POST | Create a key |
+| `/admin/keys/{ApiKeyId}` | DELETE | Revoke a key |
+| `/admin/keys/{ApiKeyId}/regenerate` | POST | Rotate a key's secret |
+| `/admin/keys/{ApiKeyId}/type` | PATCH | Change a key between Usage and Admin |
+| `/admin/keys/{ApiKeyId}/weight` | PATCH | Set the key's [fairness weight](/account/fairness) |
+
+### Creating a key
+
+```bash
+curl https://dev.api.nestapi.com/admin/keys \
+  -X POST \
+  -H "Authorization: Bearer YOUR_ADMIN_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "Reference":   "acme-corp",
+    "Email":       "ops@acme.example.com",
+    "KeyType":     "Usage",
+    "Parallelism": 2,
+    "Expires":     "2027-01-01T00:00:00Z"
+  }'
+```
+
+| Field | Notes |
+|-------|-------|
+| `Reference` | Your own identifier for the key — typically the customer it belongs to. |
+| `Email` | Contact address associated with the key. |
+| `KeyType` | `Usage` (default) or `Admin`. |
+| `Parallelism` | How many nests this key may run concurrently. |
+| `Expires` | Optional expiry. Omit for a key that never expires. |
+| `Trial` | Request a time-boxed trial key (only meaningful on a paid plan). |
+
+The response is a `ClientKey` carrying the new `ApiKey` secret. Store it when you receive it.
+Key creation is subject to your plan's active-key cap.
+
+### Rotating a key
+
+```bash
+curl https://dev.api.nestapi.com/admin/keys/THE_KEY_ID/regenerate \
+  -X POST \
+  -H "Authorization: Bearer YOUR_ADMIN_KEY"
+```
+
+Regeneration carries the key's reference, expiry, type, parallelism, fairness weight, and
+allowed origins forward onto the new secret.
+
+<Warning>
+The old secret stops working **immediately** — there is no overlap window. Update the
+integration with the returned key as part of the same operation.
+</Warning>
+
+### Revoking a key
+
+```bash
+curl https://dev.api.nestapi.com/admin/keys/THE_KEY_ID \
+  -X DELETE \
+  -H "Authorization: Bearer YOUR_ADMIN_KEY"
+```
 
 To check a key you already hold — validity and expiry — see
 [Identity &amp; key status](/account/profile).
 
 ## Browser origins (CORS)
 
-These endpoints **are** API-callable with an **Admin** key. For a key used from a browser,
-restrict which **origins** may call the API with it. Origins are matched **exactly** — scheme,
-host, and (non-default) port must all match.
+For a key used from a browser, restrict which **origins** may call the API with it. Origins
+are matched **exactly** — scheme, host, and (non-default) port must all match.
 
 | Endpoint | Method | Purpose |
 |----------|--------|---------|

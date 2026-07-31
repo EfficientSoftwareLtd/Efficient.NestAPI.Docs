@@ -11,12 +11,12 @@ final cutting output.
 
 | Endpoint | Input |
 |----------|-------|
-| `POST /nesting/quotenesting` | Base64 DXF quote parts and sheets (`QuoteNestingRequest`) |
-| `POST /nesting/geometryquotenesting` | Geometry quote parts and sheets (`QuoteNestingRequest`) |
+| `POST /v1/nesting/quotenesting` | Base64 DXF quote parts and sheets (`QuoteNestingRequest`) |
+| `POST /v1/nesting/geometryquotenesting` | Geometry quote parts and sheets (`QuoteNestingRequest`) |
 
 Both follow the same [async model](/guides/nesting-workflow): submit, receive a `RequestId`,
 and get the `ApiNestingResult` via your `ResultsWebhookUri` (or fetch it by `RequestId`).
-Both are also available under `/v1`.
+Both are also served unversioned (`/nesting/quotenesting`) for existing callers.
 
 ## Quote vs. production nesting
 
@@ -24,12 +24,12 @@ Both are also available under `/v1`.
 |--|---------------|--------------------|
 | Goal | Material-usage estimate for pricing | Cut-ready layout |
 | Speed | Optimised for fast turnaround | Optimised for layout quality |
-| Export | `GET /nesting/exportquotenest` | `GET /nesting/export` |
+| Export | `GET /v1/nesting/exportquotenest` | `GET /v1/nesting/export` |
 
 ## Exporting a quote nest
 
 ```bash
-curl "https://dev.api.nestapi.com/nesting/exportquotenest?RequestId=THE_REQUEST_ID" \
+curl "https://dev.api.nestapi.com/v1/nesting/exportquotenest?RequestId=THE_REQUEST_ID" \
   -H "Authorization: Bearer YOUR_API_KEY"
 ```
 

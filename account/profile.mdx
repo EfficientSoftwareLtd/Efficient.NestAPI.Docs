@@ -1,32 +1,71 @@
 ---
-title: "Identity & key status"
-description: "Check who a key belongs to, whether it's valid, and when it expires."
+title: "Identity & account status"
+description: "Check who a key belongs to, whether it's valid, when it expires, and what your account has left."
 ---
 
-A few lightweight endpoints let you inspect the key you're calling with — useful for health
-checks, diagnostics, and surfacing key state in your own UI.
+A few lightweight endpoints let you inspect the key you're calling with and the account
+behind it — useful for health checks, diagnostics, and surfacing state in your own UI.
 
 ## Is the key valid?
 
-`GET /auth/validate` confirms the key is active and returns basic identity info
+`GET /v1/auth/validate` confirms the key is active and returns basic identity info
 (`Valid`, `UserId`).
 
 ```bash
-curl https://dev.api.nestapi.com/auth/validate \
+curl https://dev.api.nestapi.com/v1/auth/validate \
   -H "Authorization: Bearer YOUR_API_KEY"
 ```
 
 ## When does the key expire?
 
-`GET /apiKey/validUntil` returns the key's expiry. A key with no expiry returns
+`GET /v1/apiKey/validUntil` returns the key's expiry. A key with no expiry returns
 `31/12/9999`.
 
 ```bash
-curl https://dev.api.nestapi.com/apiKey/validUntil \
+curl https://dev.api.nestapi.com/v1/apiKey/validUntil \
   -H "Authorization: Bearer YOUR_API_KEY"
 ```
 
 <Tip>
-Poll `validUntil` in scheduled jobs to warn before an integration's key lapses, and rotate it
-ahead of time from your dashboard (see [API keys](/account/api-keys)).
+Poll `validUntil` in scheduled jobs to warn before an integration's key lapses, and
+[rotate it](/account/api-keys#rotating-a-key) ahead of time.
 </Tip>
+
+## Who does the key belong to?
+
+`GET /v1/user/profile` returns the account profile behind the key — identifiers, name, and
+the account's nest count.
+
+```bash
+curl https://dev.api.nestapi.com/v1/user/profile \
+  -H "Authorization: Bearer YOUR_API_KEY"
+```
+
+## What has the account got left?
+
+`GET /v1/status` returns the account's subscription state — trial and payment flags, plus the
+current nesting balance.
+
+```bash
+curl https://dev.api.nestapi.com/v1/status \
+  -H "Authorization: Bearer YOUR_API_KEY"
+```
+
+| Field | Meaning |
+|-------|---------|
+| `IsOnTrial` | The account is currently on a trial. |
+| `RequiresPayment` | The account needs payment details before it can nest further. |
+| `NestingAccountBalance` | Remaining nesting balance, including whether the plan is paid and the subscription active. |
+
+<Tip>
+For a per-customer breakdown of how the account's nesting minutes are being consumed across
+your keys, see [Fairness](/account/fairness).
+</Tip>
+
+## Is the API up?
+
+`GET /public/alive` is an unauthenticated health check — no API key needed.
+
+```bash
+curl https://dev.api.nestapi.com/public/alive
+```

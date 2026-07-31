@@ -17,9 +17,9 @@ The nester's job is to place the parts onto the sheets efficiently, honouring yo
 A part is a closed outline (optionally with internal features) plus how many you need.
 Depending on the endpoint, parts are provided as:
 
-- **DXF** (base64) — `POST /nesting`
-- **Encoded geometry** or `SimpleGeometry` — `POST /nesting/geometry`
-- **Parametric** definitions — `POST /nesting/parametric`
+- **DXF** (base64) — `POST /v1/nesting`
+- **Encoded geometry** or `SimpleGeometry` — `POST /v1/nesting/geometry`
+- **Parametric** definitions — `POST /v1/nesting/parametric`
 
 Quantities let one request produce many placements of the same part. See
 [geometry types](/guides/geometry-types) for choosing a format.
