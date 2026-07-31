@@ -57,7 +57,7 @@ Poll job status with the `RequestId` until it reports `Completed` — or supply 
 `ResultsWebhookUri` above to be called instead:
 
 ```bash
-curl "https://dev.api.nestapi.com/v1/nesting/status?RequestId=THE_REQUEST_ID" \
+curl "https://api.nestapi.com/v1/nesting/status?RequestId=THE_REQUEST_ID" \
   -H "Authorization: Bearer YOUR_API_KEY"
 ```
 
@@ -73,7 +73,7 @@ or `Failure` — and `Result` carries the cutting plan. Each nest is one piece o
 placement starts along the bar.
 
 ```bash
-curl https://dev.api.nestapi.com/v1/nesting/1D/result \
+curl https://api.nestapi.com/v1/nesting/1D/result \
   -X POST \
   -H "Authorization: Bearer YOUR_API_KEY" \
   -H "Content-Type: application/json" \
