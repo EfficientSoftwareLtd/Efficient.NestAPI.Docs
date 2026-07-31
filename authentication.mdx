@@ -27,12 +27,12 @@ You can obtain keys in two ways:
 <CodeGroup>
 
 ```bash cURL
-curl https://dev.api.nestapi.com/v1/auth/validate \
+curl https://api.nestapi.com/v1/auth/validate \
   -H "Authorization: Bearer YOUR_API_KEY"
 ```
 
 ```javascript Node
-const res = await fetch("https://dev.api.nestapi.com/v1/auth/validate", {
+const res = await fetch("https://api.nestapi.com/v1/auth/validate", {
   headers: { Authorization: `Bearer ${process.env.NESTAPI_KEY}` },
 });
 console.log(await res.json());
@@ -42,7 +42,7 @@ console.log(await res.json());
 using var http = new HttpClient();
 http.DefaultRequestHeaders.Authorization =
     new AuthenticationHeaderValue("Bearer", apiKey);
-var res = await http.GetAsync("https://dev.api.nestapi.com/v1/auth/validate");
+var res = await http.GetAsync("https://api.nestapi.com/v1/auth/validate");
 ```
 
 </CodeGroup>

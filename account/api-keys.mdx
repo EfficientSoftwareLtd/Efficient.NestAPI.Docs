@@ -33,7 +33,7 @@ onboarding flow rather than working through the dashboard.
 ### Creating a key
 
 ```bash
-curl https://dev.api.nestapi.com/admin/keys \
+curl https://api.nestapi.com/admin/keys \
   -X POST \
   -H "Authorization: Bearer YOUR_ADMIN_KEY" \
   -H "Content-Type: application/json" \
@@ -61,7 +61,7 @@ Key creation is subject to your plan's active-key cap.
 ### Rotating a key
 
 ```bash
-curl https://dev.api.nestapi.com/admin/keys/THE_KEY_ID/regenerate \
+curl https://api.nestapi.com/admin/keys/THE_KEY_ID/regenerate \
   -X POST \
   -H "Authorization: Bearer YOUR_ADMIN_KEY"
 ```
@@ -77,7 +77,7 @@ integration with the returned key as part of the same operation.
 ### Revoking a key
 
 ```bash
-curl https://dev.api.nestapi.com/admin/keys/THE_KEY_ID \
+curl https://api.nestapi.com/admin/keys/THE_KEY_ID \
   -X DELETE \
   -H "Authorization: Bearer YOUR_ADMIN_KEY"
 ```
@@ -97,7 +97,7 @@ are matched **exactly** — scheme, host, and (non-default) port must all match.
 | `/apikeys/{KeyId}/origins` | DELETE | Remove an allowed origin |
 
 ```bash
-curl https://dev.api.nestapi.com/apikeys/YOUR_KEY_ID/origins \
+curl https://api.nestapi.com/apikeys/YOUR_KEY_ID/origins \
   -X POST \
   -H "Authorization: Bearer YOUR_ADMIN_KEY" \
   -H "Content-Type: application/json" \

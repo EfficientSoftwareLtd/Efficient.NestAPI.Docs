@@ -12,7 +12,7 @@ behind it — useful for health checks, diagnostics, and surfacing state in your
 (`Valid`, `UserId`).
 
 ```bash
-curl https://dev.api.nestapi.com/v1/auth/validate \
+curl https://api.nestapi.com/v1/auth/validate \
   -H "Authorization: Bearer YOUR_API_KEY"
 ```
 
@@ -22,7 +22,7 @@ curl https://dev.api.nestapi.com/v1/auth/validate \
 `31/12/9999`.
 
 ```bash
-curl https://dev.api.nestapi.com/v1/apiKey/validUntil \
+curl https://api.nestapi.com/v1/apiKey/validUntil \
   -H "Authorization: Bearer YOUR_API_KEY"
 ```
 
@@ -37,7 +37,7 @@ Poll `validUntil` in scheduled jobs to warn before an integration's key lapses, 
 the account's nest count.
 
 ```bash
-curl https://dev.api.nestapi.com/v1/user/profile \
+curl https://api.nestapi.com/v1/user/profile \
   -H "Authorization: Bearer YOUR_API_KEY"
 ```
 
@@ -47,7 +47,7 @@ curl https://dev.api.nestapi.com/v1/user/profile \
 current nesting balance.
 
 ```bash
-curl https://dev.api.nestapi.com/v1/status \
+curl https://api.nestapi.com/v1/status \
   -H "Authorization: Bearer YOUR_API_KEY"
 ```
 
@@ -67,5 +67,5 @@ your keys, see [Fairness](/account/fairness).
 `GET /public/alive` is an unauthenticated health check — no API key needed.
 
 ```bash
-curl https://dev.api.nestapi.com/public/alive
+curl https://api.nestapi.com/public/alive
 ```

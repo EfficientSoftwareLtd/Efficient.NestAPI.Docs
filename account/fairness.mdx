@@ -61,7 +61,7 @@ nor charged twice.
 | `BurstPercent` | Percentage of included minutes held back as the shared burst pool (0–100, default 10). Set `0` for strict proportional caps with no shared pool. |
 
 ```bash
-curl https://dev.api.nestapi.com/admin/fairness/config \
+curl https://api.nestapi.com/admin/fairness/config \
   -X PATCH \
   -H "Authorization: Bearer YOUR_ADMIN_KEY" \
   -H "Content-Type: application/json" \
@@ -71,7 +71,7 @@ curl https://dev.api.nestapi.com/admin/fairness/config \
 ### Weighting one customer
 
 ```bash
-curl https://dev.api.nestapi.com/admin/keys/THE_KEY_ID/weight \
+curl https://api.nestapi.com/admin/keys/THE_KEY_ID/weight \
   -X PATCH \
   -H "Authorization: Bearer YOUR_ADMIN_KEY" \
   -H "Content-Type: application/json" \
@@ -87,7 +87,7 @@ account totals (`IncludedMinutes`, `SharedBurstMinutes`, and whether fairness an
 on).
 
 ```bash
-curl https://dev.api.nestapi.com/usage/fairness \
+curl https://api.nestapi.com/usage/fairness \
   -H "Authorization: Bearer YOUR_ADMIN_KEY"
 ```
 
