@@ -1922,8 +1922,8 @@
   ],
   "servers": [
     {
-      "url": "https://dev.api.nestapi.com",
-      "description": "Staging"
+      "description": "Staging",
+      "url": "https://dev.api.nestapi.com"
     }
   ],
   "components": {
@@ -3714,6 +3714,47 @@
         "description": "Dictionary<String,String>",
         "type": "object"
       },
+      "ClientKey": {
+        "title": "ClientKey",
+        "properties": {
+          "ApiKey": {
+            "type": "string"
+          },
+          "ClientRef": {
+            "type": "string"
+          },
+          "Expired": {
+            "type": "boolean",
+            "nullable": false
+          },
+          "IsActive": {
+            "type": "boolean",
+            "nullable": false
+          },
+          "Expires": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "CancelledDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "Parallelism": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": false
+          },
+          "IsTrial": {
+            "type": "boolean",
+            "nullable": false
+          },
+          "KeyType": {
+            "type": "string"
+          }
+        },
+        "description": "ClientKey",
+        "type": "object"
+      },
       "NestingAccountBalance": {
         "title": "NestingAccountBalance",
         "properties": {
@@ -3839,47 +3880,6 @@
           }
         },
         "description": "UserSubscriptionStatus",
-        "type": "object"
-      },
-      "ClientKey": {
-        "title": "ClientKey",
-        "properties": {
-          "ApiKey": {
-            "type": "string"
-          },
-          "ClientRef": {
-            "type": "string"
-          },
-          "Expired": {
-            "type": "boolean",
-            "nullable": false
-          },
-          "IsActive": {
-            "type": "boolean",
-            "nullable": false
-          },
-          "Expires": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "CancelledDate": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "Parallelism": {
-            "type": "integer",
-            "format": "int32",
-            "nullable": false
-          },
-          "IsTrial": {
-            "type": "boolean",
-            "nullable": false
-          },
-          "KeyType": {
-            "type": "string"
-          }
-        },
-        "description": "ClientKey",
         "type": "object"
       },
       "FairnessConfigResponse": {
