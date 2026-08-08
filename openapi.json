@@ -697,7 +697,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ReportSourceResponse"
+                  "$ref": "#/components/schemas/ReportSourceResponseV1"
                 }
               }
             }
@@ -4116,9 +4116,12 @@
         "description": "RenderResponse",
         "type": "object"
       },
-      "ReportSourceResponse": {
-        "title": "ReportSourceResponse",
+      "ReportSourceResponseV1": {
+        "title": "ReportSourceResponseV1",
         "properties": {
+          "Status": {
+            "$ref": "#/components/schemas/NestingStatusMessage"
+          },
           "NestData": {
             "type": "array",
             "items": {
@@ -4187,7 +4190,119 @@
             "type": "string"
           }
         },
-        "description": "ReportSourceResponse",
+        "description": "ReportSourceResponseV1",
+        "type": "object"
+      },
+      "NestingStatusMessage": {
+        "title": "NestingStatusMessage",
+        "properties": {
+          "NestingStatus": {
+            "type": "string"
+          },
+          "ErrorReport": {
+            "type": "string"
+          },
+          "ErrorCode": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "ResultIdentity": {
+            "type": "string"
+          },
+          "NestingEfficiency": {
+            "type": "number",
+            "format": "double"
+          },
+          "AverageSheetUtilisation": {
+            "type": "number",
+            "format": "double"
+          },
+          "NestedSheetsInfo": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/NestedSheetInfo"
+            }
+          },
+          "NumberOfPartsNested": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "NumberOfPartsUnPlaced": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "NumberOfSheetsUsed": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "UnplacedParts": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UnplacedPartInfo"
+            }
+          }
+        },
+        "description": "NestingStatusMessage",
+        "type": "object"
+      },
+      "NestedSheetInfo": {
+        "title": "NestedSheetInfo",
+        "properties": {
+          "SheetXDimMM": {
+            "type": "number",
+            "format": "double",
+            "nullable": false
+          },
+          "SheetYDimMM": {
+            "type": "number",
+            "format": "double",
+            "nullable": false
+          },
+          "NestingEfficiency": {
+            "type": "number",
+            "format": "double",
+            "nullable": false
+          },
+          "SheetUtilisation": {
+            "type": "number",
+            "format": "double",
+            "nullable": false
+          },
+          "Multiplicity": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": false
+          },
+          "SheetIdentifier": {
+            "type": "string"
+          },
+          "NestingXDimMM": {
+            "type": "number",
+            "format": "double",
+            "nullable": false
+          },
+          "NestingYDimMM": {
+            "type": "number",
+            "format": "double",
+            "nullable": false
+          }
+        },
+        "description": "NestedSheetInfo",
+        "type": "object"
+      },
+      "UnplacedPartInfo": {
+        "title": "UnplacedPartInfo",
+        "properties": {
+          "PartIdentifier": {
+            "type": "string"
+          },
+          "UnplacedQuantity": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": false
+          }
+        },
+        "description": "UnplacedPartInfo",
         "type": "object"
       },
       "NestData": {
