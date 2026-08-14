@@ -2280,6 +2280,10 @@
           "NestingDirection": {
             "type": "string"
           },
+          "NestingAngleDegrees": {
+            "type": "number",
+            "format": "double"
+          },
           "MaximumCPUCount": {
             "type": "integer",
             "format": "int32",
