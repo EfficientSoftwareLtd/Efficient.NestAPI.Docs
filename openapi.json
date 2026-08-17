@@ -1922,8 +1922,8 @@
   ],
   "servers": [
     {
-      "url": "https://dev.api.nestapi.com",
-      "description": "Staging"
+      "description": "Staging",
+      "url": "https://dev.api.nestapi.com"
     }
   ],
   "components": {
@@ -3807,6 +3807,10 @@
           },
           "NodeSizeOverrideValue": {
             "type": "string"
+          },
+          "ParallelismOverride": {
+            "type": "integer",
+            "format": "int32"
           },
           "IsPaidPlan": {
             "type": "boolean",
