@@ -3808,6 +3808,10 @@
           "NodeSizeOverrideValue": {
             "type": "string"
           },
+          "ParallelismOverride": {
+            "type": "integer",
+            "format": "int32"
+          },
           "IsPaidPlan": {
             "type": "boolean",
             "nullable": false
