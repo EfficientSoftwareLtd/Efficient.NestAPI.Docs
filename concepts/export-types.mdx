@@ -40,11 +40,8 @@ the integer.
 | `DXF` | `2` | A base64-encoded DXF file of the nested layout. |
 | `ReportSource` | `3` | Data for report generation — statistics plus base64 renderings (material usage, per-sheet breakdown). |
 | `RemnantExport` | `4` | A base64-encoded **zip** of DXF files representing the remnants the nest generated. |
-
-<Note>
-The API also defines two further values — `Runtime` and `PartsExport` — accepted by the same
-enum. Their output is not documented here yet; check with the API team before relying on them.
-</Note>
+| `Runtime` | `5` | Information about the result together with a render. Requires **runtime render settings** to have been supplied on the original nesting request. |
+| `PartsExport` | `6` | A DXF export of the individual **part** geometry from the nesting request. |
 
 ## How to request an export (webhook-delivered)
 
