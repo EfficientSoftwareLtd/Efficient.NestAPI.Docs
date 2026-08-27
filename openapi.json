@@ -11,7 +11,7 @@
           "account"
         ],
         "summary": "Revoke an API key",
-        "description": "Admin only. Cancels one of the account's keys.",
+        "description": "Admin only. Cancels one of the account's keys.\n\n**Path**\n\n- `ApiKeyId` — the id of the key to revoke.",
         "operationId": "RevokeApiKey",
         "parameters": [
           {
@@ -25,7 +25,27 @@
         ],
         "responses": {
           "200": {
-            "description": "Success",
+            "description": "The revoked key.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClientKey"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "API key is missing or invalid.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClientKey"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The calling key is not an Admin key.",
             "content": {
               "application/json": {
                 "schema": {
@@ -58,7 +78,27 @@
         "operationId": "GetFairnessConfig",
         "responses": {
           "200": {
-            "description": "Success",
+            "description": "The account's fairness configuration.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FairnessConfigResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "API key is missing or invalid.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FairnessConfigResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The calling key is not an Admin key.",
             "content": {
               "application/json": {
                 "schema": {
@@ -80,7 +120,7 @@
           "fairness"
         ],
         "summary": "Update the account's per-customer fairness configuration",
-        "description": "Admin only. Only the fields you supply are changed. Fairness is a paid-plan feature. See NESTING_MINUTES_FAIRNESS_DESIGN.md.",
+        "description": "Admin only. Only the fields you supply are changed. Fairness is a paid-plan feature.\n\n**Body** (all optional; omitted fields are left unchanged)\n\n- `FairnessEnabled` — turn the per-customer admission gate on or off.\n- `OverageEnabled` — let a customer over its floor+burst share spill into overage rather than be rejected.\n- `DefaultLineageWeight` — default per-key weight for keys with no override (≥ 1).\n- `BurstPercent` — percent of included minutes kept as the shared first-come burst pool (0–100).",
         "operationId": "SetFairnessConfig",
         "parameters": [
           {
@@ -125,7 +165,27 @@
         },
         "responses": {
           "200": {
-            "description": "Success",
+            "description": "The updated fairness configuration.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FairnessConfigResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "API key is missing or invalid.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FairnessConfigResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The calling key is not an Admin key.",
             "content": {
               "application/json": {
                 "schema": {
@@ -158,7 +218,35 @@
         "operationId": "ListApiKeys",
         "responses": {
           "200": {
-            "description": "Success",
+            "description": "Every key on the account.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "List<ClientKey>",
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ClientKey"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "API key is missing or invalid.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "List<ClientKey>",
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ClientKey"
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The calling key is not an Admin key.",
             "content": {
               "application/json": {
                 "schema": {
@@ -184,7 +272,7 @@
           "account"
         ],
         "summary": "Create an API key",
-        "description": "Admin only. Programmatically issue a key to one of your customers. Defaults to a Usage key; set KeyType=Admin to mint another admin key. Subject to the plan's active-key cap.",
+        "description": "Admin only. Programmatically issue a key to one of your customers. Defaults to a Usage key; set `KeyType = Admin` to mint another admin key. Subject to the plan's active-key cap.\n\n**Body**\n\n- `Reference` — your own label for the key (for example the customer's name).\n- `Expires` — optional expiry date; omit for a key that does not expire.\n- `Email` — the customer's email address, associated with the key.\n- `Parallelism` — how many nests this key may run concurrently.\n- `KeyType` — `Usage` (nesting only, default) or `Admin`.\n- `Trial` — issue a time-boxed trial key (only meaningful on a paid plan).",
         "operationId": "CreateApiKey",
         "parameters": [
           {
@@ -250,7 +338,37 @@
         },
         "responses": {
           "200": {
-            "description": "Success",
+            "description": "The newly created key.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClientKey"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request — check the body and required fields.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClientKey"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "API key is missing or invalid.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClientKey"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The calling key is not an Admin key, or the active-key cap is reached.",
             "content": {
               "application/json": {
                 "schema": {
@@ -279,7 +397,7 @@
           "account"
         ],
         "summary": "Regenerate an API key",
-        "description": "Admin only. Rotates one of the account's keys: cancels the old secret and issues a new one, carrying the key's reference, expiry, type, parallelism, fairness weight and allowed origins forward. The old key stops working immediately, so update integrations with the returned key.",
+        "description": "Admin only. Rotates one of the account's keys: cancels the old secret and issues a new one, carrying the key's reference, expiry, type, parallelism, fairness weight and allowed origins forward. The old key stops working immediately, so update integrations with the returned key.\n\n**Path**\n\n- `ApiKeyId` — the id of the key to rotate.",
         "operationId": "RegenerateApiKey",
         "parameters": [
           {
@@ -302,7 +420,27 @@
         },
         "responses": {
           "200": {
-            "description": "Success",
+            "description": "The rotated key, carrying a new secret.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClientKey"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "API key is missing or invalid.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClientKey"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The calling key is not an Admin key.",
             "content": {
               "application/json": {
                 "schema": {
@@ -331,7 +469,7 @@
           "account"
         ],
         "summary": "Set a key's Admin/Usage type",
-        "description": "Admin only. Change a key's capability class — e.g. downgrade a key you handed to a customer from Admin to Usage.",
+        "description": "Admin only. Change a key's capability class — e.g. downgrade a key you handed to a customer from Admin to Usage.\n\n**Path & body**\n\n- `ApiKeyId` (path) — the id of the key to change.\n- `KeyType` (body) — the new capability class: `Usage` or `Admin`.",
         "operationId": "SetApiKeyType",
         "parameters": [
           {
@@ -366,7 +504,27 @@
         },
         "responses": {
           "200": {
-            "description": "Success",
+            "description": "The updated key.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClientKey"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "API key is missing or invalid.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClientKey"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The calling key is not an Admin key.",
             "content": {
               "application/json": {
                 "schema": {
@@ -395,7 +553,7 @@
           "fairness"
         ],
         "summary": "Set a key's fairness weight",
-        "description": "Admin only. Sets the per-customer fairness weight for one of your keys; omit LineageWeight (null) to clear the override and fall back to the plan default.",
+        "description": "Admin only. Sets the per-customer fairness weight for one of your keys.\n\n**Path & body**\n\n- `ApiKeyId` (path) — the key to weight.\n- `LineageWeight` (body) — the weight to apply; omit (null) to clear the override and fall back to the plan default.",
         "operationId": "SetKeyFairnessWeight",
         "parameters": [
           {
@@ -426,7 +584,27 @@
         },
         "responses": {
           "200": {
-            "description": "Success",
+            "description": "The key's updated fairness weight.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KeyFairnessWeightResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "API key is missing or invalid.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KeyFairnessWeightResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The calling key is not an Admin key.",
             "content": {
               "application/json": {
                 "schema": {
@@ -459,7 +637,17 @@
         "operationId": "FetchUserProfile",
         "responses": {
           "200": {
-            "description": "Success",
+            "description": "Your account profile.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicUserProfile"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "API key is missing or invalid.",
             "content": {
               "application/json": {
                 "schema": {
@@ -487,12 +675,26 @@
         "tags": [
           "nesting"
         ],
-        "summary": "Fetch nests that have been completed successfully in the last 24 hours",
-        "description": "Fetch nests that have been completed successfully in the last 24 hours",
+        "summary": "Recent successful nests (last 24 hours)",
+        "description": "Lists nests that completed successfully in the last 24 hours for the calling account.",
         "operationId": "SuccessfulNestsRequest",
         "responses": {
           "200": {
-            "description": "Success",
+            "description": "The nests that completed successfully in the last 24 hours.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "List<SuccessfulNest>",
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/SuccessfulNest"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "API key is missing or invalid.",
             "content": {
               "application/json": {
                 "schema": {
@@ -524,12 +726,26 @@
         "tags": [
           "nesting"
         ],
-        "summary": "Fetch nests that have been failed in the last 24 hours",
-        "description": "Fetch nests that have been failed in the last 24 hours",
+        "summary": "Recent failed nests (last 24 hours)",
+        "description": "Lists nests that failed in the last 24 hours for the calling account, with the reason each failed.",
         "operationId": "FailingNestsRequest",
         "responses": {
           "200": {
-            "description": "Success",
+            "description": "The nests that failed in the last 24 hours.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "List<FailedNest>",
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/FailedNest"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "API key is missing or invalid.",
             "content": {
               "application/json": {
                 "schema": {
@@ -561,13 +777,15 @@
         "tags": [
           "nesting"
         ],
-        "summary": "Get the status of a nesting request by RequestId",
-        "description": "Returns the current status (Queued, Running, Completed, Failed) and the ResultIdentity if available.",
+        "summary": "Get the status of a nesting request",
+        "description": "Returns the current status of a nesting job and, once available, the `ResultIdentity` you use to fetch the result or an export.\n\nStatus values: `Queued` (accepted, waiting for a nester), `Running` (nesting now), `Completed` (finished — fetch the result or an export), `Failed` (errored — see `/v1/nesting/failures`).",
         "operationId": "FetchNestingStatus",
         "parameters": [
           {
             "name": "RequestId",
             "in": "query",
+            "description": "The job to report on — the `RequestId` returned when you submitted the nest.",
+            "required": true,
             "schema": {
               "type": "string"
             }
@@ -575,7 +793,17 @@
         ],
         "responses": {
           "200": {
-            "description": "Success",
+            "description": "The current status of the job.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NestingStatusResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "API key is missing or invalid.",
             "content": {
               "application/json": {
                 "schema": {
@@ -603,13 +831,15 @@
         "tags": [
           "nesting"
         ],
-        "summary": "Request a Render response for a nesting Result",
-        "description": "This endpoint requires calling with your ApiKey <br /><b>RequestId</b><br /> <br /> RequestId to get result from<br /><b>ResultIdentity</b> <br /> ResultId for the result you wish to fetch<br />",
+        "summary": "Render a completed nest",
+        "description": "Returns a rendered image of a completed nesting result **synchronously, in the response body** — the one export you can fetch and use in a single call. Useful for previews in your UI or operator sheets.\n\nThe response carries the render as a base64-encoded string in `Base64EncodedRendering`, with its format in `RenderFormat` and pixel dimensions in `xDimension` / `yDimension`.",
         "operationId": "FetchNestingRender",
         "parameters": [
           {
             "name": "RequestId",
             "in": "query",
+            "description": "The completed job to render. This is `NestIdentifier` in the webhook payload.",
+            "required": true,
             "x-nullable": false,
             "schema": {
               "type": "string"
@@ -618,6 +848,8 @@
           {
             "name": "ResultIdentity",
             "in": "query",
+            "description": "The specific result to render (`ResultIdentity` in the webhook payload).",
+            "required": true,
             "x-nullable": false,
             "schema": {
               "type": "string"
@@ -626,7 +858,17 @@
         ],
         "responses": {
           "200": {
-            "description": "Success",
+            "description": "The rendered image and its dimensions.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RenderResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "API key is missing or invalid.",
             "content": {
               "application/json": {
                 "schema": {
@@ -654,8 +896,8 @@
         "tags": [
           "nesting"
         ],
-        "summary": "Request a ReportSource response for a nesting Result",
-        "description": "This endpoint requires calling with your ApiKey <br /><b>RequestId</b><br /> <br /> RequestId to get result from<br /><b>ResultIdentity</b> <br /> ResultId for the result you wish to fetch<br />",
+        "summary": "Fetch the report-source result for a completed nest",
+        "description": "Returns the report-source result (statistics, renderings and status) for a completed nest. Supply the `RequestId` of the job and the `ResultIdentity` of the specific result you want.",
         "operationId": "FetchNestingResult",
         "parameters": [
           {
@@ -693,7 +935,17 @@
         },
         "responses": {
           "200": {
-            "description": "Success",
+            "description": "The report-source result for the completed nest.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReportSourceResponseV1"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "API key is missing or invalid.",
             "content": {
               "application/json": {
                 "schema": {
@@ -721,8 +973,8 @@
         "tags": [
           "nesting"
         ],
-        "summary": "NestingRequest based on parametric part definitions.",
-        "description": "This endpoint requires calling with your ApiKey <br /><b>Request</b><br /> <b>ParametricNestingRequest</b> <br /> Refer to Model link in body section of this endpoint's api doc below (Next to Example Value) <br /><b>ResultsWebhookUri</b><br /> Web hook uri to POST the result to",
+        "summary": "Nest from parametric parts",
+        "description": "Submit a nesting request from parametric part definitions. Returns a `RequestId`; the result is delivered asynchronously to your `ResultsWebhookUri`.\n\n**Body**\n\n- `Request` — a `ParametricNestingRequest`: parts defined by parameters, plus sheets and settings. See the model in the request-body section below.\n- `ResultsWebhookUri` — the URL the completed result is `POST`ed to.\n- `AutomaticallyStartNesting` — `true` (default) starts nesting immediately; `false` holds the job for `/v1/nesting/delayedstart` (use with SignalR for live progress).",
         "operationId": "ParametricGeometryNestingRequest",
         "parameters": [
           {
@@ -759,7 +1011,27 @@
         },
         "responses": {
           "200": {
-            "description": "Success",
+            "description": "Nesting request accepted. Returns a RequestId for tracking.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiNestingResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request — check the request body and required fields.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiNestingResult"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "API key is missing or invalid.",
             "content": {
               "application/json": {
                 "schema": {
@@ -787,8 +1059,8 @@
         "tags": [
           "nesting"
         ],
-        "summary": "NestingRequest based on Encoded geometry (from our importer or defined as SimpleGeometry).",
-        "description": "This endpoint requires calling with your ApiKey <br /><b>Request</b><br /> <b>GeometryNestingRequest</b> <br /> Refer to Model link in body section of this endpoint's api doc below (Next to Example Value) <br /><b>ResultsWebhookUri</b><br /> Web hook uri to POST the result to",
+        "summary": "Nest from encoded geometry",
+        "description": "Submit a nesting request from encoded geometry (from our importer or defined as `SimpleGeometry`). Returns a `RequestId`; the result is delivered asynchronously to your `ResultsWebhookUri`.\n\n**Body**\n\n- `Request` — a `GeometryNestingRequest`: the encoded geometry, sheets and settings. See the model in the request-body section below.\n- `ResultsWebhookUri` — the URL the completed result is `POST`ed to.\n- `AutomaticallyStartNesting` — `true` (default) starts nesting immediately; `false` holds the job for `/v1/nesting/delayedstart` (use with SignalR for live progress).",
         "operationId": "EncodedGeometryNestingRequest",
         "parameters": [
           {
@@ -825,7 +1097,27 @@
         },
         "responses": {
           "200": {
-            "description": "Success",
+            "description": "Nesting request accepted. Returns a RequestId for tracking.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiNestingResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request — check the request body and required fields.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiNestingResult"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "API key is missing or invalid.",
             "content": {
               "application/json": {
                 "schema": {
@@ -853,8 +1145,8 @@
         "tags": [
           "nesting"
         ],
-        "summary": "MyNesting XML encoded request",
-        "description": "This endpoint requires calling with your ApiKey <br /><b>Request</b><br /> <b>MyNestingXML</b> <br /> Refer to Model link in body section of this endpoint's api doc below (Next to Example Value) <br /><b>ResultsWebhookUri</b><br /> Web hook uri to POST the result to",
+        "summary": "Nest from MyNesting XML",
+        "description": "Submit a nesting request from a MyNesting XML document. Returns a `RequestId`; the result is delivered asynchronously to your `ResultsWebhookUri`.\n\n**Body**\n\n- `MyNestingXML` — the MyNesting XML document, as a string.\n- `ResultsWebhookUri` — the URL the completed result is `POST`ed to.",
         "operationId": "MyNestingRequest",
         "parameters": [
           {
@@ -883,7 +1175,27 @@
         },
         "responses": {
           "200": {
-            "description": "Success",
+            "description": "Nesting request accepted. Returns a RequestId for tracking.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiNestingResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request — check the MyNesting XML and required fields.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiNestingResult"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "API key is missing or invalid.",
             "content": {
               "application/json": {
                 "schema": {
@@ -911,8 +1223,8 @@
         "tags": [
           "nesting"
         ],
-        "summary": "QuoteNestingRequest",
-        "description": "This endpoint requires calling with your ApiKey <br />",
+        "summary": "Quote nest from encoded geometry",
+        "description": "Submit a quote nest from encoded geometry — a fast material-usage estimate for quoting, not full production output. Export the layout with `/v1/nesting/exportquotenest`.\n\n**Body**\n\n- `Request` — a `QuoteNestingRequest` of encoded geometry parts and sheets.\n- `ResultsWebhookUri` — the URL the completed result is `POST`ed to.\n- `AutomaticallyStartNesting` — `true` (default) starts immediately; `false` holds the job for `/v1/nesting/delayedstart`.",
         "operationId": "EncodedGeometryQuoteNestingRequest",
         "parameters": [
           {
@@ -949,7 +1261,27 @@
         },
         "responses": {
           "200": {
-            "description": "Success",
+            "description": "Quote nesting request accepted. Returns a RequestId for tracking.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiNestingResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request — check the request body and required fields.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiNestingResult"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "API key is missing or invalid.",
             "content": {
               "application/json": {
                 "schema": {
@@ -977,8 +1309,8 @@
         "tags": [
           "nesting"
         ],
-        "summary": "QuoteNestingRequest",
-        "description": "This endpoint requires calling with your ApiKey <br />",
+        "summary": "Quote nest from DXF files",
+        "description": "Submit a quote nest from base64-encoded DXF parts — a fast material-usage estimate for quoting, not full production output. Export the layout with `/v1/nesting/exportquotenest`.\n\n**Body**\n\n- `Request` — a `QuoteNestingRequest` of base64 DXF parts and sheets.\n- `ResultsWebhookUri` — the URL the completed result is `POST`ed to.\n- `AutomaticallyStartNesting` — `true` (default) starts immediately; `false` holds the job for `/v1/nesting/delayedstart`.",
         "operationId": "DxfQuoteNestingRequest",
         "parameters": [
           {
@@ -1015,7 +1347,27 @@
         },
         "responses": {
           "200": {
-            "description": "Success",
+            "description": "Quote nesting request accepted. Returns a RequestId for tracking.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiNestingResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request — check the request body and required fields.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiNestingResult"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "API key is missing or invalid.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1043,8 +1395,8 @@
         "tags": [
           "nesting"
         ],
-        "summary": "1D Nesting Request",
-        "description": "This endpoint requires calling with your ApiKey <br />Returns a <b>RequestId</b>. Poll <b>/nesting/status</b> and, once it reports Completed, fetch the cutting plan from <b>/nesting/1D/result</b> — or supply a <b>ResultsWebhookUri</b> to be called instead. A rejected request returns the standard <b>ResponseStatus</b> error object carrying the reason.",
+        "summary": "Nest 1D / linear stock",
+        "description": "Submit a 1D (linear) nesting request for bar, tube, or profile stock. Returns a `RequestId`; poll `/v1/nesting/status` and, once it reports `Completed`, fetch the cutting plan from `/v1/nesting/1D/result` — or supply a `ResultsWebhookUri` to be called instead.\n\n**Body**\n\n- `Request` — a `Nesting1DRequest`: the lengths to cut and the stock available.\n- `ResultsWebhookUri` — optional; the URL the result is `POST`ed to on completion.\n- `AutomaticallyStartNesting` — `true` (default) starts nesting immediately.\n\nA rejected request returns the standard `ResponseStatus` error object carrying the reason.",
         "operationId": "NestingRequest1D",
         "parameters": [
           {
@@ -1129,12 +1481,22 @@
         "tags": [
           "account"
         ],
-        "summary": "Check the expiry date of your ApiKey",
-        "description": "This endpoint requires calling with your Api Key.<br />If your Api key has an expiry it will return when it expires.<br />If your Api key does not expire, it will return 31/12/9999 as the expiry date.",
+        "summary": "Check when your API key expires",
+        "description": "Returns the expiry date of the calling API key. A key that does not expire returns `31/12/9999`.",
         "operationId": "GetApiValidUntil",
         "responses": {
           "200": {
-            "description": "Success",
+            "description": "The key's expiry date.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiKeyValidUntil"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "API key is missing or invalid.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1162,8 +1524,8 @@
         "tags": [
           "nesting"
         ],
-        "summary": "Call this to start nesting in nesting ui once you have connected to signal R and invoked ListenForUpdates",
-        "description": "This endpoint requires calling with your ApiKey <br /><br />Call this to start nesting in nesting ui once you have connected to signal R and invoked ListenForUpdates",
+        "summary": "Start a delayed nest (after connecting to SignalR)",
+        "description": "Starts a nest that was submitted with `AutomaticallyStartNesting = false`.\n\nCall this once you have opened your SignalR connection and subscribed with the `RequestId`, so that no progress events are missed. The nester then begins and streams progress over your connection.\n\n**Body**\n\n- `RequestId` — the job to start, from the original submit response.",
         "operationId": "ReadyForNesting",
         "parameters": [
           {
@@ -1186,7 +1548,17 @@
         },
         "responses": {
           "200": {
-            "description": "Success",
+            "description": "The nest was started.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NestingStarted"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "API key is missing or invalid.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1214,8 +1586,8 @@
         "tags": [
           "nesting"
         ],
-        "summary": "Advance a quote nest to the next sub-nest",
-        "description": "This endpoint requires calling with your ApiKey <br /><br />Stops the in-progress nest for this RequestId early and lets the server release the next one. This is the classic interactive 'continue to next nest' — only meaningful for a running quote nest.",
+        "summary": "Continue a quote nest to the next sub-nest",
+        "description": "Stops the in-progress nest for this `RequestId` early and lets the server release the next one. This is the classic interactive \"continue to next nest\" and is only meaningful for a running quote nest.\n\n**Body**\n\n- `RequestId` — the running quote nest to advance.",
         "operationId": "ContinueNesting",
         "parameters": [
           {
@@ -1238,7 +1610,17 @@
         },
         "responses": {
           "200": {
-            "description": "Success",
+            "description": "The next sub-nest was released, or a reason it could not be.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NestingContinued"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "API key is missing or invalid.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1266,11 +1648,15 @@
         "tags": [
           "nesting"
         ],
+        "summary": "Generate an export for a completed quote nest",
+        "description": "The quote-nesting equivalent of `GET /v1/nesting/export`. Generates a quote-oriented export from a completed quote nest and delivers it **asynchronously to your webhook**.\n\nLike `export`, this call does **not** return the export in the response body — it returns `{ \"Success\": true }` on acceptance and `POST`s the generated export to the `WebHookUri` you supply. There is no `ResponseType`; the quote export is a single fixed shape.",
         "operationId": "GenerateQuoteNestingExport",
         "parameters": [
           {
             "name": "RequestId",
             "in": "query",
+            "description": "The completed quote nest to export, as returned from the quote-nesting endpoint.",
+            "required": true,
             "x-nullable": false,
             "schema": {
               "type": "string"
@@ -1280,13 +1666,36 @@
             "name": "WebHookUri",
             "in": "query",
             "schema": {
+              "$ref": "#/components/schemas/Uri",
               "type": "string"
-            }
+            },
+            "description": "The URL the generated export is `POST`ed to when it is ready. Required — without it the export has nowhere to be delivered.",
+            "required": true
           }
         ],
         "responses": {
           "200": {
-            "description": "Success",
+            "description": "The export request was accepted and queued for delivery to your webhook.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NestApiExport"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "API key is missing or invalid.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NestApiExport"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "The export limit for this quote nest has been reached.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1314,13 +1723,15 @@
         "tags": [
           "nesting"
         ],
-        "summary": "Request a response for a nesting Result based on ResponseType passed",
-        "description": "This endpoint requires calling with your ApiKey <br /><br /><b>Id</b><br/> <b>String</b><br /> This Id is NestIdentifier in the JSON pushed to your webhook for nesting. It is also returned from the /nesting endpoint<br /><br /><b>ResultId</b><br/> <b>String</b><br /> This Id is ResultIdentity in the JSON pushed to your webhook for nesting.<br /><br /><b>ResponseType</b><br/> <b>Enum / Int</b><br /> This alters the kind of result that is pushed to your provided webhook <br /><b>0 or result </b> - Posts part placement details of result to webhook<br /><b>1 or render</b> - Posts base64 encode render (SVG or PNG) of the result to webhook<br /><b>2 or dxf</b> - Posts base64 encoded dxf file of the results to webhook <br /><b>3 or reportsource</b> - Posts information designed for report generation, statistics and base64 renderings to webhook <br /><b>4 or remnantexport</b> -Posts  base64 encoded zip file containing the dxf representation of remnants generated by the nesting to webhook<br /><br /><b>WebHookUri</b><br/> <b>String</b><br /> Web hook uri to POST the result to",
+        "summary": "Generate a production export for a completed nest",
+        "description": "Generates an export from a completed nesting result and delivers it **asynchronously to your webhook**.\n\nThis call does **not** return the export in the response body. It validates the request, queues the export, and returns immediately with `{ \"Success\": true }`. When the export has been generated it is `POST`ed to the `WebHookUri` you supply.\n\nUse `ResponseType` to choose what is produced:\n\n- `Result` (0) — part-placement details for the result\n- `Render` (1) — a base64-encoded render (SVG or PNG) of the layout\n- `DXF` (2) — a base64-encoded DXF file of the nested layout\n- `ReportSource` (3) — statistics and base64 renderings for report generation\n- `RemnantExport` (4) — a base64-encoded zip of DXF files representing the remnants\n- `Runtime` (5) — information about the result together with a render; requires runtime render settings to have been supplied on the original nesting request\n- `PartsExport` (6) — a DXF export of the individual part geometry from the nesting request\n\nEach `ResponseType` may be requested once per result by default; requesting an export you have already requested returns an error.",
         "operationId": "GenerateNestApiExport",
         "parameters": [
           {
             "name": "RequestId",
             "in": "query",
+            "description": "The completed job to export. This is `NestIdentifier` in the webhook payload, and is the id returned from the nesting endpoint.",
+            "required": true,
             "x-nullable": false,
             "schema": {
               "type": "string"
@@ -1329,6 +1740,8 @@
           {
             "name": "ResultId",
             "in": "query",
+            "description": "The specific result to export. This is `ResultIdentity` in the webhook payload and in `GET /v1/nesting/status`.",
+            "required": true,
             "x-nullable": false,
             "schema": {
               "type": "string"
@@ -1337,6 +1750,8 @@
           {
             "name": "ResponseType",
             "in": "query",
+            "description": "Which export to generate. Accepts the name or the integer — see the endpoint description for the meaning of each value.",
+            "required": true,
             "x-nullable": false,
             "schema": {
               "type": "string",
@@ -1355,13 +1770,36 @@
             "name": "WebHookUri",
             "in": "query",
             "schema": {
+              "$ref": "#/components/schemas/Uri",
               "type": "string"
-            }
+            },
+            "description": "The URL the generated export is `POST`ed to when it is ready. Required — without it the export has nowhere to be delivered.",
+            "required": true
           }
         ],
         "responses": {
           "200": {
-            "description": "Success",
+            "description": "The export request was accepted and queued for delivery to your webhook.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NestApiExport"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "API key is missing or invalid.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NestApiExport"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "The per-type export limit for this result has been reached. Each `ResponseType` may be requested once per result by default.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1389,12 +1827,22 @@
         "tags": [
           "account"
         ],
-        "summary": "Validates the caller's API key is active and returns basic identity info",
-        "description": "Validates the caller's API key is active and returns basic identity info",
+        "summary": "Validate your API key",
+        "description": "Confirms the calling API key is active and returns basic identity info. A quick way to check a key works before using it.",
         "operationId": "ValidateApiKey",
         "responses": {
           "200": {
-            "description": "Success",
+            "description": "The key is valid; basic identity info is returned.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidateApiKeyResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "API key is missing or invalid.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1427,7 +1875,17 @@
         "operationId": "CheckSubscriptionStatus",
         "responses": {
           "200": {
-            "description": "Success",
+            "description": "Your subscription state and nesting balance.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserSubscriptionStatus"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "API key is missing or invalid.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1455,8 +1913,8 @@
         "tags": [
           "nesting"
         ],
-        "summary": "NestingRequest based on geometry imported from the provided base64 encoded files.",
-        "description": "This endpoint requires calling with your ApiKey <br /><b>Request</b><br /> <b>Base64NestingRequest</b> <br /> Refer to Model link in body section of this endpoint's api doc below (Next to Example Value) <br /><b>ResultsWebhookUri</b><br /> Web hook uri to POST the result to",
+        "summary": "Nest from DXF files",
+        "description": "Submit a nesting request from base64-encoded DXF files. Returns a `RequestId` immediately; the completed layout is delivered asynchronously to your `ResultsWebhookUri` (or streamed over SignalR when `AutomaticallyStartNesting` is `false`).\n\n**Body**\n\n- `Request` — a `Base64NestingRequest`: the parts, sheets and settings. See the model in the request-body section below.\n- `ResultsWebhookUri` — the URL the completed result is `POST`ed to.\n- `AutomaticallyStartNesting` — `true` (default) starts nesting immediately; `false` holds the job for `/v1/nesting/delayedstart` (use with SignalR for live progress).",
         "operationId": "DxfNestingRequest",
         "parameters": [
           {
@@ -1542,12 +2000,13 @@
           "account"
         ],
         "summary": "List allowed origins for an API key",
-        "description": "List allowed origins for an API key",
+        "description": "Returns the browser origins (CORS) currently allowed for the given API key.",
         "operationId": "GetKeyAllowedOrigins",
         "parameters": [
           {
             "name": "KeyId",
             "in": "path",
+            "description": "The API key whose origins to list.",
             "required": true,
             "schema": {
               "type": "string"
@@ -1556,7 +2015,21 @@
         ],
         "responses": {
           "200": {
-            "description": "Success",
+            "description": "The key's allowed origins.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "List<String>",
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "API key is missing or invalid.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1581,8 +2054,8 @@
         "tags": [
           "account"
         ],
-        "summary": "Add an allowed browser Origin (CORS) to an API key. Provide a full absolute origin — scheme, host and (non-default) port — e.g. https://app.example.com. Origins are matched exactly, so register each distinct origin you call the API from. For local development, add your dev server's localhost origin (e.g. http://localhost:3000); the scheme and port must match exactly (http://localhost:3000 is different from https://localhost:3000 and from http://localhost:5173).",
-        "description": "Add an allowed browser Origin (CORS) to an API key. Provide a full absolute origin — scheme, host and (non-default) port — e.g. https://app.example.com. Origins are matched exactly, so register each distinct origin you call the API from. For local development, add your dev server's localhost origin (e.g. http://localhost:3000); the scheme and port must match exactly (http://localhost:3000 is different from https://localhost:3000 and from http://localhost:5173).",
+        "summary": "Add an allowed origin to an API key",
+        "description": "Add an allowed origin to an API key",
         "operationId": "AddKeyAllowedOrigin",
         "parameters": [
           {
@@ -1612,7 +2085,35 @@
         },
         "responses": {
           "200": {
-            "description": "Success",
+            "description": "The key's allowed origins, including the one just added.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "List<String>",
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The origin is missing or not a valid absolute origin.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "List<String>",
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "API key is missing or invalid.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1638,7 +2139,7 @@
           "account"
         ],
         "summary": "Remove an allowed origin from an API key",
-        "description": "Remove an allowed origin from an API key",
+        "description": "Removes one browser origin from a key's allow-list and returns the remaining origins.\n\n**Parameters**\n\n- `KeyId` (path) — the API key to change.\n- `Origin` — the exact origin to remove (scheme, host and non-default port).",
         "operationId": "RemoveKeyAllowedOrigin",
         "parameters": [
           {
@@ -1659,7 +2160,21 @@
         ],
         "responses": {
           "200": {
-            "description": "Success",
+            "description": "The key's remaining allowed origins.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "List<String>",
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "API key is missing or invalid.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1696,7 +2211,27 @@
         "operationId": "GetFairnessUsage",
         "responses": {
           "200": {
-            "description": "Success",
+            "description": "The per-customer usage breakdown for the current period.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FairnessUsageResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "API key is missing or invalid.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FairnessUsageResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The calling key is not an Admin key.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1724,13 +2259,15 @@
         "tags": [
           "nesting"
         ],
-        "summary": "Fetch a cached nesting export generated via SignalR result generation request",
-        "description": "Fetch a cached nesting export generated via SignalR result generation request",
+        "summary": "Fetch a cached export (SignalR result generation)",
+        "description": "Pulls back an export **synchronously**, in the response body. This works only for exports produced through a **SignalR result-generation request** — the webhook-delivered `GET /v1/nesting/export` path does not populate this cache, so asking for something requested that way will always report not-ready.\n\nWhen the requested export is available, `Ready` is `true` and `PayloadJson` carries it. Otherwise `Ready` is `false` and `Error` explains why. Cached exports have a limited lifetime (see `ExpiresUtc`), so fetch promptly.",
         "operationId": "FetchCachedNestingExport",
         "parameters": [
           {
             "name": "RequestId",
             "in": "query",
+            "description": "The job whose cached export you want. This is `NestIdentifier` in the webhook payload.",
+            "required": true,
             "x-nullable": false,
             "schema": {
               "type": "string"
@@ -1739,6 +2276,8 @@
           {
             "name": "ResultId",
             "in": "query",
+            "description": "The specific result whose cached export you want (`ResultIdentity` in the webhook payload).",
+            "required": true,
             "x-nullable": false,
             "schema": {
               "type": "string"
@@ -1747,6 +2286,8 @@
           {
             "name": "ResponseType",
             "in": "query",
+            "description": "Which cached export to fetch. Must match the `ResponseType` generated over SignalR.",
+            "required": true,
             "x-nullable": false,
             "schema": {
               "type": "string",
@@ -1764,7 +2305,17 @@
         ],
         "responses": {
           "200": {
-            "description": "Success",
+            "description": "The cached export if ready (`Ready = true`), otherwise `Ready = false` with a reason.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CachedNestingExportResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "API key is missing or invalid.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1792,8 +2343,8 @@
         "tags": [
           "nesting"
         ],
-        "summary": "1D Nesting Result",
-        "description": "This endpoint requires calling with your ApiKey <br />Available once <b>/nesting/status</b> reports Completed for the RequestId. The plan is in <b>Result</b> with <b>Status</b> Success; a nest that ran but produced nothing reports Status Failure and a <b>StatusReport</b>.",
+        "summary": "Fetch a 1D nesting result",
+        "description": "Fetch the cutting plan for a completed 1D nesting request. Available once `/v1/nesting/status` reports `Completed` for the `RequestId`.\n\n**Body**\n\n- `RequestId` — the id returned when you submitted the 1D nest.\n\nThe plan is in `Result` with `Status` `Success`; a nest that ran but produced nothing reports `Status` `Failure` and a `StatusReport`.",
         "operationId": "FetchNesting1DResult",
         "parameters": [
           {
@@ -1922,8 +2473,8 @@
   ],
   "servers": [
     {
-      "description": "Production",
-      "url": "https://api.nestapi.com"
+      "url": "https://api.nestapi.com",
+      "description": "Production"
     }
   ],
   "components": {
@@ -3696,7 +4247,7 @@
             "type": "string"
           }
         },
-        "description": "Add an allowed browser Origin (CORS) to an API key. Provide a full absolute origin — scheme, host and (non-default) port — e.g. https://app.example.com. Origins are matched exactly, so register each distinct origin you call the API from. For local development, add your dev server's localhost origin (e.g. http://localhost:3000); the scheme and port must match exactly (http://localhost:3000 is different from https://localhost:3000 and from http://localhost:5173).",
+        "description": "Add an allowed browser Origin (CORS) to an API key. Provide a full absolute origin — scheme, host and (non-default) port — e.g. https://app.example.com. Origins are matched exactly, so register each distinct origin you call the API from. For local development, add your dev server's localhost origin (e.g. http://localhost:3000); the scheme and port must match exactly (http://localhost:3000 is different from https://localhost:3000 and from http://localhost:5173). KeyId comes from the route; Origin is the body.",
         "type": "object"
       },
       "FetchNesting1DResult": {
@@ -3894,19 +4445,23 @@
         "title": "FairnessConfigResponse",
         "properties": {
           "FairnessEnabled": {
+            "description": "Whether the per-customer admission gate is active for the account.",
             "type": "boolean",
             "nullable": false
           },
           "OverageEnabled": {
+            "description": "Whether over-share nests spill into overage rather than being rejected.",
             "type": "boolean",
             "nullable": false
           },
           "DefaultLineageWeight": {
+            "description": "Default per-key fairness weight for keys with no override.",
             "type": "integer",
             "format": "int32",
             "nullable": false
           },
           "BurstPercent": {
+            "description": "Percent of included minutes kept as the shared first-come burst pool.",
             "type": "integer",
             "format": "int32",
             "nullable": false
@@ -3998,24 +4553,29 @@
         "title": "FairnessUsageResponse",
         "properties": {
           "FairnessEnabled": {
+            "description": "Whether the second (per-customer) admission gate is active for this account.",
             "type": "boolean",
             "nullable": false
           },
           "OverageEnabled": {
+            "description": "Whether over-share nests spill into overage rather than being rejected.",
             "type": "boolean",
             "nullable": false
           },
           "IncludedMinutes": {
+            "description": "The account's included nesting minutes for the current period.",
             "type": "number",
             "format": "double",
             "nullable": false
           },
           "SharedBurstMinutes": {
+            "description": "The shared, first-come burst pool (a fixed fraction of the included minutes) any key may draw from once over its own floor.",
             "type": "number",
             "format": "double",
             "nullable": false
           },
           "Keys": {
+            "description": "One row per active API key (customer) on the account.",
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/FairnessKeyUsage"
@@ -4029,34 +4589,41 @@
         "title": "FairnessKeyUsage",
         "properties": {
           "ApiKeyId": {
+            "description": "Your API key id — the customer this row is for. (The internal lineage id is never exposed.)",
             "type": "string"
           },
           "Weight": {
+            "description": "Fairness weight applied to this key (per-key override, else the plan default).",
             "type": "integer",
             "format": "int32",
             "nullable": false
           },
           "ConsumedMinutes": {
+            "description": "Minutes settled within the account's included budget this period.",
             "type": "number",
             "format": "double",
             "nullable": false
           },
           "ReservedMinutes": {
+            "description": "Minutes currently reserved for in-flight nests this period.",
             "type": "number",
             "format": "double",
             "nullable": false
           },
           "OverageMinutes": {
+            "description": "Minutes this key ran beyond the account's included budget (overage), attributed to it.",
             "type": "number",
             "format": "double",
             "nullable": false
           },
           "EffectiveFloorMinutes": {
+            "description": "This key's guaranteed, reserved floor (weight / Σweights × the reserved floor pool). It can also draw from the shared burst pool on top of this.",
             "type": "number",
             "format": "double",
             "nullable": false
           },
           "Sizing": {
+            "description": "Right-sizing hint: \"undersized\" (hitting overage — needs more), \"oversized\" (chronic forfeiture — has too much), or \"balanced\".",
             "type": "string"
           }
         },
@@ -4067,9 +4634,11 @@
         "title": "KeyFairnessWeightResponse",
         "properties": {
           "ApiKeyId": {
+            "description": "The key this weight applies to.",
             "type": "string"
           },
           "LineageWeight": {
+            "description": "The key's fairness weight, or null when it falls back to the plan default.",
             "type": "integer",
             "format": "int32"
           }
@@ -4081,19 +4650,24 @@
         "title": "NestingStatusResponse",
         "properties": {
           "RequestId": {
+            "description": "The job this status refers to.",
             "type": "string",
             "nullable": false
           },
           "Status": {
+            "description": "One of `Queued`, `Running`, `Completed`, `Failed`.",
             "type": "string"
           },
           "ResultIdentity": {
+            "description": "The id of the completed result, once one is available; use it to fetch the result or an export. Null until the job completes.",
             "type": "string"
           },
           "Error": {
+            "description": "Error detail when the job has failed; otherwise null.",
             "type": "string"
           },
           "CompletedAt": {
+            "description": "When the job completed (UTC); null until it has.",
             "type": "string",
             "format": "date-time"
           }
@@ -4105,19 +4679,24 @@
         "title": "RenderResponse",
         "properties": {
           "Base64EncodedRendering": {
+            "description": "The rendered image, base64-encoded.",
             "type": "string"
           },
           "RenderFormat": {
+            "description": "The image format of the rendering, e.g. `svg` or `png`.",
             "type": "string"
           },
           "ResultIdentity": {
+            "description": "The result this rendering was produced for.",
             "type": "string",
             "nullable": false
           },
           "xDimension": {
+            "description": "The width of the rendering, in pixels.",
             "type": "string"
           },
           "yDimension": {
+            "description": "The height of the rendering, in pixels.",
             "type": "string"
           }
         },
@@ -4610,10 +5189,12 @@
         "title": "NestingContinued",
         "properties": {
           "Success": {
+            "description": "`true` if the next sub-nest was released.",
             "type": "boolean",
             "nullable": false
           },
           "ErrorReason": {
+            "description": "Why the continue failed when `Success` is `false`; otherwise null.",
             "type": "string"
           }
         },
@@ -4624,10 +5205,12 @@
         "title": "NestApiExport",
         "properties": {
           "Success": {
+            "description": "`true` if the export request was accepted and queued. This is an acknowledgement only — the export itself is delivered later as a `POST` to your `WebHookUri`.",
             "type": "boolean",
             "nullable": false
           },
           "Error": {
+            "description": "Error detail when `Success` is `false`; otherwise null.",
             "type": "string"
           }
         },
@@ -4638,10 +5221,12 @@
         "title": "ValidateApiKeyResponse",
         "properties": {
           "Valid": {
+            "description": "`true` when the calling API key is active.",
             "type": "boolean",
             "nullable": false
           },
           "UserId": {
+            "description": "The id of the account the key belongs to.",
             "type": "string"
           }
         },
@@ -4652,31 +5237,39 @@
         "title": "CachedNestingExportResponse",
         "properties": {
           "Ready": {
+            "description": "`true` if the requested export is available in `PayloadJson`; `false` if it has not been generated or has expired.",
             "type": "boolean",
             "nullable": false
           },
           "Error": {
+            "description": "Explanation when `Ready` is `false`; otherwise null.",
             "type": "string"
           },
           "RequestId": {
+            "description": "The job the export belongs to.",
             "type": "string",
             "nullable": false
           },
           "ResultId": {
+            "description": "The result the export belongs to.",
             "type": "string",
             "nullable": false
           },
           "ResponseType": {
+            "description": "The export type this response carries.",
             "type": "string"
           },
           "PayloadJson": {
+            "description": "The export itself, as JSON, when `Ready` is `true`; otherwise null.",
             "type": "string"
           },
           "CreatedUtc": {
+            "description": "When the cached export was generated (UTC).",
             "type": "string",
             "format": "date-time"
           },
           "ExpiresUtc": {
+            "description": "When the cached export expires and is no longer retrievable (UTC).",
             "type": "string",
             "format": "date-time"
           }
