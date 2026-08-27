@@ -43,7 +43,79 @@
       },
       {
         "group": "API Reference",
-        "openapi": "openapi.json"
+        "pages": [
+          {
+            "group": "Nesting",
+            "openapi": "openapi.json",
+            "pages": [
+              "POST /v1/nesting",
+              "POST /v1/nesting/geometry",
+              "POST /v1/nesting/parametric",
+              "POST /v1/nesting/mynesting",
+              "POST /v1/nesting/quotenesting",
+              "POST /v1/nesting/geometryquotenesting",
+              "POST /v1/nesting/1D"
+            ]
+          },
+          {
+            "group": "Run & track",
+            "openapi": "openapi.json",
+            "pages": [
+              "POST /v1/nesting/delayedstart",
+              "POST /v1/nesting/continue",
+              "GET /v1/nesting/status",
+              "GET /v1/nesting/successes",
+              "GET /v1/nesting/failures"
+            ]
+          },
+          {
+            "group": "Results & exports",
+            "openapi": "openapi.json",
+            "pages": [
+              "POST /v1/nesting/result/",
+              "POST /v1/nesting/1D/result",
+              "GET /v1/nesting/render/",
+              "GET /v1/nesting/export",
+              "GET /v1/nesting/exportquotenest",
+              "GET /v1/nesting/export/cached"
+            ]
+          },
+          {
+            "group": "Account & keys",
+            "openapi": "openapi.json",
+            "pages": [
+              "GET /v1/user/profile",
+              "GET /v1/status",
+              "GET /v1/auth/validate",
+              "GET /v1/apiKey/validUntil",
+              "GET /admin/keys",
+              "POST /admin/keys",
+              "POST /admin/keys/{ApiKeyId}/regenerate",
+              "PATCH /admin/keys/{ApiKeyId}/type",
+              "DELETE /admin/keys/{ApiKeyId}",
+              "GET /apikeys/{KeyId}/origins",
+              "POST /apikeys/{KeyId}/origins",
+              "DELETE /apikeys/{KeyId}/origins"
+            ]
+          },
+          {
+            "group": "Fairness",
+            "openapi": "openapi.json",
+            "pages": [
+              "GET /admin/fairness/config",
+              "PATCH /admin/fairness/config",
+              "PATCH /admin/keys/{ApiKeyId}/weight",
+              "GET /usage/fairness"
+            ]
+          },
+          {
+            "group": "Service",
+            "openapi": "openapi.json",
+            "pages": [
+              "GET /public/alive"
+            ]
+          }
+        ]
       }
     ]
   },
