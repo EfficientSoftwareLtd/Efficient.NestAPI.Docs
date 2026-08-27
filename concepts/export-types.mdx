@@ -1,37 +1,160 @@
 ---
 title: "Export types"
-description: "Turning a completed nest into production output and reports."
+description: "Turning a completed nest into production output and reports, and how each export is delivered."
 ---
 
-Once a nest completes, you turn it into output your shop can use. Exports are generated from
-a completed job by its `RequestId`.
+Once a nest completes, you turn it into output your shop can use — cut files, renders, reports,
+remnant geometry. This page covers the export **endpoints**, the export **types** you can ask
+for, and — importantly — **how each one is delivered**, because it is not the same for all of
+them.
 
-## Export endpoints
+<Note>
+Exports are keyed on a completed job. You need its `RequestId` **and** the `ResultId`
+(`ResultIdentity` in the webhook payload and in `GET /v1/nesting/status`) that identifies the
+specific result you want to export.
+</Note>
 
-| Endpoint | For | Output |
-|----------|-----|--------|
-| `GET /v1/nesting/export` | A standard production nest | Nest export (geometry + reports) |
-| `GET /v1/nesting/exportquotenest` | A [quote nest](/guides/quote-nesting) | Quote-oriented export |
-| `GET /v1/nesting/render/` | Any completed nest | A rendered image of the layout |
+## The endpoints at a glance
+
+| Endpoint | Delivery | You get |
+|----------|----------|---------|
+| `GET /v1/nesting/export` | **Async → your webhook** | A production export, of the type you pick (see below) |
+| `GET /v1/nesting/exportquotenest` | **Async → your webhook** | A quote-oriented export |
+| `GET /v1/nesting/export/cached` | **Synchronous (pull)** | An export previously generated over SignalR |
+| `GET /v1/nesting/render/` | **Synchronous** | A rendered image of the layout, in the response body |
+
+The distinction matters: `render` and `export/cached` hand you data back in the HTTP response.
+`export` and `exportquotenest` do **not** — they accept your request, return
+`{ "Success": true }` immediately, and `POST` the finished export to a webhook URL you supply.
+
+## Export types (`ResponseType`)
+
+`GET /v1/nesting/export` produces different output depending on the `ResponseType` you pass.
+This is the parameter that selects *what kind of export you get*. It accepts either the name or
+the integer.
+
+| `ResponseType` | Int | Output delivered to your webhook |
+|----------------|-----|----------------------------------|
+| `Result` | `0` | Part-placement details for the result (the same shape as the nesting result). |
+| `Render` | `1` | A base64-encoded render (SVG or PNG) of the layout. |
+| `DXF` | `2` | A base64-encoded DXF file of the nested layout. |
+| `ReportSource` | `3` | Data for report generation — statistics plus base64 renderings (material usage, per-sheet breakdown). |
+| `RemnantExport` | `4` | A base64-encoded **zip** of DXF files representing the remnants the nest generated. |
+| `Runtime` | `5` | Information about the result together with a render. Requires **runtime render settings** to have been supplied on the original nesting request. |
+| `PartsExport` | `6` | A DXF export of the individual **part** geometry from the nesting request. |
+
+## How to request an export (webhook-delivered)
+
+`GET /v1/nesting/export` is **asynchronous**. You call it with the job identifiers, the
+`ResponseType`, and a `WebHookUri`; the API queues the export and returns straight away. The
+export itself arrives later as a `POST` to your `WebHookUri`.
+
+<Steps>
+  <Step title="Call the export endpoint">
+    Pass `RequestId`, `ResultId`, the `ResponseType` you want, and the `WebHookUri` to deliver
+    to.
+
+    ```bash
+    curl "https://api.nestapi.com/v1/nesting/export?RequestId=THE_REQUEST_ID&ResultId=THE_RESULT_ID&ResponseType=DXF&WebHookUri=https://your.app/hooks/export" \
+      -H "Authorization: Bearer YOUR_API_KEY"
+    ```
+  </Step>
+  <Step title="Get the acknowledgement">
+    A successful call returns `{ "Success": true, "Error": null }`. This confirms the export was
+    **accepted**, not that it is ready — nothing is in the response body.
+  </Step>
+  <Step title="Receive the export on your webhook">
+    When the export is generated, NestAPI `POST`s it to your `WebHookUri`. Treat this like any
+    other webhook: respond `2xx` quickly and process out of band. See [Webhooks](/guides/webhooks).
+  </Step>
+</Steps>
+
+<Warning>
+Exports are **rate-limited per type**. By default you may request each `ResponseType` once per
+result; asking again for an export you have already requested returns an error rather than a
+second delivery. Request each type you need once, and hold on to what you receive.
+</Warning>
+
+### Query parameters
+
+| Parameter | Required | Notes |
+|-----------|----------|-------|
+| `RequestId` | Yes | The job's id (`NestIdentifier` in the webhook payload; returned from the nesting endpoint). |
+| `ResultId` | Yes | The specific result to export (`ResultIdentity` in the webhook payload / status). |
+| `ResponseType` | Yes | Which export to produce — see the table above. |
+| `WebHookUri` | Yes | Where the generated export is `POST`ed. Without it the export has nowhere to go. |
+
+## Quote-nest exports
+
+`GET /v1/nesting/exportquotenest` is the quote-mode equivalent and is also **webhook-delivered**.
+It takes just `RequestId` and `WebHookUri` (there is no `ResponseType` — the quote export is a
+fixed shape) and, like `export`, returns `{ "Success": true }` on acceptance and delivers the
+result to your webhook.
 
 ```bash
-curl "https://api.nestapi.com/v1/nesting/export?RequestId=THE_REQUEST_ID" \
+curl "https://api.nestapi.com/v1/nesting/exportquotenest?RequestId=THE_REQUEST_ID&WebHookUri=https://your.app/hooks/export" \
   -H "Authorization: Bearer YOUR_API_KEY"
 ```
 
-## What an export contains
+## Renders (synchronous)
 
-An export represents the finished layout — the placed parts on each sheet — in a form suited
-to downstream use: CAM/machine consumption and human-readable reporting (material usage,
-per-sheet breakdown). Renders are useful for previews in your UI or for operator sheets.
+`GET /v1/nesting/render/` is the exception: it returns the render **in the response body**, so
+it is the one export you can fetch and use in a single call. Use it for previews in your UI or
+for operator sheets.
+
+```bash
+curl "https://api.nestapi.com/v1/nesting/render/?RequestId=THE_REQUEST_ID&ResultIdentity=THE_RESULT_ID" \
+  -H "Authorization: Bearer YOUR_API_KEY"
+```
+
+The response is a `RenderResponse`:
+
+```json
+{
+  "RenderFormat": "svg",
+  "Base64EncodedRendering": "…",
+  "xDimension": "…",
+  "yDimension": "…",
+  "ResultIdentity": "THE_RESULT_ID"
+}
+```
+
+## Cached exports (SignalR)
+
+`GET /v1/nesting/export/cached` lets you **pull** an export back synchronously — but only for
+exports generated through a **SignalR result-generation request**. The webhook-delivered
+`GET /v1/nesting/export` path does not populate this cache, so asking `export/cached` for
+something you requested that way will always report not-ready. This endpoint pairs with the
+SignalR flow, not the webhook flow.
+
+It takes `RequestId`, `ResultId`, and `ResponseType`, and returns a `CachedNestingExportResponse`:
+
+```json
+{
+  "Ready": true,
+  "RequestId": "…",
+  "ResultId": "…",
+  "ResponseType": "DXF",
+  "PayloadJson": "…",
+  "CreatedUtc": "…",
+  "ExpiresUtc": "…"
+}
+```
+
+When the export has not been generated (or has expired), `Ready` is `false` and `Error`
+explains why. Cached exports have a limited lifetime, so fetch promptly.
 
 ## Choosing between them
 
-- Producing cut files for a **won job** → `GET /v1/nesting/export`.
+- Producing cut files for a **won job** → `GET /v1/nesting/export` with `ResponseType=DXF`
+  (delivered to your webhook).
+- Reports / statistics for a job → `GET /v1/nesting/export` with `ResponseType=ReportSource`.
+- Recovering **remnant** geometry → `GET /v1/nesting/export` with `ResponseType=RemnantExport`.
 - Backing up a **quote** with a layout → `GET /v1/nesting/exportquotenest`.
-- Showing the nest in a **UI** → `GET /v1/nesting/render/`.
+- Showing the nest in a **UI**, in one call → `GET /v1/nesting/render/`.
+- Pulling back an export you generated over **SignalR** → `GET /v1/nesting/export/cached`.
 
 <Note>
-For the precise export payload and any format parameters, see the **Nesting** section of the
+For the full parameter and response schemas, see the **Nesting** section of the
 [API Reference](/api-reference).
 </Note>
