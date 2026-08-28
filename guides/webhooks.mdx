@@ -1,20 +1,412 @@
 ---
 title: "Webhooks"
-description: "How nesting results are delivered to your endpoint, and how to secure it."
+description: "The exact shape of every payload NestAPI POSTs to your endpoint, and how to secure and receive them."
 ---
 
-When a nest completes, NestAPI delivers the result by making an HTTP `POST` to the
-`ResultsWebhookUri` you supplied when you submitted the request. This is the recommended way
-to receive results for server-to-server integrations.
+When a nesting job or an export finishes, NestAPI delivers the outcome by making an HTTP
+`POST` to a URL you supplied on the request (`ResultsWebhookUri` for nests, `WebHookUri` for
+exports). This is the recommended way to receive results for server-to-server integrations.
 
-## The payload
+## Delivery contract
 
-The body of the webhook `POST` is the **`ApiNestingResult`** — the same object returned by
-`POST /v1/nesting/result/`. It carries the completed layout, per-sheet placements, and
-material-usage figures for the job.
+Every webhook, whatever its payload, is delivered the same way:
 
-The result is tied to the `RequestId` you received when you submitted, so you can correlate
-each webhook delivery with the request that produced it.
+- **Method** — `POST` to the URL you supplied.
+- **Content type** — `application/json`.
+- **Body** — the JSON document described below, as plain UTF-8 text. (Payloads travel base64
+  internally, but that is decoded before delivery — your endpoint receives decoded JSON, not
+  base64.) The one exception is the [MyNesting](#mynesting-xml) endpoint, which delivers an XML
+  document.
+- **Enums are numbers.** Webhook bodies are serialized with numeric enum values, so status and
+  type fields arrive as integers (e.g. `NestingStatus` `1`, not `"Complete"`). The two
+  exceptions are called out where they occur: the [quote](#quote-nesting-results) `Status` is a
+  descriptive **string**, and the export-failure `responseType` is the type **name**.
+- **Authentication** — there is **no** signature or `Authorization` header on the request yet.
+  Secure your endpoint with an unguessable URL and confirm out of band — see
+  [Securing your webhook](#securing-your-webhook).
+- **Delivery** — treat it as **at-least-once**. A job can produce more than one delivery (an
+  interim result followed by a completion), and any delivery can be retried, so
+  [make your handler idempotent](#your-endpoints-responsibilities) on `RequestId`.
+
+<Note>
+The `RequestId` in every payload is the id you received when you submitted the job, so you can
+always correlate a delivery back to the request that produced it.
+</Note>
+
+## Which payload you receive
+
+The body depends on the endpoint you submitted to. The shapes are **not** interchangeable —
+each family has its own field names and its own way of reporting status.
+
+| You submitted to | You receive |
+|------------------|-------------|
+| `/v1/nesting`, `/v1/nesting/geometry`, `/v1/nesting/parametric` | [Standard (2D) nesting result](#standard-2d-nesting-results) |
+| `/v1/nesting/mynesting` | [MyNesting XML document](#mynesting-xml) |
+| `/v1/nesting/1D` | [Linear (1D) nesting result](#linear-1d-nesting-results) |
+| `/v1/nesting/quotenesting`, `/v1/nesting/geometryquotenesting` | [Quote nesting result](#quote-nesting-results) |
+| `/v1/nesting/export`, `/v1/nesting/exportquotenest` | [Export delivery](#export-deliveries) |
+
+## Standard (2D) nesting results
+
+Standard nesting (`/v1/nesting`, `/v1/nesting/geometry`, `/v1/nesting/parametric`) delivers a
+**`NestingResultData`** — a `RequestId` wrapping a **`Status`** (`NestingStatusMessage`):
+
+```json
+{
+  "RequestId": "3f8a…",
+  "Status": {
+    "NestingStatus": 1,
+    "ResultIdentity": "b21c…",
+    "NestingEfficiency": 0.87,
+    "AverageSheetUtilisation": 0.82,
+    "NumberOfPartsNested": 42,
+    "NumberOfPartsUnPlaced": 0,
+    "NumberOfSheetsUsed": 3,
+    "NestedSheetsInfo": [
+      {
+        "SheetIdentifier": "2500x1250",
+        "SheetXDimMM": 2500.0,
+        "SheetYDimMM": 1250.0,
+        "NestingXDimMM": 2380.0,
+        "NestingYDimMM": 1190.0,
+        "NestingEfficiency": 0.87,
+        "SheetUtilisation": 0.82,
+        "Multiplicity": 1
+      }
+    ],
+    "UnplacedParts": [],
+    "ErrorReport": null,
+    "ErrorCode": null
+  }
+}
+```
+
+<Warning>
+This payload is a **completion notification and summary — not the full layout.** It gives you
+the per-sheet statistics and, crucially, the `ResultIdentity`. To get the full report-source
+result (part placements, renderings) or to produce an export, use that `ResultIdentity` — see
+[Getting the full result](#getting-the-full-result).
+</Warning>
+
+`Status` fields:
+
+| Field | Type | Notes |
+|-------|------|-------|
+| `NestingStatus` | number | `0` `Result` · `1` `Complete` · `2` `Error` (see below). |
+| `ResultIdentity` | string (GUID) | The id you pass to `/v1/nesting/result/` and the export endpoints. Present on a result; `null` on an error. |
+| `NestingEfficiency` | number | Overall efficiency, `0`–`1`. Populated on a result only. |
+| `AverageSheetUtilisation` | number | Mean sheet utilisation, `0`–`1`. Populated on a result only. |
+| `NumberOfPartsNested` | number | Populated on a result only. |
+| `NumberOfPartsUnPlaced` | number | Populated on a result only. |
+| `NumberOfSheetsUsed` | number | Populated on a result only. |
+| `NestedSheetsInfo` | array | One entry per **distinct** sheet layout — see below. |
+| `UnplacedParts` | array | Parts that did not fit — see below. |
+| `ErrorReport` | string | Present only when `NestingStatus` is `2` (`Error`). |
+| `ErrorCode` | number | Present only on an error. |
+
+<Note>
+The summary fields (efficiency, counts, `NestedSheetsInfo`, `ResultIdentity`) are populated for
+a `Result`/`Complete` delivery. On an `Error` delivery they are absent or empty and
+`ErrorReport` / `ErrorCode` carry the reason instead.
+</Note>
+
+Each `NestedSheetsInfo` entry describes one sheet layout the nest produced; `Multiplicity` is
+how many identical copies of that layout were made:
+
+| Field | Type | Notes |
+|-------|------|-------|
+| `SheetIdentifier` | string | The identifier you gave the sheet. |
+| `SheetXDimMM` / `SheetYDimMM` | number | Sheet size, mm. |
+| `NestingXDimMM` / `NestingYDimMM` | number | Bounding size of the placed parts, mm. |
+| `NestingEfficiency` | number | Efficiency for this sheet, `0`–`1`. |
+| `SheetUtilisation` | number | Utilisation for this sheet, `0`–`1`. |
+| `Multiplicity` | number | Copies of this identical layout. |
+
+Each `UnplacedParts` entry is `{ "PartIdentifier": string, "UnplacedQuantity": number }`.
+
+Because an interim `Result` (`0`) may be delivered before the terminal `Complete` (`1`), your
+handler can receive more than one webhook for the same `RequestId`. Key your processing on
+`RequestId` and treat `NestingStatus` `1` (or `2`) as the final word.
+
+## MyNesting XML
+
+`/v1/nesting/mynesting` is the exception to everything above: it delivers the **MyNesting
+result XML document** as the body, not the JSON shape. It exists for compatibility with
+existing MyNesting integrations; new integrations should use one of the JSON endpoints.
+
+## Linear (1D) nesting results
+
+`/v1/nesting/1D` delivers a **`Nesting1DWebhookPayload`**, and unlike the 2D payload it carries
+the **full cutting plan inline** in `Result`:
+
+```json
+{
+  "RequestId": "7c40…",
+  "Status": 4,
+  "Result": {
+    "NumberOfUniqueNests": 2,
+    "Nests": [
+      {
+        "Multiplicity": 3,
+        "PlacedLengths": [
+          { "Quantity": 2, "Length": 1200.0, "PlacedX": 0.0 },
+          { "Quantity": 1, "Length": 800.0, "PlacedX": 2400.0 }
+        ]
+      }
+    ]
+  },
+  "Error": null
+}
+```
+
+Top-level fields:
+
+| Field | Type | Notes |
+|-------|------|-------|
+| `RequestId` | string (GUID) | The job id. |
+| `Status` | number | `JobStatus`: `4` `NestComplete` · `99` `Error`. |
+| `Result` | object \| null | The `Nesting1DResult` plan on success; `null` on failure. |
+| `Error` | string \| null | The failure message when `Status` is `99`; otherwise `null`. |
+
+The `Result` is the same `Nesting1DResult` returned by `POST /v1/nesting/1D/result`, so a
+webhook subscriber does not need a follow-up call:
+
+| Path | Type | Notes |
+|------|------|-------|
+| `Result.NumberOfUniqueNests` | number | Count of distinct nest patterns. |
+| `Result.Nests[]` | array | The nest patterns. Each is one length of stock. |
+| `Nests[].Multiplicity` | number | How many identical pieces of stock are cut this way. |
+| `Nests[].PlacedLengths[]` | array | The cuts placed on this pattern. |
+| `PlacedLengths[].Quantity` | number | How many of this length on the pattern. |
+| `PlacedLengths[].Length` | number | The cut length. |
+| `PlacedLengths[].PlacedX` | number | Where the cut starts along the bar. |
+
+## Quote nesting results
+
+The quote endpoints (`/v1/nesting/quotenesting`, `/v1/nesting/geometryquotenesting`) report
+progress as a stream and use a **string** `Status` rather than a numeric enum. You can receive
+three kinds of payload:
+
+<AccordionGroup>
+  <Accordion title="Interim result (Status: InterimResult)">
+    One per sub-nest as it completes, so you can show progress:
+
+    ```json
+    {
+      "RequestId": "a19f…",
+      "Status": "InterimResult",
+      "NestIndex": 2,
+      "TotalNests": 5,
+      "Result": {
+        "Material": "Mild Steel",
+        "Thickness": "3mm",
+        "SheetSize": "2500 x 1250",
+        "SheetIdentifier": "2500x1250",
+        "PartsNestedCount": "18 of 40",
+        "NestingEfficiency": "82.4%",
+        "NestingEfficiencyValue": 0.824,
+        "SheetsUsedCount": 1,
+        "TotalSheetAreaMM2": 3125000.0,
+        "ScrapAreaMM2": 550000.0,
+        "LastResultForRequest": false,
+        "RemainingTimeSeconds": 6,
+        "Base64EncodedRendering": "…",
+        "Base64EncodedDXF": "…",
+        "UsedSheets": [ … ],
+        "NestedParts": [ … ],
+        "UnplacedParts": [ … ]
+      }
+    }
+    ```
+
+    `NestIndex` / `TotalNests` let you show "2 of 5". `Result` is a `QuoteNestResult`:
+
+    | Field | Type | Notes |
+    |-------|------|-------|
+    | `Material` / `Thickness` / `CuttingProcess` | string | Descriptive labels for the nest. |
+    | `SheetSize` / `SheetIdentifier` | string | The sheet this quote used. |
+    | `PartsNestedCount` | string | Human-readable "X of Y". |
+    | `NestingEfficiency` | string | Formatted, e.g. `"82.4%"`. |
+    | `NestingEfficiencyValue` | number | The same figure as `0`–`1`. |
+    | `SheetsUsedCount` | number | Sheets consumed. |
+    | `TotalSheetAreaMM2` / `ScrapAreaMM2` | number | Areas, mm². |
+    | `LastResultForRequest` | boolean | `true` on the final sub-nest of the request. |
+    | `RemainingTimeSeconds` | number | Optimiser time left. |
+    | `Base64EncodedRendering` / `Base64EncodedDXF` | string | Preview image / layout DXF. |
+    | `UsedSheets[]` | array | `QuoteNestedSheet` — each with its own parts and rendering. |
+    | `NestedParts[]` / `UnplacedParts[]` | array | `QuoteNestedPart` entries (per-part area, cut length, quantity). |
+
+    Some numeric fields are also provided unit-neutral (`…InUnits`), expressed in the request's
+    `ResponseUnits`.
+  </Accordion>
+  <Accordion title="Completion (Status: Complete)">
+    Sent once when the whole quote finishes:
+
+    ```json
+    { "RequestId": "a19f…", "Status": "Complete" }
+    ```
+
+    The completion carries no result body — collect the full layout with
+    `GET /v1/nesting/exportquotenest`.
+  </Accordion>
+  <Accordion title="Error (Status: Error)">
+    ```json
+    { "RequestId": "a19f…", "Status": "Error", "ErrorMessage": "…" }
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Export deliveries
+
+The export endpoints (`/v1/nesting/export`, `/v1/nesting/exportquotenest`) return
+`{ "Success": true }` on acceptance and deliver the export itself to your `WebHookUri` later.
+See [export types](/concepts/export-types) for how to request one.
+
+### Success — one base type, several shapes
+
+Every successful export body is a **`ResultResponse`**. That is a base type with subclasses,
+and **the concrete shape depends on the `ResponseType` you requested.** All of them inherit a
+single `ResultIdentity` field from the base; each adds its own fields on top:
+
+| `ResponseType` | Body (subclass of `ResultResponse`) | Fields added on top of `ResultIdentity` |
+|----------------|-------------------------------------|------------------------------------------|
+| `DXF`, `RemnantExport` | `DxfBase64Response` | `DXFVersion`, `ExportFileType`, `Base64EncodedResponse` |
+| `ReportSource` | `ReportSourceResponse` | summary stats, `NestData[]`, `PlacedParts[]`, `UnplacedParts[]`, `MaterialRequirements[]` |
+| `Runtime` | `RuntimeResultResponse` | (inherits `ReportSourceResponse` unchanged) |
+| `Result` | `NestingResultResponse` | `NestedSheets[]` (placements + common cuts), `UnplacedPartIdentities[]` |
+| `Render` | `RenderResultResponse` | `RenderFormat`, `Base64EncodedRendering`, `xDimension`, `yDimension` |
+| `PartsExport` | `ExportPartsResponse` | `ExportedParts[]` |
+
+<Warning>
+The JSON carries **no type discriminator** (no `$type` field) — it is just the flat set of
+fields for the concrete subclass. Parse it according to the `ResponseType` you asked for, not
+by inspecting the body. `ResultIdentity` is always present because it is inherited from the base
+`ResultResponse`.
+</Warning>
+
+<AccordionGroup>
+  <Accordion title="DXF / RemnantExport — DxfBase64Response">
+    ```json
+    {
+      "ResultIdentity": "b21c…",
+      "DXFVersion": 0,
+      "ExportFileType": 0,
+      "Base64EncodedResponse": "…"
+    }
+    ```
+
+    `Base64EncodedResponse` is the DXF, base64-encoded. `DXFVersion` and `ExportFileType` are
+    numeric enums.
+  </Accordion>
+  <Accordion title="ReportSource / Runtime — ReportSourceResponse">
+    The rich statistics-and-geometry body. Summary figures at the top, then per-nest and
+    per-part breakdowns:
+
+    ```json
+    {
+      "ResultIdentity": "b21c…",
+      "OverallNestingEfficiency": 0.87,
+      "OverallSheetUtilization": 0.82,
+      "NumberOfNests": 2,
+      "NumberOfSheets": 3,
+      "NumberOfPlacedParts": 42,
+      "AreaOfSheetsM2": 9.375,
+      "AreaOfPlacedPartsM2": 7.7,
+      "CutLengthOfAllPlacedPartsMM": 41230.0,
+      "NestData": [
+        {
+          "NestEfficiency": 0.87,
+          "SheetUtilization": 0.82,
+          "Multiplicity": 1,
+          "NestingXDimMM": 2380.0,
+          "NestingYDimMM": 1190.0,
+          "SheetDetails": { "SheetIdentifier": "2500x1250", "XDimMM": 2500.0, "YDimMM": 1250.0, "AreaM2": 3.125 },
+          "NestedPartsData": [ … ],
+          "Base64EncodedNestRendering": "…"
+        }
+      ],
+      "PlacedParts": [
+        { "PartIdentifier": "bracket-a", "XDimMM": 120.0, "YDimMM": 80.0, "AreaMM2": 9600.0, "CutLengthMM": 412.0 }
+      ],
+      "UnplacedParts": [],
+      "MaterialRequirements": [
+        { "Quantity": 3, "SheetIdentifier": "2500x1250", "XDimMM": 2500.0, "YDimMM": 1250.0, "AreaM2": 3.125 }
+      ]
+    }
+    ```
+
+    `Runtime` returns the same shape (`RuntimeResultResponse` inherits `ReportSourceResponse`).
+  </Accordion>
+  <Accordion title="Result — NestingResultResponse (geometry / placements)">
+    The machine-readable layout: every sheet, the parts placed on it, and any common cuts.
+
+    ```json
+    {
+      "ResultIdentity": "b21c…",
+      "NestedSheets": [
+        {
+          "Quantity": 1,
+          "SheetIdentifier": "2500x1250",
+          "PartPlacements": [
+            { "PartIdentifier": "bracket-a", "PlacementX": 10.0, "PlacementY": 10.0, "PlacementAngle": 90.0, "Mirrored": false }
+          ],
+          "CommonCuts": []
+        }
+      ],
+      "UnplacedPartIdentities": null
+    }
+    ```
+  </Accordion>
+  <Accordion title="PartsExport — ExportPartsResponse">
+    ```json
+    {
+      "ResultIdentity": "b21c…",
+      "ExportedParts": [
+        { "PartIdentifier": "bracket-a", "XDimMM": 120.0, "YDimMM": 80.0, "AreaMM2": 9600.0, "Base64EncodedExport": "…" }
+      ]
+    }
+    ```
+  </Accordion>
+</AccordionGroup>
+
+### Failure
+
+On failure the body is a small, fixed object — and deliberately carries **no** internal error
+detail:
+
+```json
+{
+  "id": "3f8a…",
+  "resultId": "b21c…",
+  "responseType": "DXF",
+  "error": "Export generation failed. Please retry; if it persists, contact support with the reference below.",
+  "reference": "d4e7…"
+}
+```
+
+`id` is the `RequestId`, `resultId` the `ResultId` you asked to export, `responseType` the
+type **name** (a string here, unlike the numeric enums elsewhere), and `reference` a
+correlation id you can quote to support to have the underlying failure investigated. Retrying
+the export is safe.
+
+## Getting the full result
+
+The 2D result webhook hands you a summary plus a `ResultIdentity`. To retrieve the complete
+report-source result — statistics, per-sheet placements and renderings — call
+`POST /v1/nesting/result/` with the `RequestId` and that `ResultIdentity`. It returns a
+`ReportSourceResponseV1`, which is the [`ReportSourceResponse`](#export-deliveries) shape above
+**plus** a `Status` (the same `NestingStatusMessage` the webhook delivered):
+
+```bash
+curl "https://dev.api.nestapi.com/v1/nesting/result/" \
+  -X POST \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{ "RequestId": "THE_REQUEST_ID", "ResultIdentity": "THE_RESULT_IDENTITY" }'
+```
+
+This is also how you [recover from a missed delivery](#retries-and-missed-deliveries) or
+independently confirm a webhook is genuine.
 
 ## Your endpoint's responsibilities
 
@@ -24,8 +416,8 @@ each webhook delivery with the request that produced it.
     out of band, after you've responded, rather than holding the request open.
   </Step>
   <Step title="Be idempotent">
-    Treat delivery as at-least-once. Key your processing on the `RequestId` so a repeated
-    delivery of the same result is a no-op.
+    Delivery is at-least-once and a single job can produce several deliveries. Key your
+    processing on the `RequestId` so a repeated or interim delivery is handled safely.
   </Step>
   <Step title="Return a stable, reachable URL">
     The URL must be publicly reachable over HTTPS from NestAPI. For local development, use a
@@ -40,29 +432,23 @@ Because your webhook URL receives production data, treat it as a sensitive endpo
 expose it more widely than necessary.
 </Warning>
 
-Recommended measures:
+Webhook requests are **not signed** and carry no `Authorization` header, so your endpoint
+cannot yet verify a caller by a shared secret. Until signed webhooks are available:
 
 - **Use HTTPS** so the payload is encrypted in transit.
 - **Use an unguessable URL** — include a long random token in the path or query string and
   reject any request that doesn't carry it (e.g. `.../hooks/nestapi/9f2c…`).
-- **Confirm out of band.** On receiving a webhook, you can independently re-fetch the result
-  with its `RequestId` via `POST /v1/nesting/result/` using your API key. This confirms the
-  result is genuine before you act on it — useful until signed webhooks are available.
+- **Confirm out of band.** On receiving a nesting webhook, independently re-fetch the result
+  with its `RequestId` and `ResultIdentity` via `POST /v1/nesting/result/` using your API key.
+  This confirms the result is genuine before you act on it.
 - **Allowlist by source** if your infrastructure supports restricting inbound callers.
 
 ## Retries and missed deliveries
 
 Deliveries can be retried, so design your handler to tolerate duplicates (see idempotency
 above). If your endpoint is unreachable when a nest completes, you are not left blind — you
-can always fetch the result on demand:
-
-```bash
-curl "https://dev.api.nestapi.com/v1/nesting/result/" \
-  -X POST \
-  -H "Authorization: Bearer YOUR_API_KEY" \
-  -H "Content-Type: application/json" \
-  -d '{ "RequestId": "THE_REQUEST_ID" }'
-```
+can always fetch the result on demand with `POST /v1/nesting/result/`
+([see above](#getting-the-full-result)).
 
 Or, for jobs where you'd rather not run a public endpoint at all, use
 [SignalR with delayed start](/guides/nesting-workflow#option-b-signalr-delayed-start-live-progress)
@@ -70,6 +456,10 @@ to stream the result over a connection you initiate.
 
 ## Not receiving webhooks?
 
-- Confirm `ResultsWebhookUri` was set on the request and is publicly reachable over HTTPS.
+- Confirm `ResultsWebhookUri` (or `WebHookUri` for exports) was set on the request and is
+  publicly reachable over HTTPS.
 - Check your endpoint returns `2xx` quickly and doesn't time out.
-- Fall back to polling `POST /v1/nesting/result/` with the `RequestId`.
+- Remember `Status` is **numeric** for 2D and 1D nests (e.g. `1`, not `"Complete"`) and a
+  **string** for quote nests — parse accordingly.
+- For exports, parse by the `ResponseType` you requested — the body has no type field.
+- Fall back to polling `POST /v1/nesting/result/` with the `RequestId` and `ResultIdentity`.
