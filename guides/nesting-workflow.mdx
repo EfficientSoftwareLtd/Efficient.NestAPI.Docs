@@ -12,15 +12,17 @@ This page explains the full lifecycle and the two ways to receive results.
 <Steps>
   <Step title="Submit">
     `POST` to a nesting endpoint with your parts, sheets, settings, and a `ResultsWebhookUri`.
-    The API validates the request and returns a `RequestId`.
+    The API validates the request and returns an `ApiNestingResult` — just `{ "RequestId": … }`,
+    the id you track the job by. This acknowledgement is **not** the result.
   </Step>
   <Step title="Nest">
     The job is queued and processed by a nester. Compute time scales with part count and
     complexity — from seconds to minutes.
   </Step>
   <Step title="Deliver">
-    On completion the `ApiNestingResult` is delivered to your webhook (and/or streamed over
-    SignalR). You can also poll for it with the `RequestId`.
+    On completion a **completion notification** is delivered to your webhook (and/or streamed
+    over SignalR), carrying a summary and a `ResultIdentity`. You can also poll for it with the
+    `RequestId`. See [Webhooks](/guides/webhooks) for the exact payload of each endpoint.
   </Step>
 </Steps>
 
@@ -59,8 +61,10 @@ The DXF, geometry, and parametric requests share three top-level fields:
 ### Option A: Webhook (simplest)
 
 Set `AutomaticallyStartNesting: true` and provide `ResultsWebhookUri`. When the nest
-finishes, NestAPI `POST`s the `ApiNestingResult` to that URL. This is the recommended
-default for server-to-server integrations. See [Webhooks](/guides/webhooks).
+finishes, NestAPI `POST`s a completion notification to that URL — a summary plus the
+`ResultIdentity` you use to fetch the full result or an export. This is the recommended
+default for server-to-server integrations. See [Webhooks](/guides/webhooks) for the exact
+payload shape (it differs by endpoint).
 
 ### Option B: SignalR + delayed start (live progress)
 
@@ -93,7 +97,7 @@ Even with webhooks you can query a job by `RequestId`:
 | Endpoint | Returns |
 |----------|---------|
 | `GET /v1/nesting/status` | The job's current status (see below) |
-| `POST /v1/nesting/result/` | The `ApiNestingResult` for a completed job |
+| `POST /v1/nesting/result/` | The full report-source result (`ReportSourceResponseV1`) — pass `RequestId` and `ResultIdentity` |
 | `GET /v1/nesting/render/` | A rendered image of the nest |
 | `GET /v1/nesting/successes` | Nests completed successfully in the last 24 hours |
 | `GET /v1/nesting/failures` | Nests that failed in the last 24 hours |

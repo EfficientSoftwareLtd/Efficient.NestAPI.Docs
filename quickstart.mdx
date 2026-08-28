@@ -65,17 +65,20 @@ concept pages.
 
 <Step title="Receive the result">
 
-When the nest finishes, NestAPI `POST`s the `ApiNestingResult` to your webhook. It contains
-the layout, per-sheet placements, and material-usage figures.
+When the nest finishes, NestAPI `POST`s a completion notification to your webhook — a summary
+(efficiency, sheet and part counts) plus a `Status.ResultIdentity`. It is **not** the full
+layout; use that `ResultIdentity` to fetch the complete result. See
+[Webhooks](/guides/webhooks) for the exact payload.
 
-You can also fetch a result on demand once you have its `RequestId`:
+Fetch the full report-source result with the `RequestId` and the `ResultIdentity` from the
+webhook:
 
 ```bash
 curl "https://api.nestapi.com/v1/nesting/result/" \
   -X POST \
   -H "Authorization: Bearer YOUR_API_KEY" \
   -H "Content-Type: application/json" \
-  -d '{ "RequestId": "THE_REQUEST_ID" }'
+  -d '{ "RequestId": "THE_REQUEST_ID", "ResultIdentity": "THE_RESULT_IDENTITY" }'
 ```
 
 </Step>

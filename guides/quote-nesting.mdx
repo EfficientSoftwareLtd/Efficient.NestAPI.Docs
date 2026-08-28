@@ -14,9 +14,13 @@ final cutting output.
 | `POST /v1/nesting/quotenesting` | Base64 DXF quote parts and sheets (`QuoteNestingRequest`) |
 | `POST /v1/nesting/geometryquotenesting` | Geometry quote parts and sheets (`QuoteNestingRequest`) |
 
-Both follow the same [async model](/guides/nesting-workflow): submit, receive a `RequestId`,
-and get the `ApiNestingResult` via your `ResultsWebhookUri` (or fetch it by `RequestId`).
-Both are also served unversioned (`/nesting/quotenesting`) for existing callers.
+Both follow the same [async model](/guides/nesting-workflow): submit, receive a `RequestId`
+(returned as an `ApiNestingResult`, i.e. `{ "RequestId": … }`), then receive progress and
+completion on your `ResultsWebhookUri`. The quote webhook streams `"InterimResult"` payloads
+as sub-nests finish and a final `"Complete"` — a different shape from the standard 2D result;
+see [Webhooks → Quote nesting results](/guides/webhooks#quote-nesting-results). Collect the
+layout itself with `GET /v1/nesting/exportquotenest`. Both endpoints are also served
+unversioned (`/nesting/quotenesting`) for existing callers, but `/v1` is the canonical path.
 
 ## Quote vs. production nesting
 

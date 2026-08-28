@@ -64,8 +64,11 @@ export itself arrives later as a `POST` to your `WebHookUri`.
     **accepted**, not that it is ready — nothing is in the response body.
   </Step>
   <Step title="Receive the export on your webhook">
-    When the export is generated, NestAPI `POST`s it to your `WebHookUri`. Treat this like any
-    other webhook: respond `2xx` quickly and process out of band. See [Webhooks](/guides/webhooks).
+    When the export is generated, NestAPI `POST`s it to your `WebHookUri`. On success the body
+    is the export itself (shape depends on the `ResponseType`); on failure it is a small fixed
+    object with an `error` and a support `reference`. Treat it like any other webhook: respond
+    `2xx` quickly and process out of band. See
+    [Webhooks → Export deliveries](/guides/webhooks#export-deliveries) for both payload shapes.
   </Step>
 </Steps>
 
@@ -79,8 +82,8 @@ second delivery. Request each type you need once, and hold on to what you receiv
 
 | Parameter | Required | Notes |
 |-----------|----------|-------|
-| `RequestId` | Yes | The job's id (`NestIdentifier` in the webhook payload; returned from the nesting endpoint). |
-| `ResultId` | Yes | The specific result to export (`ResultIdentity` in the webhook payload / status). |
+| `RequestId` | Yes | The job's id (`RequestId` in the webhook payload; returned from the nesting endpoint). |
+| `ResultId` | Yes | The specific result to export (`Status.ResultIdentity` in the webhook payload / status). |
 | `ResponseType` | Yes | Which export to produce — see the table above. |
 | `WebHookUri` | Yes | Where the generated export is `POST`ed. Without it the export has nowhere to go. |
 
