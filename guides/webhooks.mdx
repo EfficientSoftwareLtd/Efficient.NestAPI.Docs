@@ -13,14 +13,12 @@ Every webhook, whatever its payload, is delivered the same way:
 
 - **Method** — `POST` to the URL you supplied.
 - **Content type** — `application/json`.
-- **Body** — the JSON document described below, as plain UTF-8 text. (Payloads travel base64
-  internally, but that is decoded before delivery — your endpoint receives decoded JSON, not
-  base64.) The one exception is the [MyNesting](#mynesting-xml) endpoint, which delivers an XML
-  document.
-- **Enums are numbers.** Webhook bodies are serialized with numeric enum values, so status and
-  type fields arrive as integers (e.g. `NestingStatus` `1`, not `"Complete"`). The two
-  exceptions are called out where they occur: the [quote](#quote-nesting-results) `Status` is a
-  descriptive **string**, and the export-failure `responseType` is the type **name**.
+- **Body** — the JSON document described below, as UTF-8 text. The one exception is the
+  [MyNesting](#mynesting-xml) endpoint, which delivers an XML document.
+- **Enums are numbers.** Enum-valued fields arrive as integers, so status and type fields are
+  numeric (e.g. `NestingStatus` `1`, not `"Complete"`). Two exceptions are called out where they
+  occur: the [quote](#quote-nesting-results) `Status` is a descriptive **string**, and the
+  export-failure `responseType` is the type **name**.
 - **Authentication** — there is **no** signature or `Authorization` header on the request yet.
   Secure your endpoint with an unguessable URL and confirm out of band — see
   [Securing your webhook](#securing-your-webhook).
