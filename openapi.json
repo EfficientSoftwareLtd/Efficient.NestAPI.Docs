@@ -2686,6 +2686,9 @@
       },
       "ParametricGeometryNestingRequest": {
         "title": "ParametricGeometryNestingRequest",
+        "required": [
+          "Request"
+        ],
         "properties": {
           "Request": {
             "$ref": "#/components/schemas/ParametricNestingRequest"
@@ -2703,6 +2706,11 @@
       },
       "ParametricNestingRequest": {
         "title": "ParametricNestingRequest",
+        "required": [
+          "Parts",
+          "Sheets",
+          "NestSettings"
+        ],
         "properties": {
           "GeometryDefinitionImportSettings": {
             "$ref": "#/components/schemas/ImportSettings"
@@ -3447,6 +3455,9 @@
       },
       "EncodedGeometryNestingRequest": {
         "title": "EncodedGeometryNestingRequest",
+        "required": [
+          "Request"
+        ],
         "properties": {
           "Request": {
             "$ref": "#/components/schemas/GeometryNestingRequest"
@@ -3464,6 +3475,11 @@
       },
       "GeometryNestingRequest": {
         "title": "GeometryNestingRequest",
+        "required": [
+          "Parts",
+          "Sheets",
+          "NestSettings"
+        ],
         "properties": {
           "GeometryDefinitionImportSettings": {
             "$ref": "#/components/schemas/ImportSettings"
@@ -3635,6 +3651,9 @@
       },
       "EncodedGeometryQuoteNestingRequest": {
         "title": "EncodedGeometryQuoteNestingRequest",
+        "required": [
+          "Request"
+        ],
         "properties": {
           "Request": {
             "$ref": "#/components/schemas/QuoteNestingRequest_QuotePart_QuoteSheet_"
@@ -3900,6 +3919,9 @@
       },
       "DxfQuoteNestingRequest": {
         "title": "DxfQuoteNestingRequest",
+        "required": [
+          "Request"
+        ],
         "properties": {
           "Request": {
             "$ref": "#/components/schemas/QuoteNestingRequest_Base64QuotePart_Base64QuoteSheet_"
@@ -4287,6 +4309,9 @@
       },
       "DxfNestingRequest": {
         "title": "DxfNestingRequest",
+        "required": [
+          "Request"
+        ],
         "properties": {
           "Request": {
             "$ref": "#/components/schemas/Base64NestingRequest"
@@ -4304,6 +4329,11 @@
       },
       "Base64NestingRequest": {
         "title": "Base64NestingRequest",
+        "required": [
+          "Parts",
+          "Sheets",
+          "NestSettings"
+        ],
         "properties": {
           "GeometryDefinitionImportSettings": {
             "$ref": "#/components/schemas/ImportSettings"
