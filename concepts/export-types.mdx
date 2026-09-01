@@ -18,7 +18,7 @@ specific result you want to export.
 
 | Endpoint | Delivery | You get |
 |----------|----------|---------|
-| `GET /v1/nesting/export` | **Async → your webhook** | A production export, of the type you pick (see below) |
+| `GET`/`POST /v1/nesting/export` | **Async → your webhook** | A production export, of the type you pick (see below). Use `POST` to supply `Runtime` render settings on the call. |
 | `GET /v1/nesting/exportquotenest` | **Async → your webhook** | A quote-oriented export |
 | `GET /v1/nesting/export/cached` | **Synchronous (pull)** | An export previously generated over SignalR |
 | `GET /v1/nesting/render/` | **Synchronous** | A rendered image of the layout, in the response body |
@@ -33,15 +33,29 @@ The distinction matters: `render` and `export/cached` hand you data back in the 
 This is the parameter that selects *what kind of export you get*. It accepts either the name or
 the integer.
 
-| `ResponseType` | Int | Output delivered to your webhook |
-|----------------|-----|----------------------------------|
-| `Result` | `0` | Part-placement details for the result (the same shape as the nesting result). |
-| `Render` | `1` | A base64-encoded render (SVG or PNG) of the layout. |
-| `DXF` | `2` | A base64-encoded DXF file of the nested layout. |
-| `ReportSource` | `3` | Data for report generation — statistics plus base64 renderings (material usage, per-sheet breakdown). |
-| `RemnantExport` | `4` | A base64-encoded **zip** of DXF files representing the remnants the nest generated. |
-| `Runtime` | `5` | Information about the result together with a render. Requires **runtime render settings** to have been supplied on the original nesting request. |
-| `PartsExport` | `6` | A DXF export of the individual **part** geometry from the nesting request. |
+Each type is generated from a **settings block you supplied on the original nesting request**.
+If that block was not supplied, the export cannot be produced — and the request is now **rejected
+up front** (see [Synchronous validation](#synchronous-validation) below) rather than accepted and
+failing silently on your webhook.
+
+| `ResponseType` | Int | Requires on the original request | Output delivered to your webhook |
+|----------------|-----|----------------------------------|----------------------------------|
+| `Result` | `0` | — | Part-placement details for the result (the same shape as the nesting result). |
+| `Render` | `1` | `RenderSettings` | A base64-encoded render (SVG or PNG) of the layout. |
+| `DXF` | `2` | `DXFExportSettings` | A base64-encoded DXF file of the nested layout. |
+| `ReportSource` | `3` | `ReportSourceSettings` | Data for report generation — statistics plus base64 renderings (material usage, per-sheet breakdown). |
+| `RemnantExport` | `4` | `RemnantGenerationSettings` | A base64-encoded **zip** of DXF files representing the remnants the nest generated. |
+| `Runtime` | `5` | see note | Information about the result together with a render. |
+| `PartsExport` | `6` | `PartExportSettings` | A DXF export of the individual **part** geometry from the nesting request. |
+
+<Note>
+**`Runtime` render settings.** Unlike the other types, `Runtime` takes its render settings
+(`ReportSourceRenderingSettings`) from the export call, not from a block on the original request.
+Over a **GET** it falls back to the original request's `ReportSourceSettings` (and is rejected if
+none were supplied). To supply the render settings on the call itself, **POST** to
+`/v1/nesting/export` with a `ReportSourceRenderingSettings` body — the POST value wins, falling
+back to the original request's `ReportSourceSettings` when omitted.
+</Note>
 
 ## How to request an export (webhook-delivered)
 
@@ -61,7 +75,9 @@ export itself arrives later as a `POST` to your `WebHookUri`.
   </Step>
   <Step title="Get the acknowledgement">
     A successful call returns `{ "Success": true, "Error": null }`. This confirms the export was
-    **accepted**, not that it is ready — nothing is in the response body.
+    **accepted** (it passed [synchronous validation](#synchronous-validation) and was queued), not
+    that it is ready — nothing is in the response body. A request that fails validation returns an
+    error status instead, with the reason in `ResponseStatus`.
   </Step>
   <Step title="Receive the export on your webhook">
     When the export is generated, NestAPI `POST`s it to your `WebHookUri`. On success the body
@@ -82,17 +98,63 @@ second delivery. Request each type you need once, and hold on to what you receiv
 
 | Parameter | Required | Notes |
 |-----------|----------|-------|
-| `RequestId` | Yes | The job's id (`RequestId` in the webhook payload; returned from the nesting endpoint). |
-| `ResultId` | Yes | The specific result to export (`Status.ResultIdentity` in the webhook payload / status). |
-| `ResponseType` | Yes | Which export to produce — see the table above. |
-| `WebHookUri` | Yes | Where the generated export is `POST`ed. Without it the export has nowhere to go. |
+| `RequestId` | Yes | The job's id (`RequestId` in the webhook payload; returned from the nesting endpoint). Must be a non-empty GUID. |
+| `ResultId` | Yes | The specific result to export (`Status.ResultIdentity` in the webhook payload / status). Must be a non-empty GUID. |
+| `ResponseType` | Yes | Which export to produce — see the table above. Must be a defined export type. |
+| `WebHookUri` | Yes | Where the generated export is `POST`ed. Must be an **absolute HTTPS** URL. Without it the export has nowhere to go. |
+
+### Synchronous validation
+
+The request is validated **before it is queued**, so a malformed or unsatisfiable export is
+rejected on the call with a clear `ResponseStatus` message, rather than being accepted with
+`{ "Success": true }` and then failing quietly on your webhook. The checks, and the status they
+return:
+
+| Status | When |
+|--------|------|
+| `400 Bad Request` | `RequestId` or `ResultId` missing/empty; `WebHookUri` missing or not an absolute HTTPS URL (plain HTTP is accepted only for a loopback host such as `localhost`, for local testing); `ResponseType` not a known export type; or the export type's required settings block (see the table above) was not supplied on the original nesting request. For `Runtime`, no `ReportSourceRenderingSettings` were available (neither on the POST body nor as `ReportSourceSettings` on the original request). |
+| `404 Not Found` | No completed nest exists for this key with that `RequestId`/`ResultId`, or the result is **no longer available** — results are held in memory for a limited time after completion, and once the payload has expired it cannot be exported. |
+| `409 Conflict` | The nest exists but is not in an exportable state: it has not completed yet, or it failed. |
+| `429 Too Many Requests` | The per-type export limit for this result has been reached (see the rate-limit note above). |
+
+A `2xx` with `{ "Success": true }` means the request passed all of these and was queued.
+
+### Supplying `Runtime` render settings (POST)
+
+Because `Runtime` render settings (`ReportSourceRenderingSettings`) are a nested object, a GET
+query string cannot carry them — over GET, `Runtime` uses the original request's
+`ReportSourceSettings`. To supply them on the export call, **POST** to `/v1/nesting/export` with
+the settings in the body:
+
+```bash
+curl -X POST "https://dev.api.nestapi.com/v1/nesting/export" \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "RequestId": "THE_REQUEST_ID",
+    "ResultId": "THE_RESULT_ID",
+    "ResponseType": "Runtime",
+    "WebHookUri": "https://your.app/hooks/export",
+    "ReportSourceRenderingSettings": {
+      "NestingRenderSettings": { "RenderFormat": "SVG", "xDimension": 1920, "yDimension": 1080, "BackColorARGB": "#FFFFFFFF", "OutlineLineColorARGB": "#FF000000", "AutomaticallyChoosePartFillColor": true },
+      "PartPreviewRenderSettings": { "RenderFormat": "SVG", "xDimension": 400, "yDimension": 400, "BackColorARGB": "#FFFFFFFF", "OutlineLineColorARGB": "#FF000000", "AutomaticallyChoosePartFillColor": true }
+    }
+  }'
+```
+
+The POST value takes precedence; when omitted it falls back to the original request's
+`ReportSourceSettings`. The POST form works for every other `ResponseType` too — the body simply
+carries the same identifiers you would otherwise pass on the query string.
 
 ## Quote-nest exports
 
 `GET /v1/nesting/exportquotenest` is the quote-mode equivalent and is also **webhook-delivered**.
 It takes just `RequestId` and `WebHookUri` (there is no `ResponseType` — the quote export is a
 fixed shape) and, like `export`, returns `{ "Success": true }` on acceptance and delivers the
-result to your webhook.
+result to your webhook. It applies up-front validation: a missing `RequestId`, a missing or
+non-absolute `WebHookUri` (`400`), or a `RequestId` with no quote nest for your key (`404`) is
+rejected on the call. (Unlike `export`, the quote webhook is not required to be HTTPS — an absolute
+URL is enough.)
 
 ```bash
 curl "https://dev.api.nestapi.com/v1/nesting/exportquotenest?RequestId=THE_REQUEST_ID&WebHookUri=https://your.app/hooks/export" \
