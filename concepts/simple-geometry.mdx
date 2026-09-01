@@ -1,0 +1,169 @@
+---
+title: "SimpleGeometry"
+description: "Describe part and sheet outlines directly as lines and arcs — no DXF — and how to package them for /v1/nesting/geometry."
+---
+
+`SimpleGeometry` lets you describe a part (or sheet) outline **directly**, as a set of straight
+lines and arcs, instead of supplying a DXF file. It's the right choice when your parts come
+from a configurator, a database, or your own CAD kernel and you'd rather hand NestAPI the
+geometry than round-trip through files.
+
+<Note>
+**Builder libraries are coming.** We plan to publish helper libraries that let you build
+NestAPI geometry from your own representation with a fluent builder — `AddPart()` →
+`AddOuterLine(...)` → `BeginInnerPolygon()...` — and produce the packaged request for you. Until
+those ship, the format below is what you construct and encode by hand. The shape is the same
+either way, so anything you build now stays valid.
+</Note>
+
+## The model
+
+A `SimpleGeometry` is a list of parts. Each part has one **outer** boundary and zero or more
+**inner** boundaries (holes). Each boundary is a closed loop of **primitives** — lines and arcs.
+
+```
+SimpleGeometry
+└─ Parts: SimplePart[]
+   ├─ Outer:  SimplePolygon           the part's outer boundary
+   │  └─ LinesAndArcs: SimplePrimitive[]   (SimpleLine | SimpleArc)
+   └─ Inners: SimplePolygon[]          holes cut out of the part
+      └─ LinesAndArcs: SimplePrimitive[]
+```
+
+Every primitive is tagged with a **`PrimitiveType`** discriminator — `"Line"` or `"Arc"` — and
+this field is **required** on each one. The value is case-sensitive.
+
+**`SimpleLine`**
+
+| Field | Type | Notes |
+|-------|------|-------|
+| `PrimitiveType` | string | Must be `"Line"`. |
+| `StartX` / `StartY` | number | Start point. |
+| `EndX` / `EndY` | number | End point. |
+
+**`SimpleArc`**
+
+| Field | Type | Notes |
+|-------|------|-------|
+| `PrimitiveType` | string | Must be `"Arc"`. |
+| `StartX` / `StartY` | number | Start point on the arc. |
+| `CenterX` / `CenterY` | number | Arc centre. |
+| `OffsetAngleRadians` | number | Signed sweep about the centre — see [Winding and arcs](#winding-and-arcs). |
+
+## Winding and arcs
+
+### Closure and winding direction
+
+Each boundary must be a **closed** loop: the primitives are taken in order, each one's end
+meeting the next one's start, and the last meeting the first. Closure is **not validated** — an
+open or self-crossing loop fails silently rather than returning an error, so make sure your
+outlines close exactly.
+
+You do **not** need to supply a particular winding direction. NestAPI normalizes every boundary
+(it reverses any loop that arrives clockwise), and the **outer-vs-hole** distinction is decided
+purely by whether you place a polygon in `Outer` or in `Inners` — never by its direction. Supply
+each loop in whichever order is natural for you.
+
+### Arc geometry
+
+An arc is defined by its **start point**, its **centre**, and a signed **sweep** — you do not
+pass a radius or an end point:
+
+- The **radius** is taken from the distance between the start point and the centre, so the start
+  point must lie on the arc.
+- **`OffsetAngleRadians`** is the angle swept about the centre, in radians. **Positive sweeps
+  counter-clockwise; negative sweeps clockwise.** Its magnitude is the arc's included angle —
+  `π` (≈ 3.14159) for a semicircle, `π/2` for a quarter.
+- The **end point is derived**: the start point rotated about the centre by `OffsetAngleRadians`.
+- Do **not** pass `0` — a zero sweep is degenerate.
+
+## Example
+
+A 200 × 100 part with a 40 × 20 rectangular hole, using lines only:
+
+```json
+{
+  "Parts": [
+    {
+      "Outer": {
+        "LinesAndArcs": [
+          { "PrimitiveType": "Line", "StartX": 0,   "StartY": 0,   "EndX": 200, "EndY": 0   },
+          { "PrimitiveType": "Line", "StartX": 200, "StartY": 0,   "EndX": 200, "EndY": 100 },
+          { "PrimitiveType": "Line", "StartX": 200, "StartY": 100, "EndX": 0,   "EndY": 100 },
+          { "PrimitiveType": "Line", "StartX": 0,   "StartY": 100, "EndX": 0,   "EndY": 0   }
+        ]
+      },
+      "Inners": [
+        {
+          "LinesAndArcs": [
+            { "PrimitiveType": "Line", "StartX": 80,  "StartY": 40, "EndX": 120, "EndY": 40 },
+            { "PrimitiveType": "Line", "StartX": 120, "StartY": 40, "EndX": 120, "EndY": 60 },
+            { "PrimitiveType": "Line", "StartX": 120, "StartY": 60, "EndX": 80,  "EndY": 60 },
+            { "PrimitiveType": "Line", "StartX": 80,  "StartY": 60, "EndX": 80,  "EndY": 40 }
+          ]
+        }
+      ]
+    }
+  ]
+}
+```
+
+An arc primitive — here a semicircle from `(200, 40)` to `(200, 60)` about centre `(200, 50)`,
+sweeping counter-clockwise (bulging out to `x = 190`):
+
+```json
+{ "PrimitiveType": "Arc", "StartX": 200, "StartY": 40, "CenterX": 200, "CenterY": 50, "OffsetAngleRadians": 3.14159 }
+```
+
+Flip the sign to `-3.14159` for the same semicircle sweeping clockwise (bulging to `x = 210`).
+
+## Packaging and submitting
+
+`SimpleGeometry` is **not** sent as a top-level request field. Each part carries its geometry as
+an encoded string, and you flag the encoding on the part. The packaging is specific:
+
+<Steps>
+  <Step title="Serialize the SimpleGeometry to JSON">
+    Produce the JSON shown above. Keep the `PrimitiveType` discriminator on every primitive.
+  </Step>
+  <Step title="Zip it, then base64-encode">
+    Write the JSON as a single entry inside a **ZIP archive** (a standard zip container — not
+    raw gzip/deflate), then base64-encode the archive bytes. NestAPI reads the **first entry**
+    of the archive.
+  </Step>
+  <Step title="Attach it to the part and flag the encoding">
+    Put the base64 string in the part's **`EncodedPartJson`** and set
+    **`GeometryDefinitionType`** to **`PreZippedBase64SimpleGeometry`**.
+  </Step>
+  <Step title="Submit">
+    `POST /v1/nesting/geometry` with the parts (and sheets) in the `Request` body, as usual —
+    see the [nesting workflow](/guides/nesting-workflow).
+  </Step>
+</Steps>
+
+So a single part in the request body ends up like:
+
+```json
+{
+  "Identifier": "bracket-a",
+  "Quantity": 5,
+  "GeometryDefinitionType": "PreZippedBase64SimpleGeometry",
+  "EncodedPartJson": "<base64 of the zipped SimpleGeometry JSON>"
+}
+```
+
+<Note>
+**Sheets** work the same way: a sheet outline can be supplied as `SimpleGeometry` in
+**`EncodedSheetJson`** with the same `GeometryDefinitionType`. (Rectangular stock is more often
+described by dimensions — see [parts &amp; sheets](/concepts/parts-and-sheets).)
+</Note>
+
+## When to use it
+
+- **Use `SimpleGeometry`** when you already hold outline geometry (lines/arcs) and don't want to
+  emit and re-import DXF files.
+- **Use DXF** (`POST /v1/nesting`) when your parts originate from CAD as files.
+- **Use parametric** (`POST /v1/nesting/parametric`) when parts are described by parameters
+  rather than explicit outlines.
+
+See [geometry types](/guides/geometry-types) for the full comparison.

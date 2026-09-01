@@ -18,10 +18,13 @@ when your parts originate from CAD.
 ## Encoded geometry — `POST /v1/nesting/geometry`
 
 Submit **`GeometryNestingRequest`** — geometry that's already been extracted, either from the
-[importer](/guides/importer-workflow) or defined directly as `SimpleGeometry`.
+[importer](/guides/importer-workflow) or defined directly as
+[`SimpleGeometry`](/concepts/simple-geometry).
 
 - Best when you already hold geometry and don't want to round-trip through files.
 - The natural follow-on to an importer session.
+- Defining outlines by hand (lines and arcs)? See [SimpleGeometry](/concepts/simple-geometry)
+  for the shape and how to package it.
 
 ## Parametric — `POST /v1/nesting/parametric`
 

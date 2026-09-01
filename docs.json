@@ -32,6 +32,7 @@
         "group": "Concepts",
         "pages": [
           "concepts/parts-and-sheets",
+          "concepts/simple-geometry",
           "concepts/nesting-settings",
           "concepts/common-cutting",
           "concepts/export-types"
