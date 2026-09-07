@@ -2473,8 +2473,8 @@
   ],
   "servers": [
     {
-      "description": "Production",
-      "url": "https://api.nestapi.com"
+      "url": "https://api.nestapi.com",
+      "description": "Production"
     }
   ],
   "components": {
@@ -2546,6 +2546,7 @@
           },
           "KeyType": {
             "type": "string",
+            "default": "Usage",
             "enum": [
               "Usage",
               "Admin"
@@ -2577,6 +2578,7 @@
           },
           "KeyType": {
             "type": "string",
+            "default": "Usage",
             "enum": [
               "Usage",
               "Admin"
@@ -2626,6 +2628,7 @@
           },
           "RenderPartLabelMode": {
             "type": "string",
+            "default": "None",
             "enum": [
               "None",
               "ID",
@@ -2648,6 +2651,7 @@
         "properties": {
           "RenderFormat": {
             "type": "string",
+            "default": "PNG",
             "enum": [
               "PNG",
               "SVG"
@@ -2682,6 +2686,9 @@
       },
       "ParametricGeometryNestingRequest": {
         "title": "ParametricGeometryNestingRequest",
+        "required": [
+          "Request"
+        ],
         "properties": {
           "Request": {
             "$ref": "#/components/schemas/ParametricNestingRequest"
@@ -2699,6 +2706,11 @@
       },
       "ParametricNestingRequest": {
         "title": "ParametricNestingRequest",
+        "required": [
+          "Parts",
+          "Sheets",
+          "NestSettings"
+        ],
         "properties": {
           "GeometryDefinitionImportSettings": {
             "$ref": "#/components/schemas/ImportSettings"
@@ -2790,6 +2802,7 @@
           },
           "MeasurementUnitsOfImportGeometry": {
             "type": "string",
+            "default": "Millimetres",
             "enum": [
               "Millimetres",
               "Inches"
@@ -2848,6 +2861,7 @@
           },
           "RepeatPreference": {
             "type": "string",
+            "default": "BestEfficiency",
             "enum": [
               "BestEfficiency",
               "BalancedRepeats",
@@ -2856,6 +2870,7 @@
           },
           "NestingDirection": {
             "type": "string",
+            "default": "Zero",
             "enum": [
               "Zero",
               "Ninety",
@@ -2874,6 +2889,7 @@
           },
           "NestingOrigin": {
             "type": "string",
+            "default": "BottomLeft",
             "enum": [
               "BottomLeft",
               "TopLeft",
@@ -2899,6 +2915,7 @@
           },
           "NestingObjective": {
             "type": "string",
+            "default": "MinimizeXThenY",
             "enum": [
               "IntelligentMinimizeX",
               "MinimizeXThenY",
@@ -2910,6 +2927,7 @@
           },
           "InnerLoopFillPreference": {
             "type": "string",
+            "default": "None",
             "enum": [
               "None",
               "DontNestInsideInnerLoops",
@@ -2918,6 +2936,7 @@
           },
           "FillerPartsStrategy": {
             "type": "string",
+            "default": "FillNest",
             "enum": [
               "FillSheet",
               "FillNest"
@@ -2936,6 +2955,7 @@
         "properties": {
           "DXFVersion": {
             "type": "string",
+            "default": "Dxf15",
             "enum": [
               "Dxf15",
               "Dxf18",
@@ -2947,6 +2967,7 @@
           },
           "ExportFileType": {
             "type": "string",
+            "default": "dxf",
             "enum": [
               "dxf",
               "dwg"
@@ -2980,6 +3001,7 @@
           },
           "SheetExportSettings": {
             "type": "string",
+            "default": "SingleFile",
             "enum": [
               "SingleFile",
               "MultipleFile"
@@ -2990,6 +3012,7 @@
           },
           "OuterLoopDirection": {
             "type": "string",
+            "default": "Clockwise",
             "enum": [
               "Clockwise",
               "CounterClockwise"
@@ -2997,6 +3020,7 @@
           },
           "InnerLoopDirection": {
             "type": "string",
+            "default": "Clockwise",
             "enum": [
               "Clockwise",
               "CounterClockwise"
@@ -3004,6 +3028,7 @@
           },
           "ExportedGeometryStructure": {
             "type": "string",
+            "default": "LinesAndArcs",
             "enum": [
               "LinesAndArcs",
               "Polylines"
@@ -3042,6 +3067,7 @@
         "properties": {
           "CommonCuttingImportance": {
             "type": "string",
+            "default": "NotSet",
             "enum": [
               "Unimportant",
               "Weak",
@@ -3052,6 +3078,7 @@
           },
           "CommonCutSafety": {
             "type": "string",
+            "default": "NotSet",
             "enum": [
               "PairsOnly",
               "Safe",
@@ -3062,6 +3089,7 @@
           },
           "CommonCutLeadinCheck": {
             "type": "string",
+            "default": "NoCheck",
             "enum": [
               "NoCheck",
               "LinearTangential",
@@ -3070,6 +3098,7 @@
           },
           "CommonCutMode": {
             "type": "string",
+            "default": "None",
             "enum": [
               "None",
               "SameParts",
@@ -3132,6 +3161,7 @@
         "properties": {
           "ParametricType": {
             "type": "string",
+            "default": "Rectangle_AB_XY",
             "enum": [
               "Rectangle_AB_XY",
               "Circle_A_Radius",
@@ -3161,6 +3191,7 @@
           },
           "GeometryDefinitionType": {
             "type": "string",
+            "default": "Base64EncodedDXF",
             "enum": [
               "Base64EncodedDXF",
               "Base64EncodedDWG",
@@ -3178,6 +3209,7 @@
           },
           "AllowableRotation": {
             "type": "string",
+            "default": "Any",
             "enum": [
               "Any",
               "Ninety",
@@ -3247,6 +3279,7 @@
           },
           "GeometryDefinitionType": {
             "type": "string",
+            "default": "Base64EncodedDXF",
             "enum": [
               "Base64EncodedDXF",
               "Base64EncodedDWG",
@@ -3353,6 +3386,7 @@
           },
           "RemnantGenerationType": {
             "type": "string",
+            "default": "TrueShape",
             "enum": [
               "TrueShape",
               "FastCoveringBoundingRectangle",
@@ -3375,6 +3409,7 @@
           },
           "InnerLoopDirection": {
             "type": "string",
+            "default": "Clockwise",
             "enum": [
               "Clockwise",
               "CounterClockwise"
@@ -3382,6 +3417,7 @@
           },
           "OuterLoopDirection": {
             "type": "string",
+            "default": "Clockwise",
             "enum": [
               "Clockwise",
               "CounterClockwise"
@@ -3389,6 +3425,7 @@
           },
           "DXFVersion": {
             "type": "string",
+            "default": "Dxf15",
             "enum": [
               "Dxf15",
               "Dxf18",
@@ -3400,6 +3437,7 @@
           },
           "ExportedGeometryStructure": {
             "type": "string",
+            "default": "LinesAndArcs",
             "enum": [
               "LinesAndArcs",
               "Polylines"
@@ -3417,6 +3455,9 @@
       },
       "EncodedGeometryNestingRequest": {
         "title": "EncodedGeometryNestingRequest",
+        "required": [
+          "Request"
+        ],
         "properties": {
           "Request": {
             "$ref": "#/components/schemas/GeometryNestingRequest"
@@ -3434,6 +3475,11 @@
       },
       "GeometryNestingRequest": {
         "title": "GeometryNestingRequest",
+        "required": [
+          "Parts",
+          "Sheets",
+          "NestSettings"
+        ],
         "properties": {
           "GeometryDefinitionImportSettings": {
             "$ref": "#/components/schemas/ImportSettings"
@@ -3492,6 +3538,7 @@
           },
           "GeometryDefinitionType": {
             "type": "string",
+            "default": "Base64EncodedDXF",
             "enum": [
               "Base64EncodedDXF",
               "Base64EncodedDWG",
@@ -3509,6 +3556,7 @@
           },
           "AllowableRotation": {
             "type": "string",
+            "default": "Any",
             "enum": [
               "Any",
               "Ninety",
@@ -3603,6 +3651,9 @@
       },
       "EncodedGeometryQuoteNestingRequest": {
         "title": "EncodedGeometryQuoteNestingRequest",
+        "required": [
+          "Request"
+        ],
         "properties": {
           "Request": {
             "$ref": "#/components/schemas/QuoteNestingRequest_QuotePart_QuoteSheet_"
@@ -3706,6 +3757,7 @@
           },
           "GeometryDefinitionType": {
             "type": "string",
+            "default": "Base64EncodedDXF",
             "enum": [
               "Base64EncodedDXF",
               "Base64EncodedDWG",
@@ -3723,6 +3775,7 @@
           },
           "AllowableRotation": {
             "type": "string",
+            "default": "Any",
             "enum": [
               "Any",
               "Ninety",
@@ -3808,6 +3861,7 @@
           },
           "GeometryDefinitionType": {
             "type": "string",
+            "default": "Base64EncodedDXF",
             "enum": [
               "Base64EncodedDXF",
               "Base64EncodedDWG",
@@ -3865,6 +3919,9 @@
       },
       "DxfQuoteNestingRequest": {
         "title": "DxfQuoteNestingRequest",
+        "required": [
+          "Request"
+        ],
         "properties": {
           "Request": {
             "$ref": "#/components/schemas/QuoteNestingRequest_Base64QuotePart_Base64QuoteSheet_"
@@ -3968,6 +4025,7 @@
           },
           "GeometryDefinitionCompressionType": {
             "type": "string",
+            "default": "None",
             "enum": [
               "None",
               "GZip"
@@ -3981,6 +4039,7 @@
           },
           "GeometryDefinitionType": {
             "type": "string",
+            "default": "Base64EncodedDXF",
             "enum": [
               "Base64EncodedDXF",
               "Base64EncodedDWG",
@@ -3998,6 +4057,7 @@
           },
           "AllowableRotation": {
             "type": "string",
+            "default": "Any",
             "enum": [
               "Any",
               "Ninety",
@@ -4083,6 +4143,7 @@
           },
           "GeometryDefinitionCompressionType": {
             "type": "string",
+            "default": "None",
             "enum": [
               "None",
               "GZip"
@@ -4096,6 +4157,7 @@
           },
           "GeometryDefinitionType": {
             "type": "string",
+            "default": "Base64EncodedDXF",
             "enum": [
               "Base64EncodedDXF",
               "Base64EncodedDWG",
@@ -4247,6 +4309,9 @@
       },
       "DxfNestingRequest": {
         "title": "DxfNestingRequest",
+        "required": [
+          "Request"
+        ],
         "properties": {
           "Request": {
             "$ref": "#/components/schemas/Base64NestingRequest"
@@ -4264,6 +4329,11 @@
       },
       "Base64NestingRequest": {
         "title": "Base64NestingRequest",
+        "required": [
+          "Parts",
+          "Sheets",
+          "NestSettings"
+        ],
         "properties": {
           "GeometryDefinitionImportSettings": {
             "$ref": "#/components/schemas/ImportSettings"
@@ -4322,6 +4392,7 @@
           },
           "GeometryDefinitionCompressionType": {
             "type": "string",
+            "default": "None",
             "enum": [
               "None",
               "GZip"
@@ -4335,6 +4406,7 @@
           },
           "GeometryDefinitionType": {
             "type": "string",
+            "default": "Base64EncodedDXF",
             "enum": [
               "Base64EncodedDXF",
               "Base64EncodedDWG",
@@ -4352,6 +4424,7 @@
           },
           "AllowableRotation": {
             "type": "string",
+            "default": "Any",
             "enum": [
               "Any",
               "Ninety",
@@ -4421,6 +4494,7 @@
           },
           "GeometryDefinitionCompressionType": {
             "type": "string",
+            "default": "None",
             "enum": [
               "None",
               "GZip"
@@ -4434,6 +4508,7 @@
           },
           "GeometryDefinitionType": {
             "type": "string",
+            "default": "Base64EncodedDXF",
             "enum": [
               "Base64EncodedDXF",
               "Base64EncodedDWG",
@@ -4575,6 +4650,7 @@
           },
           "KeyType": {
             "type": "string",
+            "default": "Usage",
             "enum": [
               "Usage",
               "Admin"
@@ -4632,6 +4708,7 @@
           },
           "NodeSizeOverrideValue": {
             "type": "string",
+            "default": "TwoCore",
             "enum": [
               "TwoCore",
               "FourCore"
@@ -5063,6 +5140,7 @@
         "properties": {
           "NestingStatus": {
             "type": "string",
+            "default": "Result",
             "enum": [
               "Result",
               "Complete",
@@ -5541,6 +5619,7 @@
           "ResponseType": {
             "description": "The export type this response carries.",
             "type": "string",
+            "default": "Result",
             "enum": [
               "Result",
               "Render",
@@ -5574,6 +5653,7 @@
         "properties": {
           "Status": {
             "type": "string",
+            "default": "Success",
             "enum": [
               "Success",
               "Warning",
