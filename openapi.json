@@ -1724,7 +1724,7 @@
           "nesting"
         ],
         "summary": "Generate a production export for a completed nest",
-        "description": "Generates an export from a completed nesting result and delivers it **asynchronously to your webhook**.\n\nThis call does **not** return the export in the response body. It validates the request, queues the export, and returns immediately with `{ \"Success\": true }`. When the export has been generated it is `POST`ed to the `WebHookUri` you supply.\n\nUse `ResponseType` to choose what is produced:\n\n- `Result` (0) — part-placement details for the result\n- `Render` (1) — a base64-encoded render (SVG or PNG) of the layout\n- `DXF` (2) — a base64-encoded DXF file of the nested layout\n- `ReportSource` (3) — statistics and base64 renderings for report generation\n- `RemnantExport` (4) — a base64-encoded zip of DXF files representing the remnants\n- `Runtime` (5) — information about the result together with a render; requires runtime render settings to have been supplied on the original nesting request\n- `PartsExport` (6) — a DXF export of the individual part geometry from the nesting request\n\nEach `ResponseType` may be requested once per result by default; requesting an export you have already requested returns an error.",
+        "description": "Generates an export from a completed nesting result and delivers it **asynchronously to your webhook**.\n\nThis call does **not** return the export in the response body. It validates the request **up front**, queues the export, and returns immediately with `{ \"Success\": true }`. When the export has been generated it is `POST`ed to the `WebHookUri` you supply.\n\nThe request is validated synchronously before it is queued — a malformed or unsatisfiable request is rejected here with a clear error rather than being accepted and failing silently later. See the responses below.\n\nUse `ResponseType` to choose what is produced. Each type requires the matching settings block to have been supplied on the **original nesting request** (a missing block is rejected up front):\n\n- `Result` (0) — part-placement details for the result. No settings required.\n- `Render` (1) — a base64-encoded render (SVG or PNG) of the layout. Requires `RenderSettings`.\n- `DXF` (2) — a base64-encoded DXF file of the nested layout. Requires `DXFExportSettings`.\n- `ReportSource` (3) — statistics and base64 renderings for report generation. Requires `ReportSourceSettings`.\n- `RemnantExport` (4) — a base64-encoded zip of DXF files representing the remnants. Requires `RemnantGenerationSettings`.\n- `Runtime` (5) — information about the result together with a render. See `ReportSourceRenderingSettings` below: on a **GET** it uses the original request's `ReportSourceSettings` (rejected if none were supplied); **POST** to this endpoint to supply the render settings on the call itself.\n- `PartsExport` (6) — a DXF export of the individual part geometry. Requires `PartExportSettings`.\n\nEach `ResponseType` may be requested once per result by default; requesting an export you have already requested returns an error.",
         "operationId": "GenerateNestApiExport",
         "parameters": [
           {
@@ -1750,7 +1750,7 @@
           {
             "name": "ResponseType",
             "in": "query",
-            "description": "Which export to generate. Accepts the name or the integer — see the endpoint description for the meaning of each value.",
+            "description": "Which export to generate. Accepts the name or the integer — see the endpoint description for the meaning of each value and the settings it requires.",
             "required": true,
             "x-nullable": false,
             "schema": {
@@ -1773,10 +1773,13 @@
               "$ref": "#/components/schemas/Uri",
               "type": "string"
             },
-            "description": "The URL the generated export is `POST`ed to when it is ready. Required — without it the export has nowhere to be delivered.",
+            "description": "The URL the generated export is `POST`ed to when it is ready. Required, and must be an absolute HTTPS URL — without it the export has nowhere to be delivered.",
             "required": true
           }
         ],
+        "requestBody": {
+          "$ref": "#/components/requestBodies/ReportSourceRenderingSettings"
+        },
         "responses": {
           "200": {
             "description": "The export request was accepted and queued for delivery to your webhook.",
@@ -1788,8 +1791,168 @@
               }
             }
           },
+          "400": {
+            "description": "The request is malformed or unsatisfiable: a missing/non-empty `RequestId` or `ResultId`, a missing or non-HTTPS `WebHookUri`, an unknown `ResponseType`, or a `ResponseType` whose required settings block was not supplied on the original nesting request. The `ResponseStatus` message explains which check failed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NestApiExport"
+                }
+              }
+            }
+          },
           "401": {
             "description": "API key is missing or invalid.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NestApiExport"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No completed nest was found for the supplied `RequestId`/`ResultId` for this key, or the result is no longer available for export (results are retained in memory for a limited time).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NestApiExport"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "The nest exists but is not in an exportable state — it has not completed yet, or it failed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NestApiExport"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "The per-type export limit for this result has been reached. Each `ResponseType` may be requested once per result by default.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NestApiExport"
+                }
+              }
+            }
+          }
+        },
+        "deprecated": false,
+        "security": [
+          {
+            "Bearer": []
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "nesting"
+        ],
+        "summary": "Generate a production export for a completed nest (accepts a body)",
+        "description": "The same operation as `GET /v1/nesting/export`, but accepting a request **body**. Use POST for a `Runtime` export, where you supply the render settings on the call itself via `ReportSourceRenderingSettings`. For every other `ResponseType` the GET and POST forms behave identically.",
+        "operationId": "GenerateNestApiExport",
+        "parameters": [
+          {
+            "name": "RequestId",
+            "in": "query",
+            "description": "The completed job to export. This is `NestIdentifier` in the webhook payload, and is the id returned from the nesting endpoint.",
+            "required": true,
+            "x-nullable": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "ResultId",
+            "in": "query",
+            "description": "The specific result to export. This is `ResultIdentity` in the webhook payload and in `GET /v1/nesting/status`.",
+            "required": true,
+            "x-nullable": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "ResponseType",
+            "in": "query",
+            "description": "Which export to generate. Accepts the name or the integer — see the endpoint description for the meaning of each value and the settings it requires.",
+            "required": true,
+            "x-nullable": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "Result",
+                "Render",
+                "DXF",
+                "ReportSource",
+                "RemnantExport",
+                "Runtime",
+                "PartsExport"
+              ]
+            }
+          },
+          {
+            "name": "WebHookUri",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/Uri",
+              "type": "string"
+            },
+            "description": "The URL the generated export is `POST`ed to when it is ready. Required, and must be an absolute HTTPS URL — without it the export has nowhere to be delivered.",
+            "required": true
+          }
+        ],
+        "requestBody": {
+          "$ref": "#/components/requestBodies/ReportSourceRenderingSettings"
+        },
+        "responses": {
+          "200": {
+            "description": "The export request was accepted and queued for delivery to your webhook.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NestApiExport"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The request is malformed or unsatisfiable: a missing/non-empty `RequestId` or `ResultId`, a missing or non-HTTPS `WebHookUri`, an unknown `ResponseType`, or a `ResponseType` whose required settings block was not supplied on the original nesting request. The `ResponseStatus` message explains which check failed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NestApiExport"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "API key is missing or invalid.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NestApiExport"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No completed nest was found for the supplied `RequestId`/`ResultId` for this key, or the result is no longer available for export (results are retained in memory for a limited time).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NestApiExport"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "The nest exists but is not in an exportable state — it has not completed yet, or it failed.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2473,8 +2636,8 @@
   ],
   "servers": [
     {
-      "url": "https://api.nestapi.com",
-      "description": "Production"
+      "description": "Production",
+      "url": "https://api.nestapi.com"
     }
   ],
   "components": {
@@ -2490,6 +2653,18 @@
             "application/json"
           ]
         }
+      }
+    },
+    "requestBodies": {
+      "ReportSourceRenderingSettings": {
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ReportSourceRenderingSettings"
+            }
+          }
+        },
+        "description": "Render settings for a `Runtime` export, supplied on a **POST** to this endpoint. When omitted (and always on a GET) the original nesting request's `ReportSourceSettings` are used instead; a `Runtime` export with neither is rejected. Ignored for every other `ResponseType`."
       }
     },
     "securitySchemes": {
