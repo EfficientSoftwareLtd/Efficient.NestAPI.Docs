@@ -2971,8 +2971,8 @@
   ],
   "servers": [
     {
-      "description": "Staging",
-      "url": "https://dev.api.nestapi.com"
+      "url": "https://dev.api.nestapi.com",
+      "description": "Staging"
     }
   ],
   "components": {
@@ -5571,9 +5571,6 @@
             "type": "boolean",
             "nullable": false
           },
-          "ExternalId": {
-            "type": "string"
-          },
           "FirstName": {
             "type": "string"
           },
@@ -6275,7 +6272,7 @@
               "Billing"
             ]
           },
-          "AccountExternalId": {
+          "AccountGuid": {
             "type": "string"
           },
           "PendingInvitations": {
