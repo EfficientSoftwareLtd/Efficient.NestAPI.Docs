@@ -5,6 +5,242 @@
     "version": "1.0"
   },
   "paths": {
+    "/admin/keys/{ApiKeyId}/regenerate": {
+      "post": {
+        "tags": [
+          "account"
+        ],
+        "summary": "Regenerate an API key",
+        "description": "Admin only. Rotates one of the account's keys: cancels the old secret and issues a new one, carrying the key's reference, expiry, type, parallelism, fairness weight and allowed origins forward. The old key stops working immediately, so update integrations with the returned key.\n\n**Path**\n\n- `ApiKeyId` — the id of the key to rotate.",
+        "operationId": "RegenerateApiKey",
+        "parameters": [
+          {
+            "name": "ApiKeyId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegenerateApiKey"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The rotated key, carrying a new secret.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClientKey"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "API key is missing or invalid.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClientKey"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The calling key is not an Admin key.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClientKey"
+                }
+              }
+            }
+          }
+        },
+        "deprecated": false,
+        "security": [
+          {
+            "Bearer": []
+          }
+        ]
+      },
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/Accept"
+        }
+      ]
+    },
+    "/admin/keys/{ApiKeyId}/type": {
+      "patch": {
+        "tags": [
+          "account"
+        ],
+        "summary": "Set a key's Admin/Usage type",
+        "description": "Admin only. Change a key's capability class — e.g. downgrade a key you handed to a customer from Admin to Usage.\n\n**Path & body**\n\n- `ApiKeyId` (path) — the id of the key to change.\n- `KeyType` (body) — the new capability class: `Usage` or `Admin`.",
+        "operationId": "SetApiKeyType",
+        "parameters": [
+          {
+            "name": "ApiKeyId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "KeyType",
+            "in": "query",
+            "x-nullable": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "Usage",
+                "Admin"
+              ]
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SetApiKeyType"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The updated key.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClientKey"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "API key is missing or invalid.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClientKey"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The calling key is not an Admin key.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClientKey"
+                }
+              }
+            }
+          }
+        },
+        "deprecated": false,
+        "security": [
+          {
+            "Bearer": []
+          }
+        ]
+      },
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/Accept"
+        }
+      ]
+    },
+    "/admin/keys/{ApiKeyId}/weight": {
+      "patch": {
+        "tags": [
+          "fairness"
+        ],
+        "summary": "Set a key's fairness weight",
+        "description": "Admin only. Sets the per-customer fairness weight for one of your keys.\n\n**Path & body**\n\n- `ApiKeyId` (path) — the key to weight.\n- `LineageWeight` (body) — the weight to apply; omit (null) to clear the override and fall back to the plan default.",
+        "operationId": "SetKeyFairnessWeight",
+        "parameters": [
+          {
+            "name": "ApiKeyId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "LineageWeight",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SetKeyFairnessWeight"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The key's updated fairness weight.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KeyFairnessWeightResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "API key is missing or invalid.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KeyFairnessWeightResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The calling key is not an Admin key.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KeyFairnessWeightResponse"
+                }
+              }
+            }
+          }
+        },
+        "deprecated": false,
+        "security": [
+          {
+            "Bearer": []
+          }
+        ]
+      },
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/Accept"
+        }
+      ]
+    },
     "/admin/keys/{ApiKeyId}": {
       "delete": {
         "tags": [
@@ -74,7 +310,7 @@
           "fairness"
         ],
         "summary": "Get the account's per-customer fairness configuration",
-        "description": "Admin only. Returns whether fairness/overage are enabled, the default per-key weight, and the shared-burst percentage for the account's active plan.",
+        "description": "Admin only. Returns whether fairness/overage are enabled, the default per-key weight, and the shared-burst percentage. These are account settings: they stay the same whichever plan the account is on.",
         "operationId": "GetFairnessConfig",
         "responses": {
           "200": {
@@ -120,7 +356,7 @@
           "fairness"
         ],
         "summary": "Update the account's per-customer fairness configuration",
-        "description": "Admin only. Only the fields you supply are changed. Fairness is a paid-plan feature.\n\n**Body** (all optional; omitted fields are left unchanged)\n\n- `FairnessEnabled` — turn the per-customer admission gate on or off.\n- `OverageEnabled` — let a customer over its floor+burst share spill into overage rather than be rejected.\n- `DefaultLineageWeight` — default per-key weight for keys with no override (≥ 1).\n- `BurstPercent` — percent of included minutes kept as the shared first-come burst pool (0–100).",
+        "description": "Admin only. Only the fields you supply are changed. Available on trials too, where overage has no effect until the account is on a paid plan.\n\n**Body** (all optional; omitted fields are left unchanged)\n\n- `FairnessEnabled` — turn the per-customer admission gate on or off.\n- `OverageEnabled` — keep nesting once the allowance and credit are used, billed as overage to the account's card at the end of each monthly window. Turning it on requires a card on file (400 otherwise).\n- `DefaultLineageWeight` — default per-key weight for keys with no override (≥ 1).\n- `BurstPercent` — percent of included minutes kept as the shared first-come burst pool (0–100).",
         "operationId": "SetFairnessConfig",
         "parameters": [
           {
@@ -373,242 +609,6 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ClientKey"
-                }
-              }
-            }
-          }
-        },
-        "deprecated": false,
-        "security": [
-          {
-            "Bearer": []
-          }
-        ]
-      },
-      "parameters": [
-        {
-          "$ref": "#/components/parameters/Accept"
-        }
-      ]
-    },
-    "/admin/keys/{ApiKeyId}/regenerate": {
-      "post": {
-        "tags": [
-          "account"
-        ],
-        "summary": "Regenerate an API key",
-        "description": "Admin only. Rotates one of the account's keys: cancels the old secret and issues a new one, carrying the key's reference, expiry, type, parallelism, fairness weight and allowed origins forward. The old key stops working immediately, so update integrations with the returned key.\n\n**Path**\n\n- `ApiKeyId` — the id of the key to rotate.",
-        "operationId": "RegenerateApiKey",
-        "parameters": [
-          {
-            "name": "ApiKeyId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/RegenerateApiKey"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "The rotated key, carrying a new secret.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ClientKey"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "API key is missing or invalid.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ClientKey"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "The calling key is not an Admin key.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ClientKey"
-                }
-              }
-            }
-          }
-        },
-        "deprecated": false,
-        "security": [
-          {
-            "Bearer": []
-          }
-        ]
-      },
-      "parameters": [
-        {
-          "$ref": "#/components/parameters/Accept"
-        }
-      ]
-    },
-    "/admin/keys/{ApiKeyId}/type": {
-      "patch": {
-        "tags": [
-          "account"
-        ],
-        "summary": "Set a key's Admin/Usage type",
-        "description": "Admin only. Change a key's capability class — e.g. downgrade a key you handed to a customer from Admin to Usage.\n\n**Path & body**\n\n- `ApiKeyId` (path) — the id of the key to change.\n- `KeyType` (body) — the new capability class: `Usage` or `Admin`.",
-        "operationId": "SetApiKeyType",
-        "parameters": [
-          {
-            "name": "ApiKeyId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "KeyType",
-            "in": "query",
-            "x-nullable": false,
-            "schema": {
-              "type": "string",
-              "enum": [
-                "Usage",
-                "Admin"
-              ]
-            }
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/SetApiKeyType"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "The updated key.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ClientKey"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "API key is missing or invalid.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ClientKey"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "The calling key is not an Admin key.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ClientKey"
-                }
-              }
-            }
-          }
-        },
-        "deprecated": false,
-        "security": [
-          {
-            "Bearer": []
-          }
-        ]
-      },
-      "parameters": [
-        {
-          "$ref": "#/components/parameters/Accept"
-        }
-      ]
-    },
-    "/admin/keys/{ApiKeyId}/weight": {
-      "patch": {
-        "tags": [
-          "fairness"
-        ],
-        "summary": "Set a key's fairness weight",
-        "description": "Admin only. Sets the per-customer fairness weight for one of your keys.\n\n**Path & body**\n\n- `ApiKeyId` (path) — the key to weight.\n- `LineageWeight` (body) — the weight to apply; omit (null) to clear the override and fall back to the plan default.",
-        "operationId": "SetKeyFairnessWeight",
-        "parameters": [
-          {
-            "name": "ApiKeyId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "LineageWeight",
-            "in": "query",
-            "schema": {
-              "type": "integer",
-              "format": "int32"
-            }
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/SetKeyFairnessWeight"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "The key's updated fairness weight.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/KeyFairnessWeightResponse"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "API key is missing or invalid.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/KeyFairnessWeightResponse"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "The calling key is not an Admin key.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/KeyFairnessWeightResponse"
                 }
               }
             }
@@ -2157,6 +2157,341 @@
         }
       ]
     },
+    "/account/membership": {
+      "get": {
+        "tags": [
+          "account"
+        ],
+        "operationId": "GetMyAccountMembership",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MyAccountMembership"
+                }
+              }
+            }
+          }
+        },
+        "deprecated": false,
+        "security": [
+          {
+            "Bearer": []
+          }
+        ]
+      },
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/Accept"
+        }
+      ]
+    },
+    "/account/members": {
+      "get": {
+        "tags": [
+          "account"
+        ],
+        "operationId": "GetAccountMembers",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AccountMembersResponse"
+                }
+              }
+            }
+          }
+        },
+        "deprecated": false,
+        "security": [
+          {
+            "Bearer": []
+          }
+        ]
+      },
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/Accept"
+        }
+      ]
+    },
+    "/account/billing-user": {
+      "delete": {
+        "tags": [
+          "account"
+        ],
+        "operationId": "RemoveBillingUser",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RemoveMemberResponse"
+                }
+              }
+            }
+          }
+        },
+        "deprecated": false,
+        "security": [
+          {
+            "Bearer": []
+          }
+        ]
+      },
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/Accept"
+        }
+      ]
+    },
+    "/account/billing-user/invitations": {
+      "post": {
+        "tags": [
+          "account"
+        ],
+        "operationId": "InviteBillingUser",
+        "parameters": [
+          {
+            "name": "Email",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InviteBillingUser"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AccountInvitationResponse"
+                }
+              }
+            }
+          }
+        },
+        "deprecated": false,
+        "security": [
+          {
+            "Bearer": []
+          }
+        ]
+      },
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/Accept"
+        }
+      ]
+    },
+    "/account/administrator/invitations": {
+      "post": {
+        "tags": [
+          "account"
+        ],
+        "operationId": "InviteAdministrator",
+        "parameters": [
+          {
+            "name": "Email",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InviteAdministrator"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AccountInvitationResponse"
+                }
+              }
+            }
+          }
+        },
+        "deprecated": false,
+        "security": [
+          {
+            "Bearer": []
+          }
+        ]
+      },
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/Accept"
+        }
+      ]
+    },
+    "/account/invitations/{InvitationId}": {
+      "delete": {
+        "tags": [
+          "account"
+        ],
+        "operationId": "CancelAccountInvitation",
+        "parameters": [
+          {
+            "name": "InvitationId",
+            "in": "path",
+            "required": true,
+            "x-nullable": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AccountInvitationInfo"
+                }
+              }
+            }
+          }
+        },
+        "deprecated": false,
+        "security": [
+          {
+            "Bearer": []
+          }
+        ]
+      },
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/Accept"
+        }
+      ]
+    },
+    "/account/invitations/{InvitationId}/accept": {
+      "post": {
+        "tags": [
+          "account"
+        ],
+        "operationId": "AcceptAccountInvitation",
+        "parameters": [
+          {
+            "name": "InvitationId",
+            "in": "path",
+            "required": true,
+            "x-nullable": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AcceptAccountInvitation"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MyAccountMembership"
+                }
+              }
+            }
+          }
+        },
+        "deprecated": false,
+        "security": [
+          {
+            "Bearer": []
+          }
+        ]
+      },
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/Accept"
+        }
+      ]
+    },
+    "/account/invitations/{InvitationId}/decline": {
+      "post": {
+        "tags": [
+          "account"
+        ],
+        "operationId": "DeclineAccountInvitation",
+        "parameters": [
+          {
+            "name": "InvitationId",
+            "in": "path",
+            "required": true,
+            "x-nullable": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DeclineAccountInvitation"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MyAccountMembership"
+                }
+              }
+            }
+          }
+        },
+        "deprecated": false,
+        "security": [
+          {
+            "Bearer": []
+          }
+        ]
+      },
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/Accept"
+        }
+      ]
+    },
     "/apikeys/{KeyId}/origins": {
       "get": {
         "tags": [
@@ -2680,6 +3015,48 @@
         "description": "Object",
         "type": "object"
       },
+      "RegenerateApiKey": {
+        "title": "RegenerateApiKey",
+        "properties": {
+          "ApiKeyId": {
+            "type": "string"
+          }
+        },
+        "description": "RegenerateApiKey",
+        "type": "object"
+      },
+      "SetApiKeyType": {
+        "title": "SetApiKeyType",
+        "properties": {
+          "ApiKeyId": {
+            "type": "string"
+          },
+          "KeyType": {
+            "type": "string",
+            "default": "Usage",
+            "enum": [
+              "Usage",
+              "Admin"
+            ]
+          }
+        },
+        "description": "SetApiKeyType",
+        "type": "object"
+      },
+      "SetKeyFairnessWeight": {
+        "title": "SetKeyFairnessWeight",
+        "properties": {
+          "ApiKeyId": {
+            "type": "string"
+          },
+          "LineageWeight": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "description": "SetKeyFairnessWeight",
+        "type": "object"
+      },
       "SetFairnessConfig": {
         "title": "SetFairnessConfig",
         "properties": {
@@ -2733,48 +3110,6 @@
           }
         },
         "description": "CreateApiKey",
-        "type": "object"
-      },
-      "RegenerateApiKey": {
-        "title": "RegenerateApiKey",
-        "properties": {
-          "ApiKeyId": {
-            "type": "string"
-          }
-        },
-        "description": "RegenerateApiKey",
-        "type": "object"
-      },
-      "SetApiKeyType": {
-        "title": "SetApiKeyType",
-        "properties": {
-          "ApiKeyId": {
-            "type": "string"
-          },
-          "KeyType": {
-            "type": "string",
-            "default": "Usage",
-            "enum": [
-              "Usage",
-              "Admin"
-            ]
-          }
-        },
-        "description": "SetApiKeyType",
-        "type": "object"
-      },
-      "SetKeyFairnessWeight": {
-        "title": "SetKeyFairnessWeight",
-        "properties": {
-          "ApiKeyId": {
-            "type": "string"
-          },
-          "LineageWeight": {
-            "type": "integer",
-            "format": "int32"
-          }
-        },
-        "description": "SetKeyFairnessWeight",
         "type": "object"
       },
       "FetchNestingResult": {
@@ -4757,6 +5092,48 @@
         "description": "Assembly<Base64Part>",
         "type": "object"
       },
+      "InviteBillingUser": {
+        "title": "InviteBillingUser",
+        "properties": {
+          "Email": {
+            "type": "string"
+          }
+        },
+        "description": "InviteBillingUser",
+        "type": "object"
+      },
+      "InviteAdministrator": {
+        "title": "InviteAdministrator",
+        "properties": {
+          "Email": {
+            "type": "string"
+          }
+        },
+        "description": "InviteAdministrator",
+        "type": "object"
+      },
+      "AcceptAccountInvitation": {
+        "title": "AcceptAccountInvitation",
+        "properties": {
+          "InvitationId": {
+            "type": "string",
+            "nullable": false
+          }
+        },
+        "description": "AcceptAccountInvitation",
+        "type": "object"
+      },
+      "DeclineAccountInvitation": {
+        "title": "DeclineAccountInvitation",
+        "properties": {
+          "InvitationId": {
+            "type": "string",
+            "nullable": false
+          }
+        },
+        "description": "DeclineAccountInvitation",
+        "type": "object"
+      },
       "AddKeyAllowedOrigin": {
         "title": "AddKeyAllowedOrigin",
         "properties": {
@@ -4787,6 +5164,178 @@
           "type": "string"
         },
         "description": "Dictionary<String,String>",
+        "type": "object"
+      },
+      "SuccessfulNest": {
+        "title": "SuccessfulNest",
+        "properties": {
+          "Id": {
+            "type": "string",
+            "nullable": false
+          },
+          "NestApiKeyId": {
+            "type": "string"
+          },
+          "NestingTime": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": false
+          },
+          "CreatedDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": false
+          },
+          "CompletedDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "NumberOfParts": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": false
+          },
+          "NumberOfNests": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": false
+          }
+        },
+        "description": "SuccessfulNest",
+        "type": "object"
+      },
+      "FailedNest": {
+        "title": "FailedNest",
+        "properties": {
+          "Id": {
+            "type": "string",
+            "nullable": false
+          },
+          "NestApiKeyId": {
+            "type": "string"
+          },
+          "NestingTime": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": false
+          },
+          "CreatedDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": false
+          },
+          "ErrorDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "NumberOfParts": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": false
+          },
+          "NumberOfNests": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": false
+          },
+          "ErrorReason": {
+            "type": "string"
+          }
+        },
+        "description": "FailedNest",
+        "type": "object"
+      },
+      "AccountInvitationResponse": {
+        "title": "AccountInvitationResponse",
+        "properties": {
+          "Invitation": {
+            "$ref": "#/components/schemas/AccountInvitationInfo"
+          },
+          "EmailSent": {
+            "type": "boolean",
+            "nullable": false
+          }
+        },
+        "description": "AccountInvitationResponse",
+        "type": "object"
+      },
+      "AccountInvitationInfo": {
+        "title": "AccountInvitationInfo",
+        "properties": {
+          "Id": {
+            "type": "string",
+            "nullable": false
+          },
+          "Email": {
+            "type": "string"
+          },
+          "Role": {
+            "type": "string",
+            "default": "Administrator",
+            "enum": [
+              "Administrator",
+              "Billing"
+            ]
+          },
+          "Status": {
+            "type": "string",
+            "default": "Pending",
+            "enum": [
+              "Pending",
+              "Accepted",
+              "Declined",
+              "Cancelled",
+              "Expired"
+            ]
+          },
+          "InvitedByType": {
+            "type": "string",
+            "default": "AccountAdministrator",
+            "enum": [
+              "AccountAdministrator",
+              "Operator",
+              "Invitee",
+              "System"
+            ]
+          },
+          "InvitedById": {
+            "type": "string"
+          },
+          "Note": {
+            "type": "string"
+          },
+          "CreatedDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": false
+          },
+          "ExpiresDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": false
+          },
+          "StatusChangedDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "StatusChangedByType": {
+            "type": "string",
+            "default": "AccountAdministrator",
+            "enum": [
+              "AccountAdministrator",
+              "Operator",
+              "Invitee",
+              "System"
+            ]
+          },
+          "StatusChangedById": {
+            "type": "string"
+          },
+          "StatusNote": {
+            "type": "string"
+          }
+        },
+        "description": "AccountInvitationInfo",
         "type": "object"
       },
       "ClientKey": {
@@ -4833,6 +5382,137 @@
           }
         },
         "description": "ClientKey",
+        "type": "object"
+      },
+      "FairnessUsageResponse": {
+        "title": "FairnessUsageResponse",
+        "properties": {
+          "FairnessEnabled": {
+            "description": "Whether the second (per-customer) admission gate is active for this account.",
+            "type": "boolean",
+            "nullable": false
+          },
+          "OverageEnabled": {
+            "description": "Whether over-share nests spill into overage rather than being rejected.",
+            "type": "boolean",
+            "nullable": false
+          },
+          "IncludedMinutes": {
+            "description": "The account's included nesting minutes for the current period.",
+            "type": "number",
+            "format": "double",
+            "nullable": false
+          },
+          "SharedBurstMinutes": {
+            "description": "The shared, first-come burst pool (a fixed fraction of the included minutes) any key may draw from once over its own floor.",
+            "type": "number",
+            "format": "double",
+            "nullable": false
+          },
+          "Keys": {
+            "description": "One row per active API key (customer) on the account.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FairnessKeyUsage"
+            }
+          }
+        },
+        "description": "FairnessUsageResponse",
+        "type": "object"
+      },
+      "FairnessKeyUsage": {
+        "title": "FairnessKeyUsage",
+        "properties": {
+          "ApiKeyId": {
+            "description": "Your API key id — the customer this row is for. (The internal lineage id is never exposed.)",
+            "type": "string"
+          },
+          "Weight": {
+            "description": "Fairness weight applied to this key (per-key override, else the plan default).",
+            "type": "integer",
+            "format": "int32",
+            "nullable": false
+          },
+          "ConsumedMinutes": {
+            "description": "Minutes settled within the account's included budget this period.",
+            "type": "number",
+            "format": "double",
+            "nullable": false
+          },
+          "ReservedMinutes": {
+            "description": "Minutes currently reserved for in-flight nests this period.",
+            "type": "number",
+            "format": "double",
+            "nullable": false
+          },
+          "OverageMinutes": {
+            "description": "Minutes this key ran beyond the account's included budget (overage), attributed to it.",
+            "type": "number",
+            "format": "double",
+            "nullable": false
+          },
+          "EffectiveFloorMinutes": {
+            "description": "This key's guaranteed, reserved floor (weight / Σweights × the reserved floor pool). It can also draw from the shared burst pool on top of this.",
+            "type": "number",
+            "format": "double",
+            "nullable": false
+          },
+          "Sizing": {
+            "description": "Right-sizing hint: \"undersized\" (hitting overage — needs more), \"oversized\" (chronic forfeiture — has too much), or \"balanced\".",
+            "type": "string"
+          }
+        },
+        "description": "FairnessKeyUsage",
+        "type": "object"
+      },
+      "FairnessConfigResponse": {
+        "title": "FairnessConfigResponse",
+        "properties": {
+          "FairnessEnabled": {
+            "description": "Whether the per-customer admission gate is active for the account.",
+            "type": "boolean",
+            "nullable": false
+          },
+          "OverageEnabled": {
+            "description": "Whether over-share nests spill into overage rather than being rejected.",
+            "type": "boolean",
+            "nullable": false
+          },
+          "DefaultLineageWeight": {
+            "description": "Default per-key fairness weight for keys with no override.",
+            "type": "integer",
+            "format": "int32",
+            "nullable": false
+          },
+          "BurstPercent": {
+            "description": "Percent of included minutes kept as the shared first-come burst pool.",
+            "type": "integer",
+            "format": "int32",
+            "nullable": false
+          },
+          "HasCardOnFile": {
+            "description": "Whether the account has a payment card on file. Overage can only be turned on with one.",
+            "type": "boolean",
+            "nullable": false
+          }
+        },
+        "description": "FairnessConfigResponse",
+        "type": "object"
+      },
+      "KeyFairnessWeightResponse": {
+        "title": "KeyFairnessWeightResponse",
+        "properties": {
+          "ApiKeyId": {
+            "description": "The key this weight applies to.",
+            "type": "string"
+          },
+          "LineageWeight": {
+            "description": "The key's fairness weight, or null when it falls back to the plan default.",
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "description": "KeyFairnessWeightResponse",
         "type": "object"
       },
       "NestingAccountBalance": {
@@ -4947,48 +5627,25 @@
         "description": "UserSubscriptionStatus",
         "type": "object"
       },
-      "FairnessConfigResponse": {
-        "title": "FairnessConfigResponse",
+      "AccountMemberInfo": {
+        "title": "AccountMemberInfo",
         "properties": {
-          "FairnessEnabled": {
-            "description": "Whether the per-customer admission gate is active for the account.",
-            "type": "boolean",
-            "nullable": false
-          },
-          "OverageEnabled": {
-            "description": "Whether over-share nests spill into overage rather than being rejected.",
-            "type": "boolean",
-            "nullable": false
-          },
-          "DefaultLineageWeight": {
-            "description": "Default per-key fairness weight for keys with no override.",
-            "type": "integer",
-            "format": "int32",
-            "nullable": false
-          },
-          "BurstPercent": {
-            "description": "Percent of included minutes kept as the shared first-come burst pool.",
-            "type": "integer",
-            "format": "int32",
-            "nullable": false
-          }
-        },
-        "description": "FairnessConfigResponse",
-        "type": "object"
-      },
-      "SuccessfulNest": {
-        "title": "SuccessfulNest",
-        "properties": {
-          "Id": {
+          "Role": {
             "type": "string",
-            "nullable": false
+            "default": "Administrator",
+            "enum": [
+              "Administrator",
+              "Billing"
+            ]
           },
-          "NestApiKeyId": {
+          "Name": {
             "type": "string"
           },
-          "NestingTime": {
-            "type": "integer",
-            "format": "int32",
+          "Email": {
+            "type": "string"
+          },
+          "IsYou": {
+            "type": "boolean",
             "nullable": false
           },
           "CreatedDate": {
@@ -4996,160 +5653,22 @@
             "format": "date-time",
             "nullable": false
           },
-          "CompletedDate": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "NumberOfParts": {
-            "type": "integer",
-            "format": "int64",
-            "nullable": false
-          },
-          "NumberOfNests": {
-            "type": "integer",
-            "format": "int64",
-            "nullable": false
-          }
-        },
-        "description": "SuccessfulNest",
-        "type": "object"
-      },
-      "FailedNest": {
-        "title": "FailedNest",
-        "properties": {
-          "Id": {
-            "type": "string",
-            "nullable": false
-          },
-          "NestApiKeyId": {
-            "type": "string"
-          },
-          "NestingTime": {
-            "type": "integer",
-            "format": "int32",
-            "nullable": false
-          },
-          "CreatedDate": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": false
-          },
-          "ErrorDate": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "NumberOfParts": {
-            "type": "integer",
-            "format": "int64",
-            "nullable": false
-          },
-          "NumberOfNests": {
-            "type": "integer",
-            "format": "int64",
-            "nullable": false
-          },
-          "ErrorReason": {
+          "Subject": {
             "type": "string"
           }
         },
-        "description": "FailedNest",
+        "description": "AccountMemberInfo",
         "type": "object"
       },
-      "FairnessUsageResponse": {
-        "title": "FairnessUsageResponse",
+      "RemoveMemberResponse": {
+        "title": "RemoveMemberResponse",
         "properties": {
-          "FairnessEnabled": {
-            "description": "Whether the second (per-customer) admission gate is active for this account.",
+          "Removed": {
             "type": "boolean",
             "nullable": false
-          },
-          "OverageEnabled": {
-            "description": "Whether over-share nests spill into overage rather than being rejected.",
-            "type": "boolean",
-            "nullable": false
-          },
-          "IncludedMinutes": {
-            "description": "The account's included nesting minutes for the current period.",
-            "type": "number",
-            "format": "double",
-            "nullable": false
-          },
-          "SharedBurstMinutes": {
-            "description": "The shared, first-come burst pool (a fixed fraction of the included minutes) any key may draw from once over its own floor.",
-            "type": "number",
-            "format": "double",
-            "nullable": false
-          },
-          "Keys": {
-            "description": "One row per active API key (customer) on the account.",
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/FairnessKeyUsage"
-            }
           }
         },
-        "description": "FairnessUsageResponse",
-        "type": "object"
-      },
-      "FairnessKeyUsage": {
-        "title": "FairnessKeyUsage",
-        "properties": {
-          "ApiKeyId": {
-            "description": "Your API key id — the customer this row is for. (The internal lineage id is never exposed.)",
-            "type": "string"
-          },
-          "Weight": {
-            "description": "Fairness weight applied to this key (per-key override, else the plan default).",
-            "type": "integer",
-            "format": "int32",
-            "nullable": false
-          },
-          "ConsumedMinutes": {
-            "description": "Minutes settled within the account's included budget this period.",
-            "type": "number",
-            "format": "double",
-            "nullable": false
-          },
-          "ReservedMinutes": {
-            "description": "Minutes currently reserved for in-flight nests this period.",
-            "type": "number",
-            "format": "double",
-            "nullable": false
-          },
-          "OverageMinutes": {
-            "description": "Minutes this key ran beyond the account's included budget (overage), attributed to it.",
-            "type": "number",
-            "format": "double",
-            "nullable": false
-          },
-          "EffectiveFloorMinutes": {
-            "description": "This key's guaranteed, reserved floor (weight / Σweights × the reserved floor pool). It can also draw from the shared burst pool on top of this.",
-            "type": "number",
-            "format": "double",
-            "nullable": false
-          },
-          "Sizing": {
-            "description": "Right-sizing hint: \"undersized\" (hitting overage — needs more), \"oversized\" (chronic forfeiture — has too much), or \"balanced\".",
-            "type": "string"
-          }
-        },
-        "description": "FairnessKeyUsage",
-        "type": "object"
-      },
-      "KeyFairnessWeightResponse": {
-        "title": "KeyFairnessWeightResponse",
-        "properties": {
-          "ApiKeyId": {
-            "description": "The key this weight applies to.",
-            "type": "string"
-          },
-          "LineageWeight": {
-            "description": "The key's fairness weight, or null when it falls back to the plan default.",
-            "type": "integer",
-            "format": "int32"
-          }
-        },
-        "description": "KeyFairnessWeightResponse",
+        "description": "RemoveMemberResponse",
         "type": "object"
       },
       "NestingStatusResponse": {
@@ -5743,6 +6262,95 @@
           }
         },
         "description": "ValidateApiKeyResponse",
+        "type": "object"
+      },
+      "MyAccountMembership": {
+        "title": "MyAccountMembership",
+        "properties": {
+          "Role": {
+            "type": "string",
+            "default": "Administrator",
+            "enum": [
+              "Administrator",
+              "Billing"
+            ]
+          },
+          "AccountExternalId": {
+            "type": "string"
+          },
+          "PendingInvitations": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/InvitationForMe"
+            }
+          }
+        },
+        "description": "MyAccountMembership",
+        "type": "object"
+      },
+      "InvitationForMe": {
+        "title": "InvitationForMe",
+        "properties": {
+          "Id": {
+            "type": "string",
+            "nullable": false
+          },
+          "Role": {
+            "type": "string",
+            "default": "Administrator",
+            "enum": [
+              "Administrator",
+              "Billing"
+            ]
+          },
+          "InvitedByType": {
+            "type": "string",
+            "default": "AccountAdministrator",
+            "enum": [
+              "AccountAdministrator",
+              "Operator",
+              "Invitee",
+              "System"
+            ]
+          },
+          "InvitedByName": {
+            "type": "string"
+          },
+          "IsToYourAccount": {
+            "type": "boolean",
+            "nullable": false
+          },
+          "CreatedDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": false
+          },
+          "ExpiresDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": false
+          }
+        },
+        "description": "InvitationForMe",
+        "type": "object"
+      },
+      "AccountMembersResponse": {
+        "title": "AccountMembersResponse",
+        "properties": {
+          "Members": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AccountMemberInfo"
+            }
+          },
+          "PendingInvitations": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AccountInvitationInfo"
+            }
+          }
+        },
+        "description": "AccountMembersResponse",
         "type": "object"
       },
       "CachedNestingExportResponse": {
