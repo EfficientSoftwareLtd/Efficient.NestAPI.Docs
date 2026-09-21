@@ -5564,9 +5564,6 @@
       "PublicUserProfile": {
         "title": "PublicUserProfile",
         "properties": {
-          "Id": {
-            "type": "string"
-          },
           "RequiresPayment": {
             "type": "boolean",
             "nullable": false
@@ -6252,10 +6249,6 @@
             "description": "`true` when the calling API key is active.",
             "type": "boolean",
             "nullable": false
-          },
-          "UserId": {
-            "description": "The id of the account the key belongs to.",
-            "type": "string"
           }
         },
         "description": "ValidateApiKeyResponse",
