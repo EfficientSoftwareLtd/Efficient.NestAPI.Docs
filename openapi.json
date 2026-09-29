@@ -3150,8 +3150,8 @@
   ],
   "servers": [
     {
-      "description": "Staging",
-      "url": "https://dev.api.nestapi.com"
+      "url": "https://dev.api.nestapi.com",
+      "description": "Staging"
     }
   ],
   "components": {
@@ -4518,6 +4518,10 @@
           "QuoteNestingMode": {
             "type": "string"
           },
+          "FiniteNesting": {
+            "type": "boolean",
+            "nullable": false
+          },
           "SimpleRemnantPreference": {
             "type": "string"
           },
@@ -4812,6 +4816,10 @@
           },
           "QuoteNestingMode": {
             "type": "string"
+          },
+          "FiniteNesting": {
+            "type": "boolean",
+            "nullable": false
           },
           "SimpleRemnantPreference": {
             "type": "string"
