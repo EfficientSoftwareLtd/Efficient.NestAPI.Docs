@@ -4142,12 +4142,14 @@
         "title": "Assembly`1",
         "properties": {
           "Parts": {
+            "description": "Parts that make up the assembly",
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/ParametricPart"
             }
           },
           "Quantity": {
+            "description": "Quantity of this assembly to be considered during nesting process",
             "type": "integer",
             "format": "int32",
             "nullable": false
@@ -4458,12 +4460,14 @@
         "title": "Assembly`1",
         "properties": {
           "Parts": {
+            "description": "Parts that make up the assembly",
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/Part"
             }
           },
           "Quantity": {
+            "description": "Quantity of this assembly to be considered during nesting process",
             "type": "integer",
             "format": "int32",
             "nullable": false
@@ -4507,52 +4511,92 @@
       },
       "QuoteNestingRequest_QuotePart_QuoteSheet_": {
         "title": "QuoteNestingRequest`2",
+        "required": [
+          "Parts",
+          "Sheets"
+        ],
         "properties": {
           "ExternalRequestId": {
+            "description": "Optional client-defined identifier for the request, returned in the response.",
             "type": "string"
           },
           "ReportIntermediateResults": {
+            "description": "True (the default) to receive improved results as they are found, as well as each nest's final result.",
             "type": "boolean",
             "nullable": false
           },
           "QuoteNestingMode": {
-            "type": "string"
+            "description": "How the parts are nested. Values: `IrregularTogether` — Parts of the same material, thickness and cutting process nested together on each sheet size; `IrregularSeparate` — Each part nested on its own on each sheet size; `FillSheetRect` — Each part's bounding rectangle repeated across one sheet of each size, to see how many fit; `FillSheetIrregular` — Each part's true shape repeated across one sheet of each size, to see how many fit.",
+            "type": "string",
+            "default": "IrregularTogether",
+            "enum": [
+              "IrregularTogether",
+              "IrregularSeparate",
+              "FillSheetRect",
+              "FillSheetIrregular"
+            ]
           },
           "FiniteNesting": {
+            "description": "Nest on the sheets supplied, at their quantities, instead of quoting. Parts that do not fit are unplaced, and no remnants or AssignedSheetCount are calculated. Irregular modes only; parts may not set LimitedToSheets.",
             "type": "boolean",
             "nullable": false
           },
           "PartSpacingOverrideAppliesToWholeNest": {
+            "description": "True (the default): the largest PartSpacingOverride in a nest is used for the whole nest, in place of the sheet's PartSpacing. False: each override applies to its own part, as in standard nesting.",
             "type": "boolean",
             "nullable": false
           },
           "SimpleRemnantPreference": {
-            "type": "string"
+            "description": "How offcut is taken off used sheets. Irregular modes only; not used with FiniteNesting. Values: `StraightLine` — A straight cut, horizontal or vertical, beyond the placed parts (largest chosen automatically); `CoveringBoundingRect` — Everything outside the bounding rectangle of the placed parts. Can produce L shaped remnants; `None` — No remnants; used sheets count as whole sheets.",
+            "type": "string",
+            "default": "StraightLine",
+            "enum": [
+              "StraightLine",
+              "CoveringBoundingRect",
+              "None"
+            ]
           },
           "ScrapAssignmentScheme": {
-            "type": "string"
+            "description": "How each nest's sheet usage is shared among its parts (AssignedSheetCount). Values: `AreaProportion` — Scrap shared in proportion to part area; `AreaProportionWithNonRectPenalty` — As AreaProportion, but weighted towards less rectangular parts; `FillSingleSheet` — Requested quantity divided by the number that fit on one sheet. For the fill-sheet modes.",
+            "type": "string",
+            "default": "AreaProportion",
+            "enum": [
+              "AreaProportion",
+              "AreaProportionWithNonRectPenalty",
+              "FillSingleSheet"
+            ]
           },
           "TimePerNestingSeconds": {
+            "description": "The maximum time in seconds for each individual nest. A request can run several nests.",
             "type": "integer",
             "format": "int32",
             "nullable": false
           },
           "Parts": {
+            "description": "The parts to nest. Each needs a sheet of the same Material and Thickness.",
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/QuotePart"
             }
           },
           "Sheets": {
+            "description": "Sheets to be considered for nesting of the Parts. Quantity is ignored unless FiniteNesting is set.",
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/QuoteSheet"
             }
           },
           "MeasurementUnits": {
-            "type": "string"
+            "description": "Units of the request's dimensions and of the response's InUnits fields. Values: `Millimetres` — Millimetres; `Inches` — Inches.",
+            "type": "string",
+            "default": "Millimetres",
+            "enum": [
+              "Millimetres",
+              "Inches"
+            ]
           },
           "IncludeRenderInResults": {
+            "description": "True (the default) to include an overview rendering in results. Requires OverviewRenderSettings.",
             "type": "boolean",
             "nullable": false
           },
@@ -4575,7 +4619,7 @@
             "$ref": "#/components/schemas/PartExportSettings"
           }
         },
-        "description": "QuoteNestingRequest<QuotePart,QuoteSheet>",
+        "description": "A quote nesting request: a fast material estimate made by nesting the parts on each candidate sheet size.",
         "type": "object"
       },
       "QuotePart": {
@@ -4818,52 +4862,92 @@
       },
       "QuoteNestingRequest_Base64QuotePart_Base64QuoteSheet_": {
         "title": "QuoteNestingRequest`2",
+        "required": [
+          "Parts",
+          "Sheets"
+        ],
         "properties": {
           "ExternalRequestId": {
+            "description": "Optional client-defined identifier for the request, returned in the response.",
             "type": "string"
           },
           "ReportIntermediateResults": {
+            "description": "True (the default) to receive improved results as they are found, as well as each nest's final result.",
             "type": "boolean",
             "nullable": false
           },
           "QuoteNestingMode": {
-            "type": "string"
+            "description": "How the parts are nested. Values: `IrregularTogether` — Parts of the same material, thickness and cutting process nested together on each sheet size; `IrregularSeparate` — Each part nested on its own on each sheet size; `FillSheetRect` — Each part's bounding rectangle repeated across one sheet of each size, to see how many fit; `FillSheetIrregular` — Each part's true shape repeated across one sheet of each size, to see how many fit.",
+            "type": "string",
+            "default": "IrregularTogether",
+            "enum": [
+              "IrregularTogether",
+              "IrregularSeparate",
+              "FillSheetRect",
+              "FillSheetIrregular"
+            ]
           },
           "FiniteNesting": {
+            "description": "Nest on the sheets supplied, at their quantities, instead of quoting. Parts that do not fit are unplaced, and no remnants or AssignedSheetCount are calculated. Irregular modes only; parts may not set LimitedToSheets.",
             "type": "boolean",
             "nullable": false
           },
           "PartSpacingOverrideAppliesToWholeNest": {
+            "description": "True (the default): the largest PartSpacingOverride in a nest is used for the whole nest, in place of the sheet's PartSpacing. False: each override applies to its own part, as in standard nesting.",
             "type": "boolean",
             "nullable": false
           },
           "SimpleRemnantPreference": {
-            "type": "string"
+            "description": "How offcut is taken off used sheets. Irregular modes only; not used with FiniteNesting. Values: `StraightLine` — A straight cut, horizontal or vertical, beyond the placed parts (largest chosen automatically); `CoveringBoundingRect` — Everything outside the bounding rectangle of the placed parts. Can produce L shaped remnants; `None` — No remnants; used sheets count as whole sheets.",
+            "type": "string",
+            "default": "StraightLine",
+            "enum": [
+              "StraightLine",
+              "CoveringBoundingRect",
+              "None"
+            ]
           },
           "ScrapAssignmentScheme": {
-            "type": "string"
+            "description": "How each nest's sheet usage is shared among its parts (AssignedSheetCount). Values: `AreaProportion` — Scrap shared in proportion to part area; `AreaProportionWithNonRectPenalty` — As AreaProportion, but weighted towards less rectangular parts; `FillSingleSheet` — Requested quantity divided by the number that fit on one sheet. For the fill-sheet modes.",
+            "type": "string",
+            "default": "AreaProportion",
+            "enum": [
+              "AreaProportion",
+              "AreaProportionWithNonRectPenalty",
+              "FillSingleSheet"
+            ]
           },
           "TimePerNestingSeconds": {
+            "description": "The maximum time in seconds for each individual nest. A request can run several nests.",
             "type": "integer",
             "format": "int32",
             "nullable": false
           },
           "Parts": {
+            "description": "The parts to nest. Each needs a sheet of the same Material and Thickness.",
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/Base64QuotePart"
             }
           },
           "Sheets": {
+            "description": "Sheets to be considered for nesting of the Parts. Quantity is ignored unless FiniteNesting is set.",
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/Base64QuoteSheet"
             }
           },
           "MeasurementUnits": {
-            "type": "string"
+            "description": "Units of the request's dimensions and of the response's InUnits fields. Values: `Millimetres` — Millimetres; `Inches` — Inches.",
+            "type": "string",
+            "default": "Millimetres",
+            "enum": [
+              "Millimetres",
+              "Inches"
+            ]
           },
           "IncludeRenderInResults": {
+            "description": "True (the default) to include an overview rendering in results. Requires OverviewRenderSettings.",
             "type": "boolean",
             "nullable": false
           },
@@ -4886,7 +4970,7 @@
             "$ref": "#/components/schemas/PartExportSettings"
           }
         },
-        "description": "QuoteNestingRequest<Base64QuotePart,Base64QuoteSheet>",
+        "description": "A quote nesting request: a fast material estimate made by nesting the parts on each candidate sheet size.",
         "type": "object"
       },
       "Base64QuotePart": {
@@ -5533,12 +5617,14 @@
         "title": "Assembly`1",
         "properties": {
           "Parts": {
+            "description": "Parts that make up the assembly",
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/Base64Part"
             }
           },
           "Quantity": {
+            "description": "Quantity of this assembly to be considered during nesting process",
             "type": "integer",
             "format": "int32",
             "nullable": false
