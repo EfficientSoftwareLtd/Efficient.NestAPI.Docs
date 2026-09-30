@@ -3559,7 +3559,7 @@
         "title": "NestSettings",
         "properties": {
           "PartSpacing": {
-            "description": "Part to part spacing value to be used in the nesting process, per part spacing override values will overrule these during the nesting process if present",
+            "description": "Part to part spacing value to be used in the nesting process. A part can override it with PartSpacingOverride.",
             "type": "number",
             "format": "double",
             "nullable": false
@@ -4010,7 +4010,7 @@
             "nullable": false
           },
           "PartSpacingOverride": {
-            "description": "Set this value to allow the part to dictate its own spacing requirements, outside of the general nesting settings, during nesting. Optional.",
+            "description": "This part's own spacing, in place of NestSettings.PartSpacing. Neighbouring parts are spaced at the average of their spacings; an override below NestSettings.PartSpacing has no effect. For quote nesting see PartSpacingOverrideAppliesToWholeNest. Optional.",
             "type": "number",
             "format": "double"
           },
@@ -4402,7 +4402,7 @@
             "nullable": false
           },
           "PartSpacingOverride": {
-            "description": "Set this value to allow the part to dictate its own spacing requirements, outside of the general nesting settings, during nesting. Optional.",
+            "description": "This part's own spacing, in place of NestSettings.PartSpacing. Neighbouring parts are spaced at the average of their spacings; an override below NestSettings.PartSpacing has no effect. For quote nesting see PartSpacingOverrideAppliesToWholeNest. Optional.",
             "type": "number",
             "format": "double"
           },
@@ -4522,6 +4522,10 @@
             "type": "boolean",
             "nullable": false
           },
+          "PartSpacingOverrideAppliesToWholeNest": {
+            "type": "boolean",
+            "nullable": false
+          },
           "SimpleRemnantPreference": {
             "type": "string"
           },
@@ -4578,15 +4582,19 @@
         "title": "QuotePart",
         "properties": {
           "Material": {
+            "description": "Material of the part. Parts are nested only on sheets of the same Material and Thickness.",
             "type": "string"
           },
           "Thickness": {
+            "description": "Thickness of the part. Must match a sheet's Thickness exactly, as text (\"3\" does not match \"3.0\").",
             "type": "string"
           },
           "CuttingProcess": {
+            "description": "Cutting process. Parts with different cutting processes are nested separately. Optional.",
             "type": "string"
           },
           "LimitedToSheets": {
+            "description": "Identifiers of the only sheets this part may be nested on. Leave empty to allow any matching sheet. Not allowed with FiniteNesting.",
             "type": "array",
             "items": {
               "type": "string"
@@ -4640,7 +4648,7 @@
             "nullable": false
           },
           "PartSpacingOverride": {
-            "description": "Set this value to allow the part to dictate its own spacing requirements, outside of the general nesting settings, during nesting. Optional.",
+            "description": "This part's own spacing, in place of NestSettings.PartSpacing. Neighbouring parts are spaced at the average of their spacings; an override below NestSettings.PartSpacing has no effect. For quote nesting see PartSpacingOverrideAppliesToWholeNest. Optional.",
             "type": "number",
             "format": "double"
           },
@@ -4689,24 +4697,28 @@
             "nullable": false
           }
         },
-        "description": "QuotePart",
+        "description": "A part to quote, with its material, thickness and cutting process.",
         "type": "object"
       },
       "QuoteSheet": {
         "title": "QuoteSheet",
         "properties": {
           "Material": {
+            "description": "Material of the sheet.",
             "type": "string"
           },
           "Thickness": {
+            "description": "Thickness of the sheet. Must match the parts' Thickness exactly, as text.",
             "type": "string"
           },
           "MinimumSimpleRemnantDimension": {
+            "description": "Minimum dimension for a remnant to be kept, in the request's MeasurementUnits.",
             "type": "number",
             "format": "double",
             "nullable": false
           },
           "PartSpacing": {
+            "description": "Part to part spacing on this sheet, in the request's MeasurementUnits. See PartSpacingOverrideAppliesToWholeNest.",
             "type": "number",
             "format": "double",
             "nullable": false
@@ -4781,7 +4793,7 @@
             "type": "string"
           }
         },
-        "description": "QuoteSheet",
+        "description": "A sheet to quote against, defined by geometry or dimensions, with its material, thickness and part spacing.",
         "type": "object"
       },
       "DxfQuoteNestingRequest": {
@@ -4818,6 +4830,10 @@
             "type": "string"
           },
           "FiniteNesting": {
+            "type": "boolean",
+            "nullable": false
+          },
+          "PartSpacingOverrideAppliesToWholeNest": {
             "type": "boolean",
             "nullable": false
           },
@@ -4877,15 +4893,19 @@
         "title": "Base64QuotePart",
         "properties": {
           "Material": {
+            "description": "Material of the part. Parts are nested only on sheets of the same Material and Thickness.",
             "type": "string"
           },
           "Thickness": {
+            "description": "Thickness of the part. Must match a sheet's Thickness exactly, as text (\"3\" does not match \"3.0\").",
             "type": "string"
           },
           "CuttingProcess": {
+            "description": "Cutting process. Parts with different cutting processes are nested separately. Optional.",
             "type": "string"
           },
           "LimitedToSheets": {
+            "description": "Identifiers of the only sheets this part may be nested on. Leave empty to allow any matching sheet. Not allowed with FiniteNesting.",
             "type": "array",
             "items": {
               "type": "string"
@@ -4954,7 +4974,7 @@
             "nullable": false
           },
           "PartSpacingOverride": {
-            "description": "Set this value to allow the part to dictate its own spacing requirements, outside of the general nesting settings, during nesting. Optional.",
+            "description": "This part's own spacing, in place of NestSettings.PartSpacing. Neighbouring parts are spaced at the average of their spacings; an override below NestSettings.PartSpacing has no effect. For quote nesting see PartSpacingOverrideAppliesToWholeNest. Optional.",
             "type": "number",
             "format": "double"
           },
@@ -5003,24 +5023,28 @@
             "nullable": false
           }
         },
-        "description": "Base64QuotePart",
+        "description": "An importable part to quote, from Base64EncodedGeometryDefinition content, with its material, thickness and cutting process.",
         "type": "object"
       },
       "Base64QuoteSheet": {
         "title": "Base64QuoteSheet",
         "properties": {
           "Material": {
+            "description": "Material of the sheet.",
             "type": "string"
           },
           "Thickness": {
+            "description": "Thickness of the sheet. Must match the parts' Thickness exactly, as text.",
             "type": "string"
           },
           "MinimumSimpleRemnantDimension": {
+            "description": "Minimum dimension for a remnant to be kept, in the request's MeasurementUnits.",
             "type": "number",
             "format": "double",
             "nullable": false
           },
           "PartSpacing": {
+            "description": "Part to part spacing on this sheet, in the request's MeasurementUnits. See PartSpacingOverrideAppliesToWholeNest.",
             "type": "number",
             "format": "double",
             "nullable": false
@@ -5110,7 +5134,7 @@
             "type": "string"
           }
         },
-        "description": "Base64QuoteSheet",
+        "description": "A sheet to quote against, from Base64EncodedGeometryDefinition content or dimensions, with its material, thickness and part spacing.",
         "type": "object"
       },
       "NestingRequest1D": {
@@ -5362,7 +5386,7 @@
             "nullable": false
           },
           "PartSpacingOverride": {
-            "description": "Set this value to allow the part to dictate its own spacing requirements, outside of the general nesting settings, during nesting. Optional.",
+            "description": "This part's own spacing, in place of NestSettings.PartSpacing. Neighbouring parts are spaced at the average of their spacings; an override below NestSettings.PartSpacing has no effect. For quote nesting see PartSpacingOverrideAppliesToWholeNest. Optional.",
             "type": "number",
             "format": "double"
           },
