@@ -3150,8 +3150,8 @@
   ],
   "servers": [
     {
-      "url": "https://dev.api.nestapi.com",
-      "description": "Staging"
+      "description": "Staging",
+      "url": "https://dev.api.nestapi.com"
     }
   ],
   "components": {
@@ -4546,6 +4546,27 @@
             "type": "boolean",
             "nullable": false
           },
+          "NestingObjective": {
+            "description": "The objective each nest aims for. IntelligentMinimizeX by default. Values: `IntelligentMinimizeX` — Minimise the layout extent along X, but avoid poor placements of longer parts even where that does not strictly match the objective; `MinimizeXThenY` — Strictly minimise the layout extent along X, then along Y; `MinimizeArea` — Minimise the overall bounding area of the layout; `MinimizeYThenX` — Strictly minimise the layout extent along Y, then along X; `NoReusableOffcut` — Aim to leave no reusable offcut. Best used together with filler-part quantities; `IntelligentMinimizeY` — Minimise the layout extent along Y, but avoid poor placements of longer parts even where that does not strictly match the objective.",
+            "type": "string",
+            "default": "IntelligentMinimizeX",
+            "enum": [
+              "IntelligentMinimizeX",
+              "MinimizeXThenY",
+              "MinimizeArea",
+              "MinimizeYThenX",
+              "NoReusableOffcut",
+              "IntelligentMinimizeY"
+            ]
+          },
+          "SheetSizeSelection": {
+            "description": "How the sheet size is chosen when several are tried. LeastMaterial by default. Values: `LeastMaterial` — The size placing the most parts, then using the least material once remnants are taken off.",
+            "type": "string",
+            "default": "LeastMaterial",
+            "enum": [
+              "LeastMaterial"
+            ]
+          },
           "SimpleRemnantPreference": {
             "description": "How offcut is taken off used sheets. Irregular modes only; not used with FiniteNesting. Values: `StraightLine` — A straight cut, horizontal or vertical, beyond the placed parts (largest chosen automatically); `CoveringBoundingRect` — Everything outside the bounding rectangle of the placed parts. Can produce L shaped remnants; `None` — No remnants; used sheets count as whole sheets.",
             "type": "string",
@@ -4896,6 +4917,27 @@
             "description": "True (the default): the largest PartSpacingOverride in a nest is used for the whole nest, in place of the sheet's PartSpacing. False: each override applies to its own part, as in standard nesting.",
             "type": "boolean",
             "nullable": false
+          },
+          "NestingObjective": {
+            "description": "The objective each nest aims for. IntelligentMinimizeX by default. Values: `IntelligentMinimizeX` — Minimise the layout extent along X, but avoid poor placements of longer parts even where that does not strictly match the objective; `MinimizeXThenY` — Strictly minimise the layout extent along X, then along Y; `MinimizeArea` — Minimise the overall bounding area of the layout; `MinimizeYThenX` — Strictly minimise the layout extent along Y, then along X; `NoReusableOffcut` — Aim to leave no reusable offcut. Best used together with filler-part quantities; `IntelligentMinimizeY` — Minimise the layout extent along Y, but avoid poor placements of longer parts even where that does not strictly match the objective.",
+            "type": "string",
+            "default": "IntelligentMinimizeX",
+            "enum": [
+              "IntelligentMinimizeX",
+              "MinimizeXThenY",
+              "MinimizeArea",
+              "MinimizeYThenX",
+              "NoReusableOffcut",
+              "IntelligentMinimizeY"
+            ]
+          },
+          "SheetSizeSelection": {
+            "description": "How the sheet size is chosen when several are tried. LeastMaterial by default. Values: `LeastMaterial` — The size placing the most parts, then using the least material once remnants are taken off.",
+            "type": "string",
+            "default": "LeastMaterial",
+            "enum": [
+              "LeastMaterial"
+            ]
           },
           "SimpleRemnantPreference": {
             "description": "How offcut is taken off used sheets. Irregular modes only; not used with FiniteNesting. Values: `StraightLine` — A straight cut, horizontal or vertical, beyond the placed parts (largest chosen automatically); `CoveringBoundingRect` — Everything outside the bounding rectangle of the placed parts. Can produce L shaped remnants; `None` — No remnants; used sheets count as whole sheets.",
