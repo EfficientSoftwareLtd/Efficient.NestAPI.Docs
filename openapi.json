@@ -4139,7 +4139,7 @@
         "type": "object"
       },
       "Assembly_ParametricPart_": {
-        "title": "Assembly`1",
+        "title": "Assembly",
         "properties": {
           "Parts": {
             "description": "Parts that make up the assembly",
@@ -4457,7 +4457,7 @@
         "type": "object"
       },
       "Assembly_Part_": {
-        "title": "Assembly`1",
+        "title": "Assembly",
         "properties": {
           "Parts": {
             "description": "Parts that make up the assembly",
@@ -4510,7 +4510,7 @@
         "type": "object"
       },
       "QuoteNestingRequest_QuotePart_QuoteSheet_": {
-        "title": "QuoteNestingRequest`2",
+        "title": "QuoteNestingRequest",
         "required": [
           "Parts",
           "Sheets"
@@ -4882,7 +4882,7 @@
         "type": "object"
       },
       "QuoteNestingRequest_Base64QuotePart_Base64QuoteSheet_": {
-        "title": "QuoteNestingRequest`2",
+        "title": "QuoteNestingRequest",
         "required": [
           "Parts",
           "Sheets"
@@ -5656,7 +5656,7 @@
         "type": "object"
       },
       "Assembly_Base64Part_": {
-        "title": "Assembly`1",
+        "title": "Assembly",
         "properties": {
           "Parts": {
             "description": "Parts that make up the assembly",
