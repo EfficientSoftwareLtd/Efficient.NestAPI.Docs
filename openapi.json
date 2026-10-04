@@ -5,6 +5,242 @@
     "version": "1.0"
   },
   "paths": {
+    "/admin/keys/{ApiKeyId}/regenerate": {
+      "post": {
+        "tags": [
+          "account"
+        ],
+        "summary": "Regenerate an API key",
+        "description": "Admin only. Rotates one of the account's keys: cancels the old secret and issues a new one, carrying the key's reference, expiry, type, parallelism, fairness weight and allowed origins forward. The old key stops working immediately, so update integrations with the returned key.\n\n**Path**\n\n- `ApiKeyId` — the id of the key to rotate.",
+        "operationId": "RegenerateApiKey",
+        "parameters": [
+          {
+            "name": "ApiKeyId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegenerateApiKey"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The rotated key, carrying a new secret.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClientKey"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "API key is missing or invalid.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClientKey"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The calling key is not an Admin key.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClientKey"
+                }
+              }
+            }
+          }
+        },
+        "deprecated": false,
+        "security": [
+          {
+            "Bearer": []
+          }
+        ]
+      },
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/Accept"
+        }
+      ]
+    },
+    "/admin/keys/{ApiKeyId}/type": {
+      "patch": {
+        "tags": [
+          "account"
+        ],
+        "summary": "Set a key's Admin/Usage type",
+        "description": "Admin only. Change a key's capability class — e.g. downgrade a key you handed to a customer from Admin to Usage.\n\n**Path & body**\n\n- `ApiKeyId` (path) — the id of the key to change.\n- `KeyType` (body) — the new capability class: `Usage` or `Admin`.",
+        "operationId": "SetApiKeyType",
+        "parameters": [
+          {
+            "name": "ApiKeyId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "KeyType",
+            "in": "query",
+            "x-nullable": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "Usage",
+                "Admin"
+              ]
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SetApiKeyType"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The updated key.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClientKey"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "API key is missing or invalid.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClientKey"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The calling key is not an Admin key.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClientKey"
+                }
+              }
+            }
+          }
+        },
+        "deprecated": false,
+        "security": [
+          {
+            "Bearer": []
+          }
+        ]
+      },
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/Accept"
+        }
+      ]
+    },
+    "/admin/keys/{ApiKeyId}/weight": {
+      "patch": {
+        "tags": [
+          "fairness"
+        ],
+        "summary": "Set a key's fairness weight",
+        "description": "Admin only. Sets the per-customer fairness weight for one of your keys.\n\n**Path & body**\n\n- `ApiKeyId` (path) — the key to weight.\n- `LineageWeight` (body) — the weight to apply; omit (null) to clear the override and fall back to the plan default.",
+        "operationId": "SetKeyFairnessWeight",
+        "parameters": [
+          {
+            "name": "ApiKeyId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "LineageWeight",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SetKeyFairnessWeight"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The key's updated fairness weight.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KeyFairnessWeightResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "API key is missing or invalid.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KeyFairnessWeightResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The calling key is not an Admin key.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KeyFairnessWeightResponse"
+                }
+              }
+            }
+          }
+        },
+        "deprecated": false,
+        "security": [
+          {
+            "Bearer": []
+          }
+        ]
+      },
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/Accept"
+        }
+      ]
+    },
     "/admin/keys/{ApiKeyId}": {
       "delete": {
         "tags": [
@@ -74,7 +310,7 @@
           "fairness"
         ],
         "summary": "Get the account's per-customer fairness configuration",
-        "description": "Admin only. Returns whether fairness/overage are enabled, the default per-key weight, and the shared-burst percentage for the account's active plan.",
+        "description": "Admin only. Returns whether fairness/overage are enabled, the default per-key weight, and the shared-burst percentage. These are account settings: they stay the same whichever plan the account is on.",
         "operationId": "GetFairnessConfig",
         "responses": {
           "200": {
@@ -120,7 +356,7 @@
           "fairness"
         ],
         "summary": "Update the account's per-customer fairness configuration",
-        "description": "Admin only. Only the fields you supply are changed. Fairness is a paid-plan feature.\n\n**Body** (all optional; omitted fields are left unchanged)\n\n- `FairnessEnabled` — turn the per-customer admission gate on or off.\n- `OverageEnabled` — let a customer over its floor+burst share spill into overage rather than be rejected.\n- `DefaultLineageWeight` — default per-key weight for keys with no override (≥ 1).\n- `BurstPercent` — percent of included minutes kept as the shared first-come burst pool (0–100).",
+        "description": "Admin only. Only the fields you supply are changed. Available on trials too, where overage has no effect until the account is on a paid plan.\n\n**Body** (all optional; omitted fields are left unchanged)\n\n- `FairnessEnabled` — turn the per-customer admission gate on or off.\n- `OverageEnabled` — keep nesting once the allowance and credit are used, billed as overage to the account's card at the end of each monthly window. Turning it on requires a card on file (400 otherwise).\n- `DefaultLineageWeight` — default per-key weight for keys with no override (≥ 1).\n- `BurstPercent` — percent of included minutes kept as the shared first-come burst pool (0–100).",
         "operationId": "SetFairnessConfig",
         "parameters": [
           {
@@ -373,242 +609,6 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ClientKey"
-                }
-              }
-            }
-          }
-        },
-        "deprecated": false,
-        "security": [
-          {
-            "Bearer": []
-          }
-        ]
-      },
-      "parameters": [
-        {
-          "$ref": "#/components/parameters/Accept"
-        }
-      ]
-    },
-    "/admin/keys/{ApiKeyId}/regenerate": {
-      "post": {
-        "tags": [
-          "account"
-        ],
-        "summary": "Regenerate an API key",
-        "description": "Admin only. Rotates one of the account's keys: cancels the old secret and issues a new one, carrying the key's reference, expiry, type, parallelism, fairness weight and allowed origins forward. The old key stops working immediately, so update integrations with the returned key.\n\n**Path**\n\n- `ApiKeyId` — the id of the key to rotate.",
-        "operationId": "RegenerateApiKey",
-        "parameters": [
-          {
-            "name": "ApiKeyId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/RegenerateApiKey"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "The rotated key, carrying a new secret.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ClientKey"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "API key is missing or invalid.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ClientKey"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "The calling key is not an Admin key.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ClientKey"
-                }
-              }
-            }
-          }
-        },
-        "deprecated": false,
-        "security": [
-          {
-            "Bearer": []
-          }
-        ]
-      },
-      "parameters": [
-        {
-          "$ref": "#/components/parameters/Accept"
-        }
-      ]
-    },
-    "/admin/keys/{ApiKeyId}/type": {
-      "patch": {
-        "tags": [
-          "account"
-        ],
-        "summary": "Set a key's Admin/Usage type",
-        "description": "Admin only. Change a key's capability class — e.g. downgrade a key you handed to a customer from Admin to Usage.\n\n**Path & body**\n\n- `ApiKeyId` (path) — the id of the key to change.\n- `KeyType` (body) — the new capability class: `Usage` or `Admin`.",
-        "operationId": "SetApiKeyType",
-        "parameters": [
-          {
-            "name": "ApiKeyId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "KeyType",
-            "in": "query",
-            "x-nullable": false,
-            "schema": {
-              "type": "string",
-              "enum": [
-                "Usage",
-                "Admin"
-              ]
-            }
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/SetApiKeyType"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "The updated key.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ClientKey"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "API key is missing or invalid.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ClientKey"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "The calling key is not an Admin key.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ClientKey"
-                }
-              }
-            }
-          }
-        },
-        "deprecated": false,
-        "security": [
-          {
-            "Bearer": []
-          }
-        ]
-      },
-      "parameters": [
-        {
-          "$ref": "#/components/parameters/Accept"
-        }
-      ]
-    },
-    "/admin/keys/{ApiKeyId}/weight": {
-      "patch": {
-        "tags": [
-          "fairness"
-        ],
-        "summary": "Set a key's fairness weight",
-        "description": "Admin only. Sets the per-customer fairness weight for one of your keys.\n\n**Path & body**\n\n- `ApiKeyId` (path) — the key to weight.\n- `LineageWeight` (body) — the weight to apply; omit (null) to clear the override and fall back to the plan default.",
-        "operationId": "SetKeyFairnessWeight",
-        "parameters": [
-          {
-            "name": "ApiKeyId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "LineageWeight",
-            "in": "query",
-            "schema": {
-              "type": "integer",
-              "format": "int32"
-            }
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/SetKeyFairnessWeight"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "The key's updated fairness weight.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/KeyFairnessWeightResponse"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "API key is missing or invalid.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/KeyFairnessWeightResponse"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "The calling key is not an Admin key.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/KeyFairnessWeightResponse"
                 }
               }
             }
@@ -2157,6 +2157,520 @@
         }
       ]
     },
+    "/account/membership": {
+      "get": {
+        "tags": [
+          "account"
+        ],
+        "operationId": "GetMyAccountMembership",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MyAccountMembership"
+                }
+              }
+            }
+          }
+        },
+        "deprecated": false,
+        "security": [
+          {
+            "Bearer": []
+          }
+        ]
+      },
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/Accept"
+        }
+      ]
+    },
+    "/account/members": {
+      "get": {
+        "tags": [
+          "account"
+        ],
+        "operationId": "GetAccountMembers",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AccountMembersResponse"
+                }
+              }
+            }
+          }
+        },
+        "deprecated": false,
+        "security": [
+          {
+            "Bearer": []
+          }
+        ]
+      },
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/Accept"
+        }
+      ]
+    },
+    "/account/billing-user": {
+      "delete": {
+        "tags": [
+          "account"
+        ],
+        "operationId": "RemoveBillingUser",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RemoveMemberResponse"
+                }
+              }
+            }
+          }
+        },
+        "deprecated": false,
+        "security": [
+          {
+            "Bearer": []
+          }
+        ]
+      },
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/Accept"
+        }
+      ]
+    },
+    "/account/checkout-request": {
+      "post": {
+        "tags": [
+          "account"
+        ],
+        "operationId": "CreateCheckoutRequest",
+        "parameters": [
+          {
+            "name": "PlanId",
+            "in": "query",
+            "x-nullable": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "InitialAccountCredit",
+            "in": "query",
+            "x-nullable": false,
+            "schema": {
+              "type": "number",
+              "format": "double"
+            }
+          },
+          {
+            "name": "InviteBillingUserEmail",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateCheckoutRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CheckoutRequestResponse"
+                }
+              }
+            }
+          }
+        },
+        "deprecated": false,
+        "security": [
+          {
+            "Bearer": []
+          }
+        ]
+      },
+      "delete": {
+        "tags": [
+          "account"
+        ],
+        "operationId": "CancelCheckoutRequest",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CancelCheckoutRequestResponse"
+                }
+              }
+            }
+          }
+        },
+        "deprecated": false,
+        "security": [
+          {
+            "Bearer": []
+          }
+        ]
+      },
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/Accept"
+        }
+      ]
+    },
+    "/account/billing-user/invitations": {
+      "post": {
+        "tags": [
+          "account"
+        ],
+        "operationId": "InviteBillingUser",
+        "parameters": [
+          {
+            "name": "Email",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InviteBillingUser"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AccountInvitationResponse"
+                }
+              }
+            }
+          }
+        },
+        "deprecated": false,
+        "security": [
+          {
+            "Bearer": []
+          }
+        ]
+      },
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/Accept"
+        }
+      ]
+    },
+    "/account/administrator/invitations": {
+      "post": {
+        "tags": [
+          "account"
+        ],
+        "operationId": "InviteAdministrator",
+        "parameters": [
+          {
+            "name": "Email",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InviteAdministrator"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AccountInvitationResponse"
+                }
+              }
+            }
+          }
+        },
+        "deprecated": false,
+        "security": [
+          {
+            "Bearer": []
+          }
+        ]
+      },
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/Accept"
+        }
+      ]
+    },
+    "/account/invitations/{InvitationId}": {
+      "delete": {
+        "tags": [
+          "account"
+        ],
+        "operationId": "CancelAccountInvitation",
+        "parameters": [
+          {
+            "name": "InvitationId",
+            "in": "path",
+            "required": true,
+            "x-nullable": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AccountInvitationInfo"
+                }
+              }
+            }
+          }
+        },
+        "deprecated": false,
+        "security": [
+          {
+            "Bearer": []
+          }
+        ]
+      },
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/Accept"
+        }
+      ]
+    },
+    "/account/checkout-request/card": {
+      "post": {
+        "tags": [
+          "account"
+        ],
+        "operationId": "PayCheckoutRequestByCard",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PayCheckoutRequestByCard"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CheckoutTransaction"
+                }
+              }
+            }
+          }
+        },
+        "deprecated": false,
+        "security": [
+          {
+            "Bearer": []
+          }
+        ]
+      },
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/Accept"
+        }
+      ]
+    },
+    "/account/checkout-request/invoice": {
+      "post": {
+        "tags": [
+          "account"
+        ],
+        "operationId": "PayCheckoutRequestByInvoice",
+        "parameters": [
+          {
+            "name": "InvoiceRequestDetails",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PayCheckoutRequestByInvoice"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CheckoutTransaction"
+                }
+              }
+            }
+          }
+        },
+        "deprecated": false,
+        "security": [
+          {
+            "Bearer": []
+          }
+        ]
+      },
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/Accept"
+        }
+      ]
+    },
+    "/account/invitations/{InvitationId}/accept": {
+      "post": {
+        "tags": [
+          "account"
+        ],
+        "operationId": "AcceptAccountInvitation",
+        "parameters": [
+          {
+            "name": "InvitationId",
+            "in": "path",
+            "required": true,
+            "x-nullable": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AcceptAccountInvitation"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MyAccountMembership"
+                }
+              }
+            }
+          }
+        },
+        "deprecated": false,
+        "security": [
+          {
+            "Bearer": []
+          }
+        ]
+      },
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/Accept"
+        }
+      ]
+    },
+    "/account/invitations/{InvitationId}/decline": {
+      "post": {
+        "tags": [
+          "account"
+        ],
+        "operationId": "DeclineAccountInvitation",
+        "parameters": [
+          {
+            "name": "InvitationId",
+            "in": "path",
+            "required": true,
+            "x-nullable": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DeclineAccountInvitation"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MyAccountMembership"
+                }
+              }
+            }
+          }
+        },
+        "deprecated": false,
+        "security": [
+          {
+            "Bearer": []
+          }
+        ]
+      },
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/Accept"
+        }
+      ]
+    },
     "/apikeys/{KeyId}/origins": {
       "get": {
         "tags": [
@@ -2680,6 +3194,48 @@
         "description": "Object",
         "type": "object"
       },
+      "RegenerateApiKey": {
+        "title": "RegenerateApiKey",
+        "properties": {
+          "ApiKeyId": {
+            "type": "string"
+          }
+        },
+        "description": "RegenerateApiKey",
+        "type": "object"
+      },
+      "SetApiKeyType": {
+        "title": "SetApiKeyType",
+        "properties": {
+          "ApiKeyId": {
+            "type": "string"
+          },
+          "KeyType": {
+            "type": "string",
+            "default": "Usage",
+            "enum": [
+              "Usage",
+              "Admin"
+            ]
+          }
+        },
+        "description": "SetApiKeyType",
+        "type": "object"
+      },
+      "SetKeyFairnessWeight": {
+        "title": "SetKeyFairnessWeight",
+        "properties": {
+          "ApiKeyId": {
+            "type": "string"
+          },
+          "LineageWeight": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "description": "SetKeyFairnessWeight",
+        "type": "object"
+      },
       "SetFairnessConfig": {
         "title": "SetFairnessConfig",
         "properties": {
@@ -2735,48 +3291,6 @@
         "description": "CreateApiKey",
         "type": "object"
       },
-      "RegenerateApiKey": {
-        "title": "RegenerateApiKey",
-        "properties": {
-          "ApiKeyId": {
-            "type": "string"
-          }
-        },
-        "description": "RegenerateApiKey",
-        "type": "object"
-      },
-      "SetApiKeyType": {
-        "title": "SetApiKeyType",
-        "properties": {
-          "ApiKeyId": {
-            "type": "string"
-          },
-          "KeyType": {
-            "type": "string",
-            "default": "Usage",
-            "enum": [
-              "Usage",
-              "Admin"
-            ]
-          }
-        },
-        "description": "SetApiKeyType",
-        "type": "object"
-      },
-      "SetKeyFairnessWeight": {
-        "title": "SetKeyFairnessWeight",
-        "properties": {
-          "ApiKeyId": {
-            "type": "string"
-          },
-          "LineageWeight": {
-            "type": "integer",
-            "format": "int32"
-          }
-        },
-        "description": "SetKeyFairnessWeight",
-        "type": "object"
-      },
       "FetchNestingResult": {
         "title": "FetchNestingResult",
         "properties": {
@@ -2802,6 +3316,7 @@
             "$ref": "#/components/schemas/RenderSettings"
           },
           "RenderPartLabelMode": {
+            "description": "How each part is labelled in the nest rendering (none, identifier, or part name). Values: `None` — No part labels; `ID` — Label each part with its identifier; `PartName` — Label each part with its part name.",
             "type": "string",
             "default": "None",
             "enum": [
@@ -2811,6 +3326,7 @@
             ]
           },
           "PartLabelHeight": {
+            "description": "Height of the part label text, in millimetres. Left null for automatic sizing.",
             "type": "number",
             "format": "double"
           },
@@ -2818,13 +3334,14 @@
             "$ref": "#/components/schemas/RenderSettings"
           }
         },
-        "description": "ReportSourceRenderingSettings",
+        "description": "Settings for the renderings generated for a ReportSource: the per-nest layout render and the per-part preview render, plus how parts are labelled.",
         "type": "object"
       },
       "RenderSettings": {
         "title": "RenderSettings",
         "properties": {
           "RenderFormat": {
+            "description": "The format to generate the nesting result render",
             "type": "string",
             "default": "PNG",
             "enum": [
@@ -2833,30 +3350,36 @@
             ]
           },
           "xDimension": {
+            "description": "X dimension in pixels of the rendering",
             "type": "integer",
             "format": "int32",
             "nullable": false
           },
           "yDimension": {
+            "description": "Y dimension in pixels of the rendering",
             "type": "integer",
             "format": "int32",
             "nullable": false
           },
           "BackColorARGB": {
+            "description": "Background color of the rendering using the ARBG hex definition, e.g. #AARRGGBB",
             "type": "string"
           },
           "OutlineLineColorARGB": {
+            "description": "Part and sheet boundary color within the rendering using the ARBG hex definition, e.g. #AARRGGBB",
             "type": "string"
           },
           "PartFillColorARGB": {
+            "description": "Part fill color within the rendering using the ARBG hex definition, e.g. #AARRGGBB. Optional.",
             "type": "string"
           },
           "AutomaticallyChoosePartFillColor": {
+            "description": "True if client wants to the renderer to automatically assign each part a unique fill colour for renderings, these will be respected throughout the nesting process. If False a PartFillColorARBG value must be supplied.",
             "type": "boolean",
             "nullable": false
           }
         },
-        "description": "RenderSettings",
+        "description": "Settings for the generation of requested nesting result renderings",
         "type": "object"
       },
       "ParametricGeometryNestingRequest": {
@@ -2906,18 +3429,21 @@
             "$ref": "#/components/schemas/ReportSourceRenderingSettings"
           },
           "Parts": {
+            "description": "The parts to nest, each carrying its own quantity and per-part options.",
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/ParametricPart"
             }
           },
           "Sheets": {
+            "description": "Sheets to be considered for nesting of the Parts",
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/Sheet"
             }
           },
           "Assemblies": {
+            "description": "Assemblies to be considered for nesting",
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/Assembly_ParametricPart_"
@@ -2930,6 +3456,7 @@
             "$ref": "#/components/schemas/PartExportSettings"
           },
           "Tag": {
+            "description": "Optional client-defined tag carried with the request, for your own correlation. Not interpreted by the nester.",
             "type": "string"
           }
         },
@@ -2940,42 +3467,52 @@
         "title": "ImportSettings",
         "properties": {
           "CutLayers": {
+            "description": "Name of the layer in the geometry definition file that defines the cut boundary of the of the shape. This will be used to determine the outer and inner boundaries of the shapes to be nested",
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/ImportLayerAssignment"
             }
           },
           "AttachLayers": {
+            "description": "List of layer names to be attached to shapes defined by the CutLayerName. This geometry should be within the body of the shape defined by the cut layer",
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/ImportLayerAssignment"
             }
           },
           "IgnoreLayers": {
+            "description": "Layers to ignore during import.",
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/ImportLayerAssignment"
             }
           },
           "UseAllPartsInFile": {
+            "description": "Import every part/block found in the file, rather than a single part.",
             "type": "boolean"
           },
           "CollateMultipleBlockInserts": {
+            "description": "Treat multiple inserts of the same block as a single collated part.",
             "type": "boolean"
           },
           "AppendPartNamesToIdentities": {
+            "description": "Append the source part/block name to each part identity. Mutually exclusive with UsePartNamesAsIdentityOnMultiPartImport; generally only useful with UseAllPartsInFile when block names overlap across multiple files.",
             "type": "boolean"
           },
           "UsePartNamesAsIdentityOnMultiPartImport": {
+            "description": "Use the source part/block name as the part identity on a multi-part import. Requires that part/block names are unique across the whole request.",
             "type": "boolean"
           },
           "AutomaticallyAttachUnusedCutAssignedGeometry": {
+            "description": "Automatically attach cut-assigned geometry that was not otherwise used to the part that contains it.",
             "type": "boolean"
           },
           "LayerNameForAutomaticallyAttachedGeometry": {
+            "description": "Layer name used for geometry attached by AutomaticallyAttachUnusedCutAssignedGeometry.",
             "type": "string"
           },
           "MeasurementUnitsOfImportGeometry": {
+            "description": "Measurement units the imported geometry is defined in. Default is millimetres. Values: `Millimetres` — Millimetres; `Inches` — Inches.",
             "type": "string",
             "default": "Millimetres",
             "enum": [
@@ -2984,29 +3521,34 @@
             ]
           },
           "FromScale": {
+            "description": "Source value of the scale conversion applied to imported geometry (a FromScale:ToScale ratio). Default 1.0.",
             "type": "number",
             "format": "double",
             "nullable": false
           },
           "ToScale": {
+            "description": "Target value of the scale conversion applied to imported geometry (a FromScale:ToScale ratio). Default 1.0.",
             "type": "number",
             "format": "double",
             "nullable": false
           }
         },
-        "description": "ImportSettings",
+        "description": "Instructions for the importer engine to extract geometry from the supplied files used to define parts and irregular sheets",
         "type": "object"
       },
       "ImportLayerAssignment": {
         "title": "ImportLayerAssignment",
         "properties": {
           "ColourHex": {
+            "description": "Colour for assignment e.g. #FFFFFF (white) : Optional but if set you must also set LineType",
             "type": "string"
           },
           "LayerName": {
+            "description": "Layer name for assignment : Required",
             "type": "string"
           },
           "LineType": {
+            "description": "Line type for assignment - case sensitive, often upper case e.g. CONTINUOUS : Optional but if set you must also set ColourHex",
             "type": "string"
           }
         },
@@ -3017,24 +3559,29 @@
         "title": "NestSettings",
         "properties": {
           "PartSpacing": {
+            "description": "Part to part spacing value to be used in the nesting process. A part can override it with PartSpacingOverride.",
             "type": "number",
             "format": "double",
             "nullable": false
           },
           "ReportIntermediateResults": {
+            "description": "True if the client wants to receive updates as a new, improved, nesting result is generated.",
             "type": "boolean",
             "nullable": false
           },
           "MaxRunTimeSeconds": {
+            "description": "The maximum time in seconds the nesting process should run for",
             "type": "number",
             "format": "double",
             "nullable": false
           },
           "UtilisationStopTarget": {
+            "description": "The % utilisation target for the nesting process. If this target percentage is reached the nesting process will automatically finish. Optional.",
             "type": "number",
             "format": "double"
           },
           "RepeatPreference": {
+            "description": "Nesting repeat preference for the nesting process Values: `BestEfficiency` — Create nests with the best efficiency possible, but with fewer repeated layouts; `BalancedRepeats` — Use repeated nests when efficiency is not affected too much; `PreferRepeats` — Reduce the number of different sheet layouts at the expense of material efficiency.",
             "type": "string",
             "default": "BestEfficiency",
             "enum": [
@@ -3044,6 +3591,7 @@
             ]
           },
           "NestingDirection": {
+            "description": "Direction of nesting for the nesting process Values: `Zero` — No specific direction; nest naturally from the origin. This is the default and is always valid; `Ninety` — Pack the nest upward from the origin; `OneEighty` — Pack the nest to the left from the origin; `TwoSeventy` — Pack the nest downward from the origin.",
             "type": "string",
             "default": "Zero",
             "enum": [
@@ -3054,15 +3602,18 @@
             ]
           },
           "NestingAngleDegrees": {
+            "description": "Optional nesting angle in degrees. When set, the whole layout is rotated by this angle and nested from the bottom-left, then reported back in the sheet's real orientation - so parts nest along the edge brought to the bottom. Always nests from the bottom-left origin and is mutually exclusive with NestingDirection. Leave null (the default) to nest without an angle.",
             "type": "number",
             "format": "double"
           },
           "MaximumCPUCount": {
+            "description": "The maximum number of CPUs the nesting process should try to use. Recommended maximum is (CPU count - 1) to allow client to operate unimpeded",
             "type": "integer",
             "format": "int32",
             "nullable": false
           },
           "NestingOrigin": {
+            "description": "The origin of the sheet the nesting process will begin from. Values: `BottomLeft` — Nest from the bottom-left corner of the sheet; `TopLeft` — Nest from the top-left corner of the sheet; `TopRight` — Nest from the top-right corner of the sheet; `BottomRight` — Nest from the bottom-right corner of the sheet.",
             "type": "string",
             "default": "BottomLeft",
             "enum": [
@@ -3073,22 +3624,27 @@
             ]
           },
           "AllowEnginePopups": {
+            "description": "Diagnostic use only. Allow the nesting engine to show UI pop-ups. Leave false for API use.",
             "type": "boolean",
             "nullable": false
           },
           "ExportDiagnosticData": {
+            "description": "Diagnostic use only. Export internal diagnostic data from the nesting run.",
             "type": "boolean",
             "nullable": false
           },
           "DiagnosticDataPath": {
+            "description": "Diagnostic use only. Path that diagnostic data is written to when ExportDiagnosticData is set.",
             "type": "string"
           },
           "MaximumDifferentSheetSizes": {
+            "description": "Maximum number of different sheet sizes to be used in the nesting results generated, 0 = no restriction",
             "type": "integer",
             "format": "int32",
             "nullable": false
           },
           "NestingObjective": {
+            "description": "The nesting Objective for the nesting algorithms to aim towards Values: `IntelligentMinimizeX` — Minimise the layout extent along X, but avoid poor placements of longer parts even where that does not strictly match the objective; `MinimizeXThenY` — Strictly minimise the layout extent along X, then along Y; `MinimizeArea` — Minimise the overall bounding area of the layout; `MinimizeYThenX` — Strictly minimise the layout extent along Y, then along X; `NoReusableOffcut` — Aim to leave no reusable offcut. Best used together with filler-part quantities; `IntelligentMinimizeY` — Minimise the layout extent along Y, but avoid poor placements of longer parts even where that does not strictly match the objective.",
             "type": "string",
             "default": "MinimizeXThenY",
             "enum": [
@@ -3101,6 +3657,7 @@
             ]
           },
           "InnerLoopFillPreference": {
+            "description": "Gets or sets the preference for how the inner loop should be filled during nesting. Values: `None` — Do not instruct the nesting algorithm to treat holes (inner loops) specially; `DontNestInsideInnerLoops` — Never place parts inside the inner loops (holes) of other parts; `PreferNestingInsideInnerLoops` — Prefer placing parts inside the inner loops (holes) of other parts.",
             "type": "string",
             "default": "None",
             "enum": [
@@ -3110,6 +3667,7 @@
             ]
           },
           "FillerPartsStrategy": {
+            "description": "Filler parts strategy to be used during the nesting process. This will determine how filler parts are placed in the nest.",
             "type": "string",
             "default": "FillNest",
             "enum": [
@@ -3118,17 +3676,19 @@
             ]
           },
           "StrictPartPriorities": {
+            "description": "Gets or sets a value indicating whether part priorities are strictly enforced during nesting.",
             "type": "boolean",
             "nullable": false
           }
         },
-        "description": "NestSettings",
+        "description": "Settings for the nesting request to follow during the nesting process",
         "type": "object"
       },
       "DXFExportSettings": {
         "title": "DXFExportSettings",
         "properties": {
           "DXFVersion": {
+            "description": "DXF revision the file is written as. Values: `Dxf15` — DXF revision 15.0.02 (AutoCAD 2000, 2002, AC1015); `Dxf18` — DXF revision 18.1.01 (AutoCAD 2004, AC1018); `Dxf21` — DXF revision 21.1.01 (AutoCAD 2007, AC1021); `Dxf24` — DXF revision 24.1.01 (AutoCAD 2010, AC1024); `Dxf27` — DXF revision 27 (AutoCAD 2013, AC1027); `Dxf32` — DXF revision 32 (AutoCAD 2018, AC1032).",
             "type": "string",
             "default": "Dxf15",
             "enum": [
@@ -3141,6 +3701,7 @@
             ]
           },
           "ExportFileType": {
+            "description": "Output file format (DXF or DWG). Values: `dxf` — DXF file; `dwg` — DWG file.",
             "type": "string",
             "default": "dxf",
             "enum": [
@@ -3149,32 +3710,41 @@
             ]
           },
           "FilePathWithoutExtension": {
+            "description": "Output file path without extension. Used only when the request was loaded from the file system (not NestAPI).",
             "type": "string"
           },
           "ExportFolderPath": {
+            "description": "Output folder. Used only when the request was loaded from the file system (not NestAPI).",
             "type": "string"
           },
           "PreferredFileNameInFolderWithoutExtension": {
+            "description": "Preferred file name (without extension) within the export folder.",
             "type": "string"
           },
           "NestOrientationAngleCCW": {
+            "description": "Angle in degrees, counter-clockwise, to orient each nest by in the export. Default 0.",
             "type": "number",
             "format": "double"
           },
           "AddPartLabels": {
+            "description": "Add a text label to each part in the export.",
             "type": "boolean"
           },
           "PartLabelHeight": {
+            "description": "Height of the part label text, in millimetres.",
             "type": "number",
             "format": "double"
           },
           "AddNestStatistics": {
+            "description": "Add nest statistics (efficiency, counts) to the export.",
             "type": "boolean"
           },
           "ExportSheetBoundaries": {
+            "description": "Include the sheet boundary outline in the export.",
             "type": "boolean"
           },
           "SheetExportSettings": {
+            "description": "Whether all sheets go into one file or one file per sheet. Values: `SingleFile` — All sheets in a single export file; `MultipleFile` — One export file per sheet.",
             "type": "string",
             "default": "SingleFile",
             "enum": [
@@ -3183,9 +3753,11 @@
             ]
           },
           "RemoveCommonEdges": {
+            "description": "Collapse shared edges between adjacent parts into a single line where common cuts were applied.",
             "type": "boolean"
           },
           "OuterLoopDirection": {
+            "description": "Winding direction to emit for outer loops (part boundary). Default clockwise. Values: `Clockwise` — Clockwise winding; `CounterClockwise` — Counter-clockwise winding.",
             "type": "string",
             "default": "Clockwise",
             "enum": [
@@ -3194,6 +3766,7 @@
             ]
           },
           "InnerLoopDirection": {
+            "description": "Winding direction to emit for inner loops (holes). Default clockwise. Values: `Clockwise` — Clockwise winding; `CounterClockwise` — Counter-clockwise winding.",
             "type": "string",
             "default": "Clockwise",
             "enum": [
@@ -3202,6 +3775,7 @@
             ]
           },
           "ExportedGeometryStructure": {
+            "description": "How geometry is structured in the export (individual lines and arcs, or polylines). Values: `LinesAndArcs` — Emit geometry as individual lines and arcs; `Polylines` — Emit geometry as connected polylines.",
             "type": "string",
             "default": "LinesAndArcs",
             "enum": [
@@ -3210,37 +3784,46 @@
             ]
           },
           "ExportPartsAsBlocks": {
+            "description": "Export each part as a DXF block insert rather than loose geometry.",
             "type": "boolean"
           },
           "ExportAllPartsOnSingleLayer": {
+            "description": "Place all part geometry on a single layer (named by AllPartsSingleLayerName).",
             "type": "boolean"
           },
           "AllPartsSingleLayerName": {
+            "description": "Layer name used when ExportAllPartsOnSingleLayer is set.",
             "type": "string"
           },
           "SheetsLayerName": {
+            "description": "Layer name the sheet boundary geometry is placed on.",
             "type": "string"
           },
           "AppendSheetDimensionsToFileName": {
+            "description": "Append the sheet dimensions to the export file name.",
             "type": "boolean"
           },
           "AppendQuantityToFileName": {
+            "description": "Append the sheet quantity to the export file name.",
             "type": "boolean"
           },
           "AppendSheetIdentifierToFileName": {
+            "description": "Append the sheet identifier to the export file name. Not compatible with non-zip single-file output.",
             "type": "boolean"
           },
           "SplitCirclesIntoArcPairs": {
+            "description": "Split full circles into pairs of arcs in the export (for machines that cannot cut a closed circle entity).",
             "type": "boolean"
           }
         },
-        "description": "DXFExportSettings",
+        "description": "Settings to control the export of DXF files from the Process Server",
         "type": "object"
       },
       "CommonCutSettings": {
         "title": "CommonCutSettings",
         "properties": {
           "CommonCuttingImportance": {
+            "description": "Importance of prioritising common cuts Values: `Unimportant` — Maximise material and give no specific value to common cutting; `Weak` — Give a light preference for common cutting (default); `Important` — Give more preference to common cutting; `VeryImportant` — Return solutions with lots of common-line cutting; may lose material; `NotSet` — Not specified; the engine default applies.",
             "type": "string",
             "default": "NotSet",
             "enum": [
@@ -3252,6 +3835,7 @@
             ]
           },
           "CommonCutSafety": {
+            "description": "How \"safe\" do you want the common cuts to be - recommend safe unless common cuts very valuable Values: `PairsOnly` — Only pair up parts; the most conservative option; `Safe` — Fast leaving conditions on the border of common cuts. Recommended; `Strong` — Intermediate between safe and aggressive; `Aggressive` — Aggressive common cutting; may lead to cutting problems; `NotSet` — Not specified; the engine default applies.",
             "type": "string",
             "default": "NotSet",
             "enum": [
@@ -3263,6 +3847,7 @@
             ]
           },
           "CommonCutLeadinCheck": {
+            "description": "Check any described lead in / outs with respect to the common cut (when lead in / outs are present) Values: `NoCheck` — No lead-in checking; `LinearTangential` — Simple prolongating linear lead-in that may be tangential to one of the parts; `LinearNonTangential` — The linear lead-in must be fully valid and not on the border of any part. Forbids partial common cut.",
             "type": "string",
             "default": "NoCheck",
             "enum": [
@@ -3272,6 +3857,7 @@
             ]
           },
           "CommonCutMode": {
+            "description": "Choose which common cut mode is to be used - same part or different part Values: `None` — Common cutting is off; `SameParts` — The normal mode: share edges only between copies of the same part; `DifferentParts` — Experimental. Also share edges between different parts. Useful when you have many different parts in small quantities with long straight edges, saving both cutting time and material.",
             "type": "string",
             "default": "None",
             "enum": [
@@ -3281,60 +3867,71 @@
             ]
           },
           "MaterialCostPerUnitSqr": {
+            "description": "Cost per area unit of material to allow for balancing common cut material savings for time savings",
             "type": "number",
             "format": "double",
             "nullable": false
           },
           "CuttingCostPerUnit": {
+            "description": "Cost per length unit of cutting to allow for balancing of time savings vs material costs",
             "type": "number",
             "format": "double",
             "nullable": false
           },
           "MinLengthOfCommonCut": {
+            "description": "Minimum length of any common cut generated",
             "type": "number",
             "format": "double",
             "nullable": false
           },
           "RegardingRatio": {
+            "description": "Controls the leaving condition around a common cut. Where edges near a common cut are closer than the normal part gap, heating or cut problems can occur if they stay close for too long; this \"bad zone\" is approximated by a \"regarding length\". This ratio caps that length relative to the normal part gap: 2.0 is strict, 8.0 is permissive.",
             "type": "number",
             "format": "double",
             "nullable": false
           },
           "CanIntroduceHolesFromCommonCut": {
+            "description": "Can the common cuts introduce holes in the layout",
             "type": "boolean",
             "nullable": false
           },
           "OnlyPairs": {
+            "description": "Only allow common cuts on pairs of parts",
             "type": "boolean",
             "nullable": false
           },
           "CommonCutPartsMaximumDimensionX": {
+            "description": "Maximum X dimension of any common cut \"block\" generated",
             "type": "number",
             "format": "double",
             "nullable": false
           },
           "CommonCutPartsMaximumDimensionY": {
+            "description": "Maximum Y dimension of any common cut \"block\" generated",
             "type": "number",
             "format": "double",
             "nullable": false
           },
           "AllowCommonCutOnHoles": {
+            "description": "Can the common cuts be applied in holes within parts",
             "type": "boolean",
             "nullable": false
           },
           "CommonCutGap": {
+            "description": "The gap between parts for common cut edges. Must be less than part spacing - normally kerf width for your cutting technology",
             "type": "number",
             "format": "double",
             "nullable": false
           }
         },
-        "description": "CommonCutSettings",
+        "description": "Common cut settings to enable and control common cuts",
         "type": "object"
       },
       "ParametricPart": {
         "title": "ParametricPart",
         "properties": {
           "ParametricType": {
+            "description": "The parametric shape to generate. Determines how A-D are interpreted. Values: `Rectangle_AB_XY` — Rectangle: A = X dimension, B = Y dimension; `Circle_A_Radius` — Circle: A = radius; `RectangularFrame_ABCD_OuterXY_InnerXY` — Rectangular frame: A/B = outer X/Y, C/D = inner X/Y; `Ring_AB_OuterRadius_InnerRadius` — Ring: A = outer radius, B = inner radius.",
             "type": "string",
             "default": "Rectangle_AB_XY",
             "enum": [
@@ -3345,26 +3942,32 @@
             ]
           },
           "A": {
+            "description": "Dimension A. Meaning depends on ParametricType (e.g. Rectangle_AB_XY: X dimension).",
             "type": "number",
             "format": "double",
             "nullable": false
           },
           "B": {
+            "description": "Dimension B. Meaning depends on ParametricType (e.g. Rectangle_AB_XY: Y dimension). Leave null when the shape does not use it.",
             "type": "number",
             "format": "double"
           },
           "C": {
+            "description": "Dimension C. Meaning depends on ParametricType (e.g. RectangularFrame: inner X dimension). Leave null when the shape does not use it.",
             "type": "number",
             "format": "double"
           },
           "D": {
+            "description": "Dimension D. Meaning depends on ParametricType (e.g. RectangularFrame: inner Y dimension). Leave null when the shape does not use it.",
             "type": "number",
             "format": "double"
           },
           "Identifier": {
+            "description": "Client defined unique (per nesting request) identifier for the part. GUID recommended. Part and sheet identifiers must be unique for the nesting request",
             "type": "string"
           },
           "GeometryDefinitionType": {
+            "description": "Type of the geometry definition",
             "type": "string",
             "default": "Base64EncodedDXF",
             "enum": [
@@ -3378,11 +3981,13 @@
             ]
           },
           "Quantity": {
+            "description": "Quantity required of this part to be placed in the nesting process. This is the quantity of the part in the Assembly in Assembly nesting context",
             "type": "integer",
             "format": "int32",
             "nullable": false
           },
           "AllowableRotation": {
+            "description": "Allowable rotation options for the nesting engine to assess from the drawn angle for this part. Values: `Any` — Allow rotation to any angle; `Ninety` — Allow 90° rotation from the drawn angle; `OneEighty` — Allow 180° rotation from the drawn angle; `Custom` — Reserved; not currently used; `Zero` — No rotation; place the part at its drawn angle only.",
             "type": "string",
             "default": "Any",
             "enum": [
@@ -3394,65 +3999,78 @@
             ]
           },
           "AllowableTilt": {
+            "description": "Tilt angles to be considered from each allowable rotation during nesting. For example, 180 with a setting of 1 for tilt will allow the engine to explore 359, 0, 1 and 179, 180, 181 degrees during nesting",
             "type": "number",
             "format": "double",
             "nullable": false
           },
           "AllowMirror": {
+            "description": "True to allow the nesting engine to consider placing this part in its mirrored form during nesting, false to not allow this.",
             "type": "boolean",
             "nullable": false
           },
           "PartSpacingOverride": {
+            "description": "This part's own spacing, in place of NestSettings.PartSpacing. Neighbouring parts are spaced at the average of their spacings; an override below NestSettings.PartSpacing has no effect. For quote nesting see PartSpacingOverrideAppliesToWholeNest. Optional.",
             "type": "number",
             "format": "double"
           },
           "Priority": {
+            "description": "Part priority, higher priority parts will generally be placed earlier in the nesting process. Ignored in the context of Assembly nesting. Optional.",
             "type": "integer",
             "format": "int32",
             "nullable": false
           },
           "EncodedPartJson": {
+            "description": "Encoded JSON representation of the part, should only be combined with the GeometryDefinition GeometryType of one of the Geometry options",
             "type": "string"
           },
           "InitialRotationAngleFollowingImportCCW": {
+            "description": "Angle for the part to be rotated before nesting - defined in degrees and applied counter clockwise, negative for clockwise. Optional.",
             "type": "number",
             "format": "double",
             "nullable": false
           },
           "CustomRotationStepAngle": {
+            "description": "Specific rotation step angle in degrees to be considered by the nesting engine. Must be combined with AllowableRotation = Custom. Optional.",
             "type": "number",
             "format": "double",
             "nullable": false
           },
           "AllowCommonCutIfEnabled": {
+            "description": "Can this part be considered for common cuts in the nesting process if the relevant common cut settings are present in the request. Optional, Default is True",
             "type": "boolean",
             "nullable": false
           },
           "FillerPartQuantity": {
+            "description": "Filler part quantity to be considered during nesting. Ignored in the contect of Assembly nesting. Optional.",
             "type": "integer",
             "format": "int32",
             "nullable": false
           },
           "NestAsRectangle": {
+            "description": "Force the nesting engine to treat this part as its bounding rectangle only for nesting purposes.",
             "type": "boolean",
             "nullable": false
           },
           "CommonCutMaxBlockSize": {
+            "description": "The maximum number of common cuts per block",
             "type": "integer",
             "format": "int32",
             "nullable": false
           }
         },
-        "description": "ParametricPart",
+        "description": "A part defined by parameters (a ParametricType plus dimensions A-D) rather than by supplied geometry. The nester generates the outline from these values.",
         "type": "object"
       },
       "Sheet": {
         "title": "Sheet",
         "properties": {
           "Identifier": {
+            "description": "Client defined unique (per nesting request) identifier for the sheet. GUID recommended. Part and sheet identifiers must be unique for the nesting request",
             "type": "string"
           },
           "GeometryDefinitionType": {
+            "description": "File type of the geometry definition file. Optional, sheet may be defined using dimensions",
             "type": "string",
             "default": "Base64EncodedDXF",
             "enum": [
@@ -3466,60 +4084,72 @@
             ]
           },
           "RectangularXDimension": {
+            "description": "X dimension of rectangular sheet. Optional.",
             "type": "number",
             "format": "double"
           },
           "RectangularYDimension": {
+            "description": "Y dimension of rectangular sheet. Optional.",
             "type": "number",
             "format": "double"
           },
           "IrregularSheetSpacing": {
+            "description": "Edge spacing value to applied to sheet defined using geometry definition. Optional.",
             "type": "number",
             "format": "double"
           },
           "TopSpacing": {
+            "description": "Top edge spacing to be applied to rectangular sheet. Optional.",
             "type": "number",
             "format": "double"
           },
           "LeftSpacing": {
+            "description": "Left edge spacing to be applied to rectangular sheet. Optional.",
             "type": "number",
             "format": "double"
           },
           "RightSpacing": {
+            "description": "Right edge spacing to be applied to rectangular sheet. Optional.",
             "type": "number",
             "format": "double"
           },
           "BottomSpacing": {
+            "description": "Bottom edge spacing to be applied to rectangular sheet. Optional.",
             "type": "number",
             "format": "double"
           },
           "Quantity": {
+            "description": "Quantity of this sheet to be considered during nesting process",
             "type": "integer",
             "format": "int32",
             "nullable": false
           },
           "Priority": {
+            "description": "Priority of this sheet. Higher priority sheets will be considered for nesting first",
             "type": "integer",
             "format": "int32",
             "nullable": false
           },
           "EncodedSheetJson": {
+            "description": "Encoded JSON representation of the sheet, should only be combined with the GeometryDefinitionType of one of the Geometry options",
             "type": "string"
           }
         },
-        "description": "Sheet",
+        "description": "Definition of a sheet size or shape to be considered during the nesting process. Sheets can be defined using geometry files or dimensions. If geometry is defined dimensions will be ignored.",
         "type": "object"
       },
       "Assembly_ParametricPart_": {
-        "title": "Assembly`1",
+        "title": "Assembly",
         "properties": {
           "Parts": {
+            "description": "Parts that make up the assembly",
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/ParametricPart"
             }
           },
           "Quantity": {
+            "description": "Quantity of this assembly to be considered during nesting process",
             "type": "integer",
             "format": "int32",
             "nullable": false
@@ -3532,34 +4162,42 @@
         "title": "RemnantGenerationSettings",
         "properties": {
           "MinimumDimensionMM": {
+            "description": "Minimum millimetres dimension for a remnant to be considered valid when generating remnants",
             "type": "number",
             "format": "double",
             "nullable": false
           },
           "MinimumAreaMM2": {
+            "description": "Minimum area in square millimetres for a remnant to be considered valid when generating remnants",
             "type": "number",
             "format": "double",
             "nullable": false
           },
           "GenerateRemnantsOnFinalNestedSheetOnly": {
+            "description": "If true the remnant generation process will only consider the final sheet in the nesting. Generally the final sheet will be the one with the most free space",
             "type": "boolean",
             "nullable": false
           },
           "IncludeRemnantsInExportedNests": {
+            "description": "If true the remnant geometry will be included in exported nestings (e.g. within the DXF)",
             "type": "boolean",
             "nullable": false
           },
           "ExportFolderPath": {
+            "description": "If nesting request has been loaded from the file system (not NestAPI) this path will be used, if set, to export the remnants to as DXF files",
             "type": "string"
           },
           "RemnantsLayerName": {
+            "description": "The layer name in the exported nesting that the remnant geometry will be in",
             "type": "string"
           },
           "AllowRemnantGenerationInsidePartHoles": {
+            "description": "If true then remnant generation will be considered for holes in parts, if false holes in parts will be ignored during remnant generation",
             "type": "boolean",
             "nullable": false
           },
           "RemnantGenerationType": {
+            "description": "The type of remnant generation approach. Default is TrueShape. Values: `TrueShape` — Accurate but potentially slow depending upon nested geometry quantity and complexity. Useful if you plan on nesting onto the created remnant geometry; `FastCoveringBoundingRectangle` — Fast remnant generation based on the covering bounding rectangle of the place parts on a sheet. Can produce L shaped remnants; `FastStraightLine` — Fast remnant generation based on a straight line cut off horizontally or vertically (largest chosen automatically).",
             "type": "string",
             "default": "TrueShape",
             "enum": [
@@ -3576,13 +4214,16 @@
         "title": "PartExportSettings",
         "properties": {
           "AddPartLabel": {
+            "description": "Add a text label to each exported part.",
             "type": "boolean"
           },
           "PartLabelHeight": {
+            "description": "Height of the part label text, in millimetres.",
             "type": "number",
             "format": "double"
           },
           "InnerLoopDirection": {
+            "description": "Winding direction to emit for inner loops (holes). Values: `Clockwise` — Clockwise winding; `CounterClockwise` — Counter-clockwise winding.",
             "type": "string",
             "default": "Clockwise",
             "enum": [
@@ -3591,6 +4232,7 @@
             ]
           },
           "OuterLoopDirection": {
+            "description": "Winding direction to emit for outer loops (part boundary). Values: `Clockwise` — Clockwise winding; `CounterClockwise` — Counter-clockwise winding.",
             "type": "string",
             "default": "Clockwise",
             "enum": [
@@ -3599,6 +4241,7 @@
             ]
           },
           "DXFVersion": {
+            "description": "DXF revision the export is written as. Values: `Dxf15` — DXF revision 15.0.02 (AutoCAD 2000, 2002, AC1015); `Dxf18` — DXF revision 18.1.01 (AutoCAD 2004, AC1018); `Dxf21` — DXF revision 21.1.01 (AutoCAD 2007, AC1021); `Dxf24` — DXF revision 24.1.01 (AutoCAD 2010, AC1024); `Dxf27` — DXF revision 27 (AutoCAD 2013, AC1027); `Dxf32` — DXF revision 32 (AutoCAD 2018, AC1032).",
             "type": "string",
             "default": "Dxf15",
             "enum": [
@@ -3611,6 +4254,7 @@
             ]
           },
           "ExportedGeometryStructure": {
+            "description": "How geometry is structured in the export (individual lines and arcs, or polylines). Values: `LinesAndArcs` — Emit geometry as individual lines and arcs; `Polylines` — Emit geometry as connected polylines.",
             "type": "string",
             "default": "LinesAndArcs",
             "enum": [
@@ -3619,7 +4263,7 @@
             ]
           }
         },
-        "description": "PartExportSettings",
+        "description": "Settings controlling how the individual part geometry is exported (a PartsExport).",
         "type": "object"
       },
       "Uri": {
@@ -3675,18 +4319,21 @@
             "$ref": "#/components/schemas/ReportSourceRenderingSettings"
           },
           "Parts": {
+            "description": "The parts to nest, each carrying its own quantity and per-part options.",
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/Part"
             }
           },
           "Sheets": {
+            "description": "Sheets to be considered for nesting of the Parts",
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/Sheet"
             }
           },
           "Assemblies": {
+            "description": "Assemblies to be considered for nesting",
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/Assembly_Part_"
@@ -3699,6 +4346,7 @@
             "$ref": "#/components/schemas/PartExportSettings"
           },
           "Tag": {
+            "description": "Optional client-defined tag carried with the request, for your own correlation. Not interpreted by the nester.",
             "type": "string"
           }
         },
@@ -3709,9 +4357,11 @@
         "title": "Part",
         "properties": {
           "Identifier": {
+            "description": "Client defined unique (per nesting request) identifier for the part. GUID recommended. Part and sheet identifiers must be unique for the nesting request",
             "type": "string"
           },
           "GeometryDefinitionType": {
+            "description": "Type of the geometry definition",
             "type": "string",
             "default": "Base64EncodedDXF",
             "enum": [
@@ -3725,11 +4375,13 @@
             ]
           },
           "Quantity": {
+            "description": "Quantity required of this part to be placed in the nesting process. This is the quantity of the part in the Assembly in Assembly nesting context",
             "type": "integer",
             "format": "int32",
             "nullable": false
           },
           "AllowableRotation": {
+            "description": "Allowable rotation options for the nesting engine to assess from the drawn angle for this part. Values: `Any` — Allow rotation to any angle; `Ninety` — Allow 90° rotation from the drawn angle; `OneEighty` — Allow 180° rotation from the drawn angle; `Custom` — Reserved; not currently used; `Zero` — No rotation; place the part at its drawn angle only.",
             "type": "string",
             "default": "Any",
             "enum": [
@@ -3741,68 +4393,81 @@
             ]
           },
           "AllowableTilt": {
+            "description": "Tilt angles to be considered from each allowable rotation during nesting. For example, 180 with a setting of 1 for tilt will allow the engine to explore 359, 0, 1 and 179, 180, 181 degrees during nesting",
             "type": "number",
             "format": "double",
             "nullable": false
           },
           "AllowMirror": {
+            "description": "True to allow the nesting engine to consider placing this part in its mirrored form during nesting, false to not allow this.",
             "type": "boolean",
             "nullable": false
           },
           "PartSpacingOverride": {
+            "description": "This part's own spacing, in place of NestSettings.PartSpacing. Neighbouring parts are spaced at the average of their spacings; an override below NestSettings.PartSpacing has no effect. For quote nesting see PartSpacingOverrideAppliesToWholeNest. Optional.",
             "type": "number",
             "format": "double"
           },
           "Priority": {
+            "description": "Part priority, higher priority parts will generally be placed earlier in the nesting process. Ignored in the context of Assembly nesting. Optional.",
             "type": "integer",
             "format": "int32",
             "nullable": false
           },
           "EncodedPartJson": {
+            "description": "Encoded JSON representation of the part, should only be combined with the GeometryDefinition GeometryType of one of the Geometry options",
             "type": "string"
           },
           "InitialRotationAngleFollowingImportCCW": {
+            "description": "Angle for the part to be rotated before nesting - defined in degrees and applied counter clockwise, negative for clockwise. Optional.",
             "type": "number",
             "format": "double",
             "nullable": false
           },
           "CustomRotationStepAngle": {
+            "description": "Specific rotation step angle in degrees to be considered by the nesting engine. Must be combined with AllowableRotation = Custom. Optional.",
             "type": "number",
             "format": "double",
             "nullable": false
           },
           "AllowCommonCutIfEnabled": {
+            "description": "Can this part be considered for common cuts in the nesting process if the relevant common cut settings are present in the request. Optional, Default is True",
             "type": "boolean",
             "nullable": false
           },
           "FillerPartQuantity": {
+            "description": "Filler part quantity to be considered during nesting. Ignored in the contect of Assembly nesting. Optional.",
             "type": "integer",
             "format": "int32",
             "nullable": false
           },
           "NestAsRectangle": {
+            "description": "Force the nesting engine to treat this part as its bounding rectangle only for nesting purposes.",
             "type": "boolean",
             "nullable": false
           },
           "CommonCutMaxBlockSize": {
+            "description": "The maximum number of common cuts per block",
             "type": "integer",
             "format": "int32",
             "nullable": false
           }
         },
-        "description": "Part",
+        "description": "Definition of a part to be nested as part of a nesting request",
         "type": "object"
       },
       "Assembly_Part_": {
-        "title": "Assembly`1",
+        "title": "Assembly",
         "properties": {
           "Parts": {
+            "description": "Parts that make up the assembly",
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/Part"
             }
           },
           "Quantity": {
+            "description": "Quantity of this assembly to be considered during nesting process",
             "type": "integer",
             "format": "int32",
             "nullable": false
@@ -3845,45 +4510,114 @@
         "type": "object"
       },
       "QuoteNestingRequest_QuotePart_QuoteSheet_": {
-        "title": "QuoteNestingRequest`2",
+        "title": "QuoteNestingRequest",
+        "required": [
+          "Parts",
+          "Sheets"
+        ],
         "properties": {
           "ExternalRequestId": {
+            "description": "Optional client-defined identifier for the request, returned in the response.",
             "type": "string"
           },
           "ReportIntermediateResults": {
+            "description": "True (the default) to receive improved results as they are found, as well as each nest's final result.",
             "type": "boolean",
             "nullable": false
           },
           "QuoteNestingMode": {
-            "type": "string"
+            "description": "How the parts are nested. Values: `IrregularTogether` — Parts of the same material, thickness and cutting process nested together on each sheet size; `IrregularSeparate` — Each part nested on its own on each sheet size; `FillSheetRect` — Each part's bounding rectangle repeated across one sheet of each size, to see how many fit; `FillSheetIrregular` — Each part's true shape repeated across one sheet of each size, to see how many fit.",
+            "type": "string",
+            "default": "IrregularTogether",
+            "enum": [
+              "IrregularTogether",
+              "IrregularSeparate",
+              "FillSheetRect",
+              "FillSheetIrregular"
+            ]
+          },
+          "FiniteNesting": {
+            "description": "Nest on the sheets supplied, at their quantities, instead of quoting. Parts that do not fit are unplaced, and no remnants or AssignedSheetCount are calculated. Irregular modes only; parts may not set LimitedToSheets.",
+            "type": "boolean",
+            "nullable": false
+          },
+          "PartSpacingOverrideAppliesToWholeNest": {
+            "description": "True (the default): the largest PartSpacingOverride in a nest is used for the whole nest, in place of the sheet's PartSpacing. False: each override applies to its own part, as in standard nesting.",
+            "type": "boolean",
+            "nullable": false
+          },
+          "NestingObjective": {
+            "description": "The objective each nest aims for. IntelligentMinimizeX by default. Values: `IntelligentMinimizeX` — Minimise the layout extent along X, but avoid poor placements of longer parts even where that does not strictly match the objective; `MinimizeXThenY` — Strictly minimise the layout extent along X, then along Y; `MinimizeArea` — Minimise the overall bounding area of the layout; `MinimizeYThenX` — Strictly minimise the layout extent along Y, then along X; `NoReusableOffcut` — Aim to leave no reusable offcut. Best used together with filler-part quantities; `IntelligentMinimizeY` — Minimise the layout extent along Y, but avoid poor placements of longer parts even where that does not strictly match the objective.",
+            "type": "string",
+            "default": "IntelligentMinimizeX",
+            "enum": [
+              "IntelligentMinimizeX",
+              "MinimizeXThenY",
+              "MinimizeArea",
+              "MinimizeYThenX",
+              "NoReusableOffcut",
+              "IntelligentMinimizeY"
+            ]
+          },
+          "SheetSizeSelection": {
+            "description": "How the sheet size is chosen when several are tried. LeastMaterial by default. Values: `LeastMaterial` — The size placing the most parts, then using the least material once remnants are taken off.",
+            "type": "string",
+            "default": "LeastMaterial",
+            "enum": [
+              "LeastMaterial"
+            ]
           },
           "SimpleRemnantPreference": {
-            "type": "string"
+            "description": "How offcut is taken off used sheets. Irregular modes only; not used with FiniteNesting. Values: `StraightLine` — A straight cut, horizontal or vertical, beyond the placed parts (largest chosen automatically); `CoveringBoundingRect` — Everything outside the bounding rectangle of the placed parts. Can produce L shaped remnants; `None` — No remnants; used sheets count as whole sheets.",
+            "type": "string",
+            "default": "StraightLine",
+            "enum": [
+              "StraightLine",
+              "CoveringBoundingRect",
+              "None"
+            ]
           },
           "ScrapAssignmentScheme": {
-            "type": "string"
+            "description": "How each nest's sheet usage is shared among its parts (AssignedSheetCount). Values: `AreaProportion` — Scrap shared in proportion to part area; `AreaProportionWithNonRectPenalty` — As AreaProportion, but weighted towards less rectangular parts; `FillSingleSheet` — Requested quantity divided by the number that fit on one sheet. For the fill-sheet modes.",
+            "type": "string",
+            "default": "AreaProportion",
+            "enum": [
+              "AreaProportion",
+              "AreaProportionWithNonRectPenalty",
+              "FillSingleSheet"
+            ]
           },
           "TimePerNestingSeconds": {
+            "description": "The maximum time in seconds for each individual nest. A request can run several nests.",
             "type": "integer",
             "format": "int32",
             "nullable": false
           },
           "Parts": {
+            "description": "The parts to nest. Each needs a sheet of the same Material and Thickness.",
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/QuotePart"
             }
           },
           "Sheets": {
+            "description": "Sheets to be considered for nesting of the Parts. Quantity is ignored unless FiniteNesting is set.",
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/QuoteSheet"
             }
           },
           "MeasurementUnits": {
-            "type": "string"
+            "description": "Units of the request's dimensions and of the response's InUnits fields. Values: `Millimetres` — Millimetres; `Inches` — Inches.",
+            "type": "string",
+            "default": "Millimetres",
+            "enum": [
+              "Millimetres",
+              "Inches"
+            ]
           },
           "IncludeRenderInResults": {
+            "description": "True (the default) to include an overview rendering in results. Requires OverviewRenderSettings.",
             "type": "boolean",
             "nullable": false
           },
@@ -3906,31 +4640,37 @@
             "$ref": "#/components/schemas/PartExportSettings"
           }
         },
-        "description": "QuoteNestingRequest<QuotePart,QuoteSheet>",
+        "description": "A quote nesting request: a fast material estimate made by nesting the parts on each candidate sheet size.",
         "type": "object"
       },
       "QuotePart": {
         "title": "QuotePart",
         "properties": {
           "Material": {
+            "description": "Material of the part. Parts are nested only on sheets of the same Material and Thickness.",
             "type": "string"
           },
           "Thickness": {
+            "description": "Thickness of the part. Must match a sheet's Thickness exactly, as text (\"3\" does not match \"3.0\").",
             "type": "string"
           },
           "CuttingProcess": {
+            "description": "Cutting process. Parts with different cutting processes are nested separately. Optional.",
             "type": "string"
           },
           "LimitedToSheets": {
+            "description": "Identifiers of the only sheets this part may be nested on. Leave empty to allow any matching sheet. Not allowed with FiniteNesting.",
             "type": "array",
             "items": {
               "type": "string"
             }
           },
           "Identifier": {
+            "description": "Client defined unique (per nesting request) identifier for the part. GUID recommended. Part and sheet identifiers must be unique for the nesting request",
             "type": "string"
           },
           "GeometryDefinitionType": {
+            "description": "Type of the geometry definition",
             "type": "string",
             "default": "Base64EncodedDXF",
             "enum": [
@@ -3944,11 +4684,13 @@
             ]
           },
           "Quantity": {
+            "description": "Quantity required of this part to be placed in the nesting process. This is the quantity of the part in the Assembly in Assembly nesting context",
             "type": "integer",
             "format": "int32",
             "nullable": false
           },
           "AllowableRotation": {
+            "description": "Allowable rotation options for the nesting engine to assess from the drawn angle for this part. Values: `Any` — Allow rotation to any angle; `Ninety` — Allow 90° rotation from the drawn angle; `OneEighty` — Allow 180° rotation from the drawn angle; `Custom` — Reserved; not currently used; `Zero` — No rotation; place the part at its drawn angle only.",
             "type": "string",
             "default": "Any",
             "enum": [
@@ -3960,81 +4702,98 @@
             ]
           },
           "AllowableTilt": {
+            "description": "Tilt angles to be considered from each allowable rotation during nesting. For example, 180 with a setting of 1 for tilt will allow the engine to explore 359, 0, 1 and 179, 180, 181 degrees during nesting",
             "type": "number",
             "format": "double",
             "nullable": false
           },
           "AllowMirror": {
+            "description": "True to allow the nesting engine to consider placing this part in its mirrored form during nesting, false to not allow this.",
             "type": "boolean",
             "nullable": false
           },
           "PartSpacingOverride": {
+            "description": "This part's own spacing, in place of NestSettings.PartSpacing. Neighbouring parts are spaced at the average of their spacings; an override below NestSettings.PartSpacing has no effect. For quote nesting see PartSpacingOverrideAppliesToWholeNest. Optional.",
             "type": "number",
             "format": "double"
           },
           "Priority": {
+            "description": "Part priority, higher priority parts will generally be placed earlier in the nesting process. Ignored in the context of Assembly nesting. Optional.",
             "type": "integer",
             "format": "int32",
             "nullable": false
           },
           "EncodedPartJson": {
+            "description": "Encoded JSON representation of the part, should only be combined with the GeometryDefinition GeometryType of one of the Geometry options",
             "type": "string"
           },
           "InitialRotationAngleFollowingImportCCW": {
+            "description": "Angle for the part to be rotated before nesting - defined in degrees and applied counter clockwise, negative for clockwise. Optional.",
             "type": "number",
             "format": "double",
             "nullable": false
           },
           "CustomRotationStepAngle": {
+            "description": "Specific rotation step angle in degrees to be considered by the nesting engine. Must be combined with AllowableRotation = Custom. Optional.",
             "type": "number",
             "format": "double",
             "nullable": false
           },
           "AllowCommonCutIfEnabled": {
+            "description": "Can this part be considered for common cuts in the nesting process if the relevant common cut settings are present in the request. Optional, Default is True",
             "type": "boolean",
             "nullable": false
           },
           "FillerPartQuantity": {
+            "description": "Filler part quantity to be considered during nesting. Ignored in the contect of Assembly nesting. Optional.",
             "type": "integer",
             "format": "int32",
             "nullable": false
           },
           "NestAsRectangle": {
+            "description": "Force the nesting engine to treat this part as its bounding rectangle only for nesting purposes.",
             "type": "boolean",
             "nullable": false
           },
           "CommonCutMaxBlockSize": {
+            "description": "The maximum number of common cuts per block",
             "type": "integer",
             "format": "int32",
             "nullable": false
           }
         },
-        "description": "QuotePart",
+        "description": "A part to quote, with its material, thickness and cutting process.",
         "type": "object"
       },
       "QuoteSheet": {
         "title": "QuoteSheet",
         "properties": {
           "Material": {
+            "description": "Material of the sheet.",
             "type": "string"
           },
           "Thickness": {
+            "description": "Thickness of the sheet. Must match the parts' Thickness exactly, as text.",
             "type": "string"
           },
           "MinimumSimpleRemnantDimension": {
+            "description": "Minimum dimension for a remnant to be kept, in the request's MeasurementUnits.",
             "type": "number",
             "format": "double",
             "nullable": false
           },
           "PartSpacing": {
+            "description": "Part to part spacing on this sheet, in the request's MeasurementUnits. See PartSpacingOverrideAppliesToWholeNest.",
             "type": "number",
             "format": "double",
             "nullable": false
           },
           "Identifier": {
+            "description": "Client defined unique (per nesting request) identifier for the sheet. GUID recommended. Part and sheet identifiers must be unique for the nesting request",
             "type": "string"
           },
           "GeometryDefinitionType": {
+            "description": "File type of the geometry definition file. Optional, sheet may be defined using dimensions",
             "type": "string",
             "default": "Base64EncodedDXF",
             "enum": [
@@ -4048,48 +4807,58 @@
             ]
           },
           "RectangularXDimension": {
+            "description": "X dimension of rectangular sheet. Optional.",
             "type": "number",
             "format": "double"
           },
           "RectangularYDimension": {
+            "description": "Y dimension of rectangular sheet. Optional.",
             "type": "number",
             "format": "double"
           },
           "IrregularSheetSpacing": {
+            "description": "Edge spacing value to applied to sheet defined using geometry definition. Optional.",
             "type": "number",
             "format": "double"
           },
           "TopSpacing": {
+            "description": "Top edge spacing to be applied to rectangular sheet. Optional.",
             "type": "number",
             "format": "double"
           },
           "LeftSpacing": {
+            "description": "Left edge spacing to be applied to rectangular sheet. Optional.",
             "type": "number",
             "format": "double"
           },
           "RightSpacing": {
+            "description": "Right edge spacing to be applied to rectangular sheet. Optional.",
             "type": "number",
             "format": "double"
           },
           "BottomSpacing": {
+            "description": "Bottom edge spacing to be applied to rectangular sheet. Optional.",
             "type": "number",
             "format": "double"
           },
           "Quantity": {
+            "description": "Quantity of this sheet to be considered during nesting process",
             "type": "integer",
             "format": "int32",
             "nullable": false
           },
           "Priority": {
+            "description": "Priority of this sheet. Higher priority sheets will be considered for nesting first",
             "type": "integer",
             "format": "int32",
             "nullable": false
           },
           "EncodedSheetJson": {
+            "description": "Encoded JSON representation of the sheet, should only be combined with the GeometryDefinitionType of one of the Geometry options",
             "type": "string"
           }
         },
-        "description": "QuoteSheet",
+        "description": "A sheet to quote against, defined by geometry or dimensions, with its material, thickness and part spacing.",
         "type": "object"
       },
       "DxfQuoteNestingRequest": {
@@ -4113,45 +4882,114 @@
         "type": "object"
       },
       "QuoteNestingRequest_Base64QuotePart_Base64QuoteSheet_": {
-        "title": "QuoteNestingRequest`2",
+        "title": "QuoteNestingRequest",
+        "required": [
+          "Parts",
+          "Sheets"
+        ],
         "properties": {
           "ExternalRequestId": {
+            "description": "Optional client-defined identifier for the request, returned in the response.",
             "type": "string"
           },
           "ReportIntermediateResults": {
+            "description": "True (the default) to receive improved results as they are found, as well as each nest's final result.",
             "type": "boolean",
             "nullable": false
           },
           "QuoteNestingMode": {
-            "type": "string"
+            "description": "How the parts are nested. Values: `IrregularTogether` — Parts of the same material, thickness and cutting process nested together on each sheet size; `IrregularSeparate` — Each part nested on its own on each sheet size; `FillSheetRect` — Each part's bounding rectangle repeated across one sheet of each size, to see how many fit; `FillSheetIrregular` — Each part's true shape repeated across one sheet of each size, to see how many fit.",
+            "type": "string",
+            "default": "IrregularTogether",
+            "enum": [
+              "IrregularTogether",
+              "IrregularSeparate",
+              "FillSheetRect",
+              "FillSheetIrregular"
+            ]
+          },
+          "FiniteNesting": {
+            "description": "Nest on the sheets supplied, at their quantities, instead of quoting. Parts that do not fit are unplaced, and no remnants or AssignedSheetCount are calculated. Irregular modes only; parts may not set LimitedToSheets.",
+            "type": "boolean",
+            "nullable": false
+          },
+          "PartSpacingOverrideAppliesToWholeNest": {
+            "description": "True (the default): the largest PartSpacingOverride in a nest is used for the whole nest, in place of the sheet's PartSpacing. False: each override applies to its own part, as in standard nesting.",
+            "type": "boolean",
+            "nullable": false
+          },
+          "NestingObjective": {
+            "description": "The objective each nest aims for. IntelligentMinimizeX by default. Values: `IntelligentMinimizeX` — Minimise the layout extent along X, but avoid poor placements of longer parts even where that does not strictly match the objective; `MinimizeXThenY` — Strictly minimise the layout extent along X, then along Y; `MinimizeArea` — Minimise the overall bounding area of the layout; `MinimizeYThenX` — Strictly minimise the layout extent along Y, then along X; `NoReusableOffcut` — Aim to leave no reusable offcut. Best used together with filler-part quantities; `IntelligentMinimizeY` — Minimise the layout extent along Y, but avoid poor placements of longer parts even where that does not strictly match the objective.",
+            "type": "string",
+            "default": "IntelligentMinimizeX",
+            "enum": [
+              "IntelligentMinimizeX",
+              "MinimizeXThenY",
+              "MinimizeArea",
+              "MinimizeYThenX",
+              "NoReusableOffcut",
+              "IntelligentMinimizeY"
+            ]
+          },
+          "SheetSizeSelection": {
+            "description": "How the sheet size is chosen when several are tried. LeastMaterial by default. Values: `LeastMaterial` — The size placing the most parts, then using the least material once remnants are taken off.",
+            "type": "string",
+            "default": "LeastMaterial",
+            "enum": [
+              "LeastMaterial"
+            ]
           },
           "SimpleRemnantPreference": {
-            "type": "string"
+            "description": "How offcut is taken off used sheets. Irregular modes only; not used with FiniteNesting. Values: `StraightLine` — A straight cut, horizontal or vertical, beyond the placed parts (largest chosen automatically); `CoveringBoundingRect` — Everything outside the bounding rectangle of the placed parts. Can produce L shaped remnants; `None` — No remnants; used sheets count as whole sheets.",
+            "type": "string",
+            "default": "StraightLine",
+            "enum": [
+              "StraightLine",
+              "CoveringBoundingRect",
+              "None"
+            ]
           },
           "ScrapAssignmentScheme": {
-            "type": "string"
+            "description": "How each nest's sheet usage is shared among its parts (AssignedSheetCount). Values: `AreaProportion` — Scrap shared in proportion to part area; `AreaProportionWithNonRectPenalty` — As AreaProportion, but weighted towards less rectangular parts; `FillSingleSheet` — Requested quantity divided by the number that fit on one sheet. For the fill-sheet modes.",
+            "type": "string",
+            "default": "AreaProportion",
+            "enum": [
+              "AreaProportion",
+              "AreaProportionWithNonRectPenalty",
+              "FillSingleSheet"
+            ]
           },
           "TimePerNestingSeconds": {
+            "description": "The maximum time in seconds for each individual nest. A request can run several nests.",
             "type": "integer",
             "format": "int32",
             "nullable": false
           },
           "Parts": {
+            "description": "The parts to nest. Each needs a sheet of the same Material and Thickness.",
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/Base64QuotePart"
             }
           },
           "Sheets": {
+            "description": "Sheets to be considered for nesting of the Parts. Quantity is ignored unless FiniteNesting is set.",
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/Base64QuoteSheet"
             }
           },
           "MeasurementUnits": {
-            "type": "string"
+            "description": "Units of the request's dimensions and of the response's InUnits fields. Values: `Millimetres` — Millimetres; `Inches` — Inches.",
+            "type": "string",
+            "default": "Millimetres",
+            "enum": [
+              "Millimetres",
+              "Inches"
+            ]
           },
           "IncludeRenderInResults": {
+            "description": "True (the default) to include an overview rendering in results. Requires OverviewRenderSettings.",
             "type": "boolean",
             "nullable": false
           },
@@ -4174,28 +5012,33 @@
             "$ref": "#/components/schemas/PartExportSettings"
           }
         },
-        "description": "QuoteNestingRequest<Base64QuotePart,Base64QuoteSheet>",
+        "description": "A quote nesting request: a fast material estimate made by nesting the parts on each candidate sheet size.",
         "type": "object"
       },
       "Base64QuotePart": {
         "title": "Base64QuotePart",
         "properties": {
           "Material": {
+            "description": "Material of the part. Parts are nested only on sheets of the same Material and Thickness.",
             "type": "string"
           },
           "Thickness": {
+            "description": "Thickness of the part. Must match a sheet's Thickness exactly, as text (\"3\" does not match \"3.0\").",
             "type": "string"
           },
           "CuttingProcess": {
+            "description": "Cutting process. Parts with different cutting processes are nested separately. Optional.",
             "type": "string"
           },
           "LimitedToSheets": {
+            "description": "Identifiers of the only sheets this part may be nested on. Leave empty to allow any matching sheet. Not allowed with FiniteNesting.",
             "type": "array",
             "items": {
               "type": "string"
             }
           },
           "Base64EncodedGeometryDefinition": {
+            "description": "Geometry definition of the part. Must be of a supported file type",
             "type": "string"
           },
           "GeometryDefinitionCompressionType": {
@@ -4210,9 +5053,11 @@
             "type": "string"
           },
           "Identifier": {
+            "description": "Client defined unique (per nesting request) identifier for the part. GUID recommended. Part and sheet identifiers must be unique for the nesting request",
             "type": "string"
           },
           "GeometryDefinitionType": {
+            "description": "Type of the geometry definition",
             "type": "string",
             "default": "Base64EncodedDXF",
             "enum": [
@@ -4226,11 +5071,13 @@
             ]
           },
           "Quantity": {
+            "description": "Quantity required of this part to be placed in the nesting process. This is the quantity of the part in the Assembly in Assembly nesting context",
             "type": "integer",
             "format": "int32",
             "nullable": false
           },
           "AllowableRotation": {
+            "description": "Allowable rotation options for the nesting engine to assess from the drawn angle for this part. Values: `Any` — Allow rotation to any angle; `Ninety` — Allow 90° rotation from the drawn angle; `OneEighty` — Allow 180° rotation from the drawn angle; `Custom` — Reserved; not currently used; `Zero` — No rotation; place the part at its drawn angle only.",
             "type": "string",
             "default": "Any",
             "enum": [
@@ -4242,78 +5089,94 @@
             ]
           },
           "AllowableTilt": {
+            "description": "Tilt angles to be considered from each allowable rotation during nesting. For example, 180 with a setting of 1 for tilt will allow the engine to explore 359, 0, 1 and 179, 180, 181 degrees during nesting",
             "type": "number",
             "format": "double",
             "nullable": false
           },
           "AllowMirror": {
+            "description": "True to allow the nesting engine to consider placing this part in its mirrored form during nesting, false to not allow this.",
             "type": "boolean",
             "nullable": false
           },
           "PartSpacingOverride": {
+            "description": "This part's own spacing, in place of NestSettings.PartSpacing. Neighbouring parts are spaced at the average of their spacings; an override below NestSettings.PartSpacing has no effect. For quote nesting see PartSpacingOverrideAppliesToWholeNest. Optional.",
             "type": "number",
             "format": "double"
           },
           "Priority": {
+            "description": "Part priority, higher priority parts will generally be placed earlier in the nesting process. Ignored in the context of Assembly nesting. Optional.",
             "type": "integer",
             "format": "int32",
             "nullable": false
           },
           "EncodedPartJson": {
+            "description": "Encoded JSON representation of the part, should only be combined with the GeometryDefinition GeometryType of one of the Geometry options",
             "type": "string"
           },
           "InitialRotationAngleFollowingImportCCW": {
+            "description": "Angle for the part to be rotated before nesting - defined in degrees and applied counter clockwise, negative for clockwise. Optional.",
             "type": "number",
             "format": "double",
             "nullable": false
           },
           "CustomRotationStepAngle": {
+            "description": "Specific rotation step angle in degrees to be considered by the nesting engine. Must be combined with AllowableRotation = Custom. Optional.",
             "type": "number",
             "format": "double",
             "nullable": false
           },
           "AllowCommonCutIfEnabled": {
+            "description": "Can this part be considered for common cuts in the nesting process if the relevant common cut settings are present in the request. Optional, Default is True",
             "type": "boolean",
             "nullable": false
           },
           "FillerPartQuantity": {
+            "description": "Filler part quantity to be considered during nesting. Ignored in the contect of Assembly nesting. Optional.",
             "type": "integer",
             "format": "int32",
             "nullable": false
           },
           "NestAsRectangle": {
+            "description": "Force the nesting engine to treat this part as its bounding rectangle only for nesting purposes.",
             "type": "boolean",
             "nullable": false
           },
           "CommonCutMaxBlockSize": {
+            "description": "The maximum number of common cuts per block",
             "type": "integer",
             "format": "int32",
             "nullable": false
           }
         },
-        "description": "Base64QuotePart",
+        "description": "An importable part to quote, from Base64EncodedGeometryDefinition content, with its material, thickness and cutting process.",
         "type": "object"
       },
       "Base64QuoteSheet": {
         "title": "Base64QuoteSheet",
         "properties": {
           "Material": {
+            "description": "Material of the sheet.",
             "type": "string"
           },
           "Thickness": {
+            "description": "Thickness of the sheet. Must match the parts' Thickness exactly, as text.",
             "type": "string"
           },
           "MinimumSimpleRemnantDimension": {
+            "description": "Minimum dimension for a remnant to be kept, in the request's MeasurementUnits.",
             "type": "number",
             "format": "double",
             "nullable": false
           },
           "PartSpacing": {
+            "description": "Part to part spacing on this sheet, in the request's MeasurementUnits. See PartSpacingOverrideAppliesToWholeNest.",
             "type": "number",
             "format": "double",
             "nullable": false
           },
           "Base64EncodedGeometryDefinition": {
+            "description": "Geometry definition of the part. Must be of a supported file type",
             "type": "string"
           },
           "GeometryDefinitionCompressionType": {
@@ -4328,9 +5191,11 @@
             "type": "string"
           },
           "Identifier": {
+            "description": "Client defined unique (per nesting request) identifier for the sheet. GUID recommended. Part and sheet identifiers must be unique for the nesting request",
             "type": "string"
           },
           "GeometryDefinitionType": {
+            "description": "File type of the geometry definition file. Optional, sheet may be defined using dimensions",
             "type": "string",
             "default": "Base64EncodedDXF",
             "enum": [
@@ -4344,48 +5209,58 @@
             ]
           },
           "RectangularXDimension": {
+            "description": "X dimension of rectangular sheet. Optional.",
             "type": "number",
             "format": "double"
           },
           "RectangularYDimension": {
+            "description": "Y dimension of rectangular sheet. Optional.",
             "type": "number",
             "format": "double"
           },
           "IrregularSheetSpacing": {
+            "description": "Edge spacing value to applied to sheet defined using geometry definition. Optional.",
             "type": "number",
             "format": "double"
           },
           "TopSpacing": {
+            "description": "Top edge spacing to be applied to rectangular sheet. Optional.",
             "type": "number",
             "format": "double"
           },
           "LeftSpacing": {
+            "description": "Left edge spacing to be applied to rectangular sheet. Optional.",
             "type": "number",
             "format": "double"
           },
           "RightSpacing": {
+            "description": "Right edge spacing to be applied to rectangular sheet. Optional.",
             "type": "number",
             "format": "double"
           },
           "BottomSpacing": {
+            "description": "Bottom edge spacing to be applied to rectangular sheet. Optional.",
             "type": "number",
             "format": "double"
           },
           "Quantity": {
+            "description": "Quantity of this sheet to be considered during nesting process",
             "type": "integer",
             "format": "int32",
             "nullable": false
           },
           "Priority": {
+            "description": "Priority of this sheet. Higher priority sheets will be considered for nesting first",
             "type": "integer",
             "format": "int32",
             "nullable": false
           },
           "EncodedSheetJson": {
+            "description": "Encoded JSON representation of the sheet, should only be combined with the GeometryDefinitionType of one of the Geometry options",
             "type": "string"
           }
         },
-        "description": "Base64QuoteSheet",
+        "description": "A sheet to quote against, from Base64EncodedGeometryDefinition content or dimensions, with its material, thickness and part spacing.",
         "type": "object"
       },
       "NestingRequest1D": {
@@ -4409,55 +5284,63 @@
         "title": "Nesting1DRequest",
         "properties": {
           "SourceLength": {
+            "description": "Length of the source material",
             "type": "number",
             "format": "double",
             "nullable": false
           },
           "SourceWidth": {
+            "description": "Width of the source material",
             "type": "number",
             "format": "double",
             "nullable": false
           },
           "CutGap": {
+            "description": "Cut gap (kerf) between parts",
             "type": "number",
             "format": "double",
             "nullable": false
           },
           "SourceQuantity": {
+            "description": "Number of source materials available",
             "type": "integer",
             "format": "int32",
             "nullable": false
           },
           "ComputationTime": {
+            "description": "Computation time in seconds",
             "type": "integer",
             "format": "int32",
             "nullable": false
           },
           "Lengths": {
+            "description": "Lengths to be nested",
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/Nesting1DRequestLength"
             }
           }
         },
-        "description": "Nesting1DRequest",
+        "description": "Request for a 1D nesting computation",
         "type": "object"
       },
       "Nesting1DRequestLength": {
         "title": "Nesting1DRequestLength",
         "properties": {
           "Quantity": {
+            "description": "Quantity required of this length",
             "type": "integer",
             "format": "int32",
             "nullable": false
           },
           "Length": {
+            "description": "The length dimension",
             "type": "number",
             "format": "double",
             "nullable": false
           }
         },
-        "description": "Nesting1DRequestLength",
+        "description": "A length to be nested as part of a 1D nesting request",
         "type": "object"
       },
       "ReadyForNesting": {
@@ -4529,18 +5412,21 @@
             "$ref": "#/components/schemas/ReportSourceRenderingSettings"
           },
           "Parts": {
+            "description": "The parts to nest, each carrying its own quantity and per-part options.",
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/Base64Part"
             }
           },
           "Sheets": {
+            "description": "Sheets to be considered for nesting of the Parts",
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/Base64Sheet"
             }
           },
           "Assemblies": {
+            "description": "Assemblies to be considered for nesting",
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/Assembly_Base64Part_"
@@ -4553,6 +5439,7 @@
             "$ref": "#/components/schemas/PartExportSettings"
           },
           "Tag": {
+            "description": "Optional client-defined tag carried with the request, for your own correlation. Not interpreted by the nester.",
             "type": "string"
           }
         },
@@ -4563,6 +5450,7 @@
         "title": "Base64Part",
         "properties": {
           "Base64EncodedGeometryDefinition": {
+            "description": "Geometry definition of the part. Must be of a supported file type",
             "type": "string"
           },
           "GeometryDefinitionCompressionType": {
@@ -4577,9 +5465,11 @@
             "type": "string"
           },
           "Identifier": {
+            "description": "Client defined unique (per nesting request) identifier for the part. GUID recommended. Part and sheet identifiers must be unique for the nesting request",
             "type": "string"
           },
           "GeometryDefinitionType": {
+            "description": "Type of the geometry definition",
             "type": "string",
             "default": "Base64EncodedDXF",
             "enum": [
@@ -4593,11 +5483,13 @@
             ]
           },
           "Quantity": {
+            "description": "Quantity required of this part to be placed in the nesting process. This is the quantity of the part in the Assembly in Assembly nesting context",
             "type": "integer",
             "format": "int32",
             "nullable": false
           },
           "AllowableRotation": {
+            "description": "Allowable rotation options for the nesting engine to assess from the drawn angle for this part. Values: `Any` — Allow rotation to any angle; `Ninety` — Allow 90° rotation from the drawn angle; `OneEighty` — Allow 180° rotation from the drawn angle; `Custom` — Reserved; not currently used; `Zero` — No rotation; place the part at its drawn angle only.",
             "type": "string",
             "default": "Any",
             "enum": [
@@ -4609,62 +5501,74 @@
             ]
           },
           "AllowableTilt": {
+            "description": "Tilt angles to be considered from each allowable rotation during nesting. For example, 180 with a setting of 1 for tilt will allow the engine to explore 359, 0, 1 and 179, 180, 181 degrees during nesting",
             "type": "number",
             "format": "double",
             "nullable": false
           },
           "AllowMirror": {
+            "description": "True to allow the nesting engine to consider placing this part in its mirrored form during nesting, false to not allow this.",
             "type": "boolean",
             "nullable": false
           },
           "PartSpacingOverride": {
+            "description": "This part's own spacing, in place of NestSettings.PartSpacing. Neighbouring parts are spaced at the average of their spacings; an override below NestSettings.PartSpacing has no effect. For quote nesting see PartSpacingOverrideAppliesToWholeNest. Optional.",
             "type": "number",
             "format": "double"
           },
           "Priority": {
+            "description": "Part priority, higher priority parts will generally be placed earlier in the nesting process. Ignored in the context of Assembly nesting. Optional.",
             "type": "integer",
             "format": "int32",
             "nullable": false
           },
           "EncodedPartJson": {
+            "description": "Encoded JSON representation of the part, should only be combined with the GeometryDefinition GeometryType of one of the Geometry options",
             "type": "string"
           },
           "InitialRotationAngleFollowingImportCCW": {
+            "description": "Angle for the part to be rotated before nesting - defined in degrees and applied counter clockwise, negative for clockwise. Optional.",
             "type": "number",
             "format": "double",
             "nullable": false
           },
           "CustomRotationStepAngle": {
+            "description": "Specific rotation step angle in degrees to be considered by the nesting engine. Must be combined with AllowableRotation = Custom. Optional.",
             "type": "number",
             "format": "double",
             "nullable": false
           },
           "AllowCommonCutIfEnabled": {
+            "description": "Can this part be considered for common cuts in the nesting process if the relevant common cut settings are present in the request. Optional, Default is True",
             "type": "boolean",
             "nullable": false
           },
           "FillerPartQuantity": {
+            "description": "Filler part quantity to be considered during nesting. Ignored in the contect of Assembly nesting. Optional.",
             "type": "integer",
             "format": "int32",
             "nullable": false
           },
           "NestAsRectangle": {
+            "description": "Force the nesting engine to treat this part as its bounding rectangle only for nesting purposes.",
             "type": "boolean",
             "nullable": false
           },
           "CommonCutMaxBlockSize": {
+            "description": "The maximum number of common cuts per block",
             "type": "integer",
             "format": "int32",
             "nullable": false
           }
         },
-        "description": "Base64Part",
+        "description": "Importable part based on Base64EncodedGeometryDefinition content. The encoded file will be passed through the importer during loading of the nesting request.",
         "type": "object"
       },
       "Base64Sheet": {
         "title": "Base64Sheet",
         "properties": {
           "Base64EncodedGeometryDefinition": {
+            "description": "Geometry definition of the part. Must be of a supported file type",
             "type": "string"
           },
           "GeometryDefinitionCompressionType": {
@@ -4679,9 +5583,11 @@
             "type": "string"
           },
           "Identifier": {
+            "description": "Client defined unique (per nesting request) identifier for the sheet. GUID recommended. Part and sheet identifiers must be unique for the nesting request",
             "type": "string"
           },
           "GeometryDefinitionType": {
+            "description": "File type of the geometry definition file. Optional, sheet may be defined using dimensions",
             "type": "string",
             "default": "Base64EncodedDXF",
             "enum": [
@@ -4695,44 +5601,54 @@
             ]
           },
           "RectangularXDimension": {
+            "description": "X dimension of rectangular sheet. Optional.",
             "type": "number",
             "format": "double"
           },
           "RectangularYDimension": {
+            "description": "Y dimension of rectangular sheet. Optional.",
             "type": "number",
             "format": "double"
           },
           "IrregularSheetSpacing": {
+            "description": "Edge spacing value to applied to sheet defined using geometry definition. Optional.",
             "type": "number",
             "format": "double"
           },
           "TopSpacing": {
+            "description": "Top edge spacing to be applied to rectangular sheet. Optional.",
             "type": "number",
             "format": "double"
           },
           "LeftSpacing": {
+            "description": "Left edge spacing to be applied to rectangular sheet. Optional.",
             "type": "number",
             "format": "double"
           },
           "RightSpacing": {
+            "description": "Right edge spacing to be applied to rectangular sheet. Optional.",
             "type": "number",
             "format": "double"
           },
           "BottomSpacing": {
+            "description": "Bottom edge spacing to be applied to rectangular sheet. Optional.",
             "type": "number",
             "format": "double"
           },
           "Quantity": {
+            "description": "Quantity of this sheet to be considered during nesting process",
             "type": "integer",
             "format": "int32",
             "nullable": false
           },
           "Priority": {
+            "description": "Priority of this sheet. Higher priority sheets will be considered for nesting first",
             "type": "integer",
             "format": "int32",
             "nullable": false
           },
           "EncodedSheetJson": {
+            "description": "Encoded JSON representation of the sheet, should only be combined with the GeometryDefinitionType of one of the Geometry options",
             "type": "string"
           }
         },
@@ -4740,21 +5656,131 @@
         "type": "object"
       },
       "Assembly_Base64Part_": {
-        "title": "Assembly`1",
+        "title": "Assembly",
         "properties": {
           "Parts": {
+            "description": "Parts that make up the assembly",
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/Base64Part"
             }
           },
           "Quantity": {
+            "description": "Quantity of this assembly to be considered during nesting process",
             "type": "integer",
             "format": "int32",
             "nullable": false
           }
         },
         "description": "Assembly<Base64Part>",
+        "type": "object"
+      },
+      "CreateCheckoutRequest": {
+        "title": "CreateCheckoutRequest",
+        "properties": {
+          "PlanId": {
+            "type": "string",
+            "nullable": false
+          },
+          "InitialAccountCredit": {
+            "type": "number",
+            "format": "double",
+            "nullable": false
+          },
+          "InviteBillingUserEmail": {
+            "type": "string"
+          }
+        },
+        "description": "CreateCheckoutRequest",
+        "type": "object"
+      },
+      "InviteBillingUser": {
+        "title": "InviteBillingUser",
+        "properties": {
+          "Email": {
+            "type": "string"
+          }
+        },
+        "description": "InviteBillingUser",
+        "type": "object"
+      },
+      "InviteAdministrator": {
+        "title": "InviteAdministrator",
+        "properties": {
+          "Email": {
+            "type": "string"
+          }
+        },
+        "description": "InviteAdministrator",
+        "type": "object"
+      },
+      "PayCheckoutRequestByCard": {
+        "title": "PayCheckoutRequestByCard",
+        "properties": {},
+        "description": "PayCheckoutRequestByCard",
+        "type": "object"
+      },
+      "PayCheckoutRequestByInvoice": {
+        "title": "PayCheckoutRequestByInvoice",
+        "properties": {
+          "InvoiceRequestDetails": {
+            "$ref": "#/components/schemas/InvoiceRequestDetails"
+          }
+        },
+        "description": "PayCheckoutRequestByInvoice",
+        "type": "object"
+      },
+      "InvoiceRequestDetails": {
+        "title": "InvoiceRequestDetails",
+        "properties": {
+          "AddressLineOne": {
+            "type": "string"
+          },
+          "City": {
+            "type": "string"
+          },
+          "State": {
+            "type": "string"
+          },
+          "PostalCode": {
+            "type": "string"
+          },
+          "Country": {
+            "type": "string"
+          },
+          "PurchaseOrderNumber": {
+            "type": "string"
+          },
+          "CompanyName": {
+            "type": "string"
+          },
+          "TaxNumber": {
+            "type": "string"
+          }
+        },
+        "description": "InvoiceRequestDetails",
+        "type": "object"
+      },
+      "AcceptAccountInvitation": {
+        "title": "AcceptAccountInvitation",
+        "properties": {
+          "InvitationId": {
+            "type": "string",
+            "nullable": false
+          }
+        },
+        "description": "AcceptAccountInvitation",
+        "type": "object"
+      },
+      "DeclineAccountInvitation": {
+        "title": "DeclineAccountInvitation",
+        "properties": {
+          "InvitationId": {
+            "type": "string",
+            "nullable": false
+          }
+        },
+        "description": "DeclineAccountInvitation",
         "type": "object"
       },
       "AddKeyAllowedOrigin": {
@@ -4787,193 +5813,6 @@
           "type": "string"
         },
         "description": "Dictionary<String,String>",
-        "type": "object"
-      },
-      "ClientKey": {
-        "title": "ClientKey",
-        "properties": {
-          "ApiKey": {
-            "type": "string"
-          },
-          "ClientRef": {
-            "type": "string"
-          },
-          "Expired": {
-            "type": "boolean",
-            "nullable": false
-          },
-          "IsActive": {
-            "type": "boolean",
-            "nullable": false
-          },
-          "Expires": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "CancelledDate": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "Parallelism": {
-            "type": "integer",
-            "format": "int32",
-            "nullable": false
-          },
-          "IsTrial": {
-            "type": "boolean",
-            "nullable": false
-          },
-          "KeyType": {
-            "type": "string",
-            "default": "Usage",
-            "enum": [
-              "Usage",
-              "Admin"
-            ]
-          }
-        },
-        "description": "ClientKey",
-        "type": "object"
-      },
-      "NestingAccountBalance": {
-        "title": "NestingAccountBalance",
-        "properties": {
-          "UserId": {
-            "type": "integer",
-            "format": "int32",
-            "nullable": false
-          },
-          "StartDate": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": false
-          },
-          "EndDate": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": false
-          },
-          "RemainingAllowanceSeconds": {
-            "type": "number",
-            "format": "double",
-            "nullable": false
-          },
-          "RemainingAllowance": {
-            "description": "Allowance in minutes",
-            "type": "number",
-            "format": "double",
-            "nullable": false
-          },
-          "RemainingCredit": {
-            "type": "number",
-            "format": "double",
-            "nullable": false
-          },
-          "PaidUntil": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "HasActiveSubscription": {
-            "type": "boolean",
-            "nullable": false
-          }
-        },
-        "description": "NestingAccountBalance",
-        "type": "object"
-      },
-      "PublicUserProfile": {
-        "title": "PublicUserProfile",
-        "properties": {
-          "Id": {
-            "type": "string"
-          },
-          "RequiresPayment": {
-            "type": "boolean",
-            "nullable": false
-          },
-          "ExternalId": {
-            "type": "string"
-          },
-          "FirstName": {
-            "type": "string"
-          },
-          "LastName": {
-            "type": "string"
-          },
-          "Locked": {
-            "type": "boolean",
-            "nullable": false
-          },
-          "LockedDate": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "LastAttemptedLoginDate": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "NestCount": {
-            "type": "integer",
-            "format": "int32",
-            "nullable": false
-          }
-        },
-        "description": "PublicUserProfile",
-        "type": "object"
-      },
-      "UserSubscriptionStatus": {
-        "title": "UserSubscriptionStatus",
-        "properties": {
-          "HasHadTrail": {
-            "type": "boolean",
-            "nullable": false
-          },
-          "IsOnTrial": {
-            "type": "boolean",
-            "nullable": false
-          },
-          "HasTrialRequest": {
-            "type": "boolean",
-            "nullable": false
-          },
-          "RequiresPayment": {
-            "type": "boolean",
-            "nullable": false
-          },
-          "NestingAccountBalance": {
-            "$ref": "#/components/schemas/NestingAccountBalance"
-          }
-        },
-        "description": "UserSubscriptionStatus",
-        "type": "object"
-      },
-      "FairnessConfigResponse": {
-        "title": "FairnessConfigResponse",
-        "properties": {
-          "FairnessEnabled": {
-            "description": "Whether the per-customer admission gate is active for the account.",
-            "type": "boolean",
-            "nullable": false
-          },
-          "OverageEnabled": {
-            "description": "Whether over-share nests spill into overage rather than being rejected.",
-            "type": "boolean",
-            "nullable": false
-          },
-          "DefaultLineageWeight": {
-            "description": "Default per-key fairness weight for keys with no override.",
-            "type": "integer",
-            "format": "int32",
-            "nullable": false
-          },
-          "BurstPercent": {
-            "description": "Percent of included minutes kept as the shared first-come burst pool.",
-            "type": "integer",
-            "format": "int32",
-            "nullable": false
-          }
-        },
-        "description": "FairnessConfigResponse",
         "type": "object"
       },
       "SuccessfulNest": {
@@ -5053,6 +5892,145 @@
           }
         },
         "description": "FailedNest",
+        "type": "object"
+      },
+      "AccountInvitationResponse": {
+        "title": "AccountInvitationResponse",
+        "properties": {
+          "Invitation": {
+            "$ref": "#/components/schemas/AccountInvitationInfo"
+          },
+          "EmailSent": {
+            "type": "boolean",
+            "nullable": false
+          }
+        },
+        "description": "AccountInvitationResponse",
+        "type": "object"
+      },
+      "AccountInvitationInfo": {
+        "title": "AccountInvitationInfo",
+        "properties": {
+          "Id": {
+            "type": "string",
+            "nullable": false
+          },
+          "Email": {
+            "type": "string"
+          },
+          "Role": {
+            "type": "string",
+            "default": "Administrator",
+            "enum": [
+              "Administrator",
+              "Billing"
+            ]
+          },
+          "Status": {
+            "type": "string",
+            "default": "Pending",
+            "enum": [
+              "Pending",
+              "Accepted",
+              "Declined",
+              "Cancelled",
+              "Expired"
+            ]
+          },
+          "InvitedByType": {
+            "type": "string",
+            "default": "AccountAdministrator",
+            "enum": [
+              "AccountAdministrator",
+              "Operator",
+              "Invitee",
+              "System"
+            ]
+          },
+          "InvitedById": {
+            "type": "string"
+          },
+          "Note": {
+            "type": "string"
+          },
+          "CreatedDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": false
+          },
+          "ExpiresDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": false
+          },
+          "StatusChangedDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "StatusChangedByType": {
+            "type": "string",
+            "default": "AccountAdministrator",
+            "enum": [
+              "AccountAdministrator",
+              "Operator",
+              "Invitee",
+              "System"
+            ]
+          },
+          "StatusChangedById": {
+            "type": "string"
+          },
+          "StatusNote": {
+            "type": "string"
+          }
+        },
+        "description": "AccountInvitationInfo",
+        "type": "object"
+      },
+      "ClientKey": {
+        "title": "ClientKey",
+        "properties": {
+          "ApiKey": {
+            "type": "string"
+          },
+          "ClientRef": {
+            "type": "string"
+          },
+          "Expired": {
+            "type": "boolean",
+            "nullable": false
+          },
+          "IsActive": {
+            "type": "boolean",
+            "nullable": false
+          },
+          "Expires": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "CancelledDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "Parallelism": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": false
+          },
+          "IsTrial": {
+            "type": "boolean",
+            "nullable": false
+          },
+          "KeyType": {
+            "type": "string",
+            "default": "Usage",
+            "enum": [
+              "Usage",
+              "Admin"
+            ]
+          }
+        },
+        "description": "ClientKey",
         "type": "object"
       },
       "FairnessUsageResponse": {
@@ -5136,6 +6114,40 @@
         "description": "FairnessKeyUsage",
         "type": "object"
       },
+      "FairnessConfigResponse": {
+        "title": "FairnessConfigResponse",
+        "properties": {
+          "FairnessEnabled": {
+            "description": "Whether the per-customer admission gate is active for the account.",
+            "type": "boolean",
+            "nullable": false
+          },
+          "OverageEnabled": {
+            "description": "Whether over-share nests spill into overage rather than being rejected.",
+            "type": "boolean",
+            "nullable": false
+          },
+          "DefaultLineageWeight": {
+            "description": "Default per-key fairness weight for keys with no override.",
+            "type": "integer",
+            "format": "int32",
+            "nullable": false
+          },
+          "BurstPercent": {
+            "description": "Percent of included minutes kept as the shared first-come burst pool.",
+            "type": "integer",
+            "format": "int32",
+            "nullable": false
+          },
+          "HasCardOnFile": {
+            "description": "Whether the account has a payment card on file. Overage can only be turned on with one.",
+            "type": "boolean",
+            "nullable": false
+          }
+        },
+        "description": "FairnessConfigResponse",
+        "type": "object"
+      },
       "KeyFairnessWeightResponse": {
         "title": "KeyFairnessWeightResponse",
         "properties": {
@@ -5150,6 +6162,156 @@
           }
         },
         "description": "KeyFairnessWeightResponse",
+        "type": "object"
+      },
+      "NestingAccountBalance": {
+        "title": "NestingAccountBalance",
+        "properties": {
+          "UserId": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": false
+          },
+          "StartDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": false
+          },
+          "EndDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": false
+          },
+          "RemainingAllowanceSeconds": {
+            "type": "number",
+            "format": "double",
+            "nullable": false
+          },
+          "RemainingAllowance": {
+            "description": "Allowance in minutes",
+            "type": "number",
+            "format": "double",
+            "nullable": false
+          },
+          "RemainingCredit": {
+            "type": "number",
+            "format": "double",
+            "nullable": false
+          },
+          "PaidUntil": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "HasActiveSubscription": {
+            "type": "boolean",
+            "nullable": false
+          }
+        },
+        "description": "NestingAccountBalance",
+        "type": "object"
+      },
+      "PublicUserProfile": {
+        "title": "PublicUserProfile",
+        "properties": {
+          "RequiresPayment": {
+            "type": "boolean",
+            "nullable": false
+          },
+          "FirstName": {
+            "type": "string"
+          },
+          "LastName": {
+            "type": "string"
+          },
+          "Locked": {
+            "type": "boolean",
+            "nullable": false
+          },
+          "LockedDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "LastAttemptedLoginDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "NestCount": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": false
+          }
+        },
+        "description": "PublicUserProfile",
+        "type": "object"
+      },
+      "UserSubscriptionStatus": {
+        "title": "UserSubscriptionStatus",
+        "properties": {
+          "HasHadTrail": {
+            "type": "boolean",
+            "nullable": false
+          },
+          "IsOnTrial": {
+            "type": "boolean",
+            "nullable": false
+          },
+          "HasTrialRequest": {
+            "type": "boolean",
+            "nullable": false
+          },
+          "RequiresPayment": {
+            "type": "boolean",
+            "nullable": false
+          },
+          "NestingAccountBalance": {
+            "$ref": "#/components/schemas/NestingAccountBalance"
+          }
+        },
+        "description": "UserSubscriptionStatus",
+        "type": "object"
+      },
+      "AccountMemberInfo": {
+        "title": "AccountMemberInfo",
+        "properties": {
+          "Role": {
+            "type": "string",
+            "default": "Administrator",
+            "enum": [
+              "Administrator",
+              "Billing"
+            ]
+          },
+          "Name": {
+            "type": "string"
+          },
+          "Email": {
+            "type": "string"
+          },
+          "IsYou": {
+            "type": "boolean",
+            "nullable": false
+          },
+          "CreatedDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": false
+          },
+          "Subject": {
+            "type": "string"
+          }
+        },
+        "description": "AccountMemberInfo",
+        "type": "object"
+      },
+      "RemoveMemberResponse": {
+        "title": "RemoveMemberResponse",
+        "properties": {
+          "Removed": {
+            "type": "boolean",
+            "nullable": false
+          }
+        },
+        "description": "RemoveMemberResponse",
         "type": "object"
       },
       "NestingStatusResponse": {
@@ -5280,6 +6442,7 @@
             "nullable": false
           },
           "ResultIdentity": {
+            "description": "Unique identifier for the nesting result",
             "type": "string"
           }
         },
@@ -5290,6 +6453,7 @@
         "title": "NestingStatusMessage",
         "properties": {
           "NestingStatus": {
+            "description": "The nesting status being reported",
             "type": "string",
             "default": "Result",
             "enum": [
@@ -5299,6 +6463,7 @@
             ]
           },
           "ErrorReport": {
+            "description": "Report on error if status is Error. Not present if status is not Error.",
             "type": "string"
           },
           "ErrorCode": {
@@ -5306,42 +6471,50 @@
             "format": "int32"
           },
           "ResultIdentity": {
+            "description": "Unique identifier (GUID) for the result. Not present if status is not Result.",
             "type": "string"
           },
           "NestingEfficiency": {
+            "description": "Nesting efficiency figure for the result. Not present if status is not Result.",
             "type": "number",
             "format": "double"
           },
           "AverageSheetUtilisation": {
+            "description": "Average sheet utilisation figure for the result. Not present if status is not Result.",
             "type": "number",
             "format": "double"
           },
           "NestedSheetsInfo": {
+            "description": "Details of the sheets and nests that form the result",
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/NestedSheetInfo"
             }
           },
           "NumberOfPartsNested": {
+            "description": "Number of parts nested in the result. Not present if status is not Result.",
             "type": "integer",
             "format": "int32"
           },
           "NumberOfPartsUnPlaced": {
+            "description": "Number of parts not nested in the result. Not present if status is not Result.",
             "type": "integer",
             "format": "int32"
           },
           "NumberOfSheetsUsed": {
+            "description": "Number of sheets used in the result. Not present if status is not Result.",
             "type": "integer",
             "format": "int32"
           },
           "UnplacedParts": {
+            "description": "Information about parts which are not placed",
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/UnplacedPartInfo"
             }
           }
         },
-        "description": "NestingStatusMessage",
+        "description": "Sent from Server to client when the status of the nesting process changes, i.e. it generates a result, completes or errors",
         "type": "object"
       },
       "NestedSheetInfo": {
@@ -5736,13 +6909,199 @@
             "description": "`true` when the calling API key is active.",
             "type": "boolean",
             "nullable": false
-          },
-          "UserId": {
-            "description": "The id of the account the key belongs to.",
-            "type": "string"
           }
         },
         "description": "ValidateApiKeyResponse",
+        "type": "object"
+      },
+      "MyAccountMembership": {
+        "title": "MyAccountMembership",
+        "properties": {
+          "Role": {
+            "type": "string",
+            "default": "Administrator",
+            "enum": [
+              "Administrator",
+              "Billing"
+            ]
+          },
+          "AccountGuid": {
+            "type": "string"
+          },
+          "PendingInvitations": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/InvitationForMe"
+            }
+          },
+          "CheckoutRequest": {
+            "$ref": "#/components/schemas/CheckoutRequestInfo"
+          }
+        },
+        "description": "MyAccountMembership",
+        "type": "object"
+      },
+      "InvitationForMe": {
+        "title": "InvitationForMe",
+        "properties": {
+          "Id": {
+            "type": "string",
+            "nullable": false
+          },
+          "Role": {
+            "type": "string",
+            "default": "Administrator",
+            "enum": [
+              "Administrator",
+              "Billing"
+            ]
+          },
+          "InvitedByType": {
+            "type": "string",
+            "default": "AccountAdministrator",
+            "enum": [
+              "AccountAdministrator",
+              "Operator",
+              "Invitee",
+              "System"
+            ]
+          },
+          "InvitedByName": {
+            "type": "string"
+          },
+          "IsToYourAccount": {
+            "type": "boolean",
+            "nullable": false
+          },
+          "CreatedDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": false
+          },
+          "ExpiresDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": false
+          }
+        },
+        "description": "InvitationForMe",
+        "type": "object"
+      },
+      "CheckoutRequestInfo": {
+        "title": "CheckoutRequestInfo",
+        "properties": {
+          "Id": {
+            "type": "string",
+            "nullable": false
+          },
+          "PlanId": {
+            "type": "string",
+            "nullable": false
+          },
+          "PlanName": {
+            "type": "string"
+          },
+          "Cost": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": false
+          },
+          "CurrencyCode": {
+            "type": "string"
+          },
+          "RenewalPeriod": {
+            "type": "string",
+            "default": "None",
+            "enum": [
+              "None",
+              "Day",
+              "Month",
+              "Year"
+            ]
+          },
+          "InitialAccountCredit": {
+            "type": "number",
+            "format": "double",
+            "nullable": false
+          },
+          "CanPayByCard": {
+            "type": "boolean",
+            "nullable": false
+          },
+          "CanPayByInvoice": {
+            "type": "boolean",
+            "nullable": false
+          },
+          "RequestedByName": {
+            "type": "string"
+          },
+          "RequestedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": false
+          }
+        },
+        "description": "CheckoutRequestInfo",
+        "type": "object"
+      },
+      "AccountMembersResponse": {
+        "title": "AccountMembersResponse",
+        "properties": {
+          "Members": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AccountMemberInfo"
+            }
+          },
+          "PendingInvitations": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AccountInvitationInfo"
+            }
+          }
+        },
+        "description": "AccountMembersResponse",
+        "type": "object"
+      },
+      "CheckoutRequestResponse": {
+        "title": "CheckoutRequestResponse",
+        "properties": {
+          "CheckoutRequest": {
+            "$ref": "#/components/schemas/CheckoutRequestInfo"
+          },
+          "Invitation": {
+            "$ref": "#/components/schemas/AccountInvitationInfo"
+          },
+          "EmailSent": {
+            "type": "boolean",
+            "nullable": false
+          }
+        },
+        "description": "CheckoutRequestResponse",
+        "type": "object"
+      },
+      "CancelCheckoutRequestResponse": {
+        "title": "CancelCheckoutRequestResponse",
+        "properties": {
+          "Cancelled": {
+            "type": "boolean",
+            "nullable": false
+          }
+        },
+        "description": "CancelCheckoutRequestResponse",
+        "type": "object"
+      },
+      "CheckoutTransaction": {
+        "title": "CheckoutTransaction",
+        "properties": {
+          "Id": {
+            "type": "string"
+          },
+          "Name": {
+            "type": "string"
+          }
+        },
+        "description": "CheckoutTransaction",
         "type": "object"
       },
       "CachedNestingExportResponse": {
@@ -5828,58 +7187,65 @@
         "title": "Nesting1DResult",
         "properties": {
           "NumberOfUniqueNests": {
+            "description": "Number of unique nest patterns in the solution",
             "type": "integer",
             "format": "int32",
             "nullable": false
           },
           "Nests": {
+            "description": "The nest patterns that form the solution",
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/Nesting1DNest"
             }
           }
         },
-        "description": "Nesting1DResult",
+        "description": "Result of a 1D nesting computation",
         "type": "object"
       },
       "Nesting1DNest": {
         "title": "Nesting1DNest",
         "properties": {
           "Multiplicity": {
+            "description": "Number of copies of this nest pattern",
             "type": "integer",
             "format": "int32",
             "nullable": false
           },
           "PlacedLengths": {
+            "description": "The placed lengths within this nest pattern",
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/Nesting1DPlacedLength"
             }
           }
         },
-        "description": "Nesting1DNest",
+        "description": "A single nest pattern within a 1D nesting result",
         "type": "object"
       },
       "Nesting1DPlacedLength": {
         "title": "Nesting1DPlacedLength",
         "properties": {
           "Quantity": {
+            "description": "Quantity of this placed length",
             "type": "integer",
             "format": "int32",
             "nullable": false
           },
           "Length": {
+            "description": "The length dimension",
             "type": "number",
             "format": "double",
             "nullable": false
           },
           "PlacedX": {
+            "description": "The X position of this length within the nest",
             "type": "number",
             "format": "double",
             "nullable": false
           }
         },
-        "description": "Nesting1DPlacedLength",
+        "description": "A placed length within a 1D nest pattern",
         "type": "object"
       },
       "ResponseStatus": {
