@@ -1643,6 +1643,68 @@
         }
       ]
     },
+    "/v1/nesting/abort": {
+      "post": {
+        "tags": [
+          "nesting"
+        ],
+        "summary": "Abort a running quote nest",
+        "description": "Stops the in-progress nest for this `RequestId` and runs none of the remaining sub-nests. The quote then completes as normal, with the groups that were not nested reported as aborted. This is the classic interactive \"cancel\" and is only meaningful for a running quote nest.\n\n**Body**\n\n- `RequestId` — the running quote nest to abort.",
+        "operationId": "AbortNesting",
+        "parameters": [
+          {
+            "name": "RequestId",
+            "in": "query",
+            "x-nullable": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AbortNesting"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The quote nest was aborted, or a reason it could not be.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NestingAborted"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "API key is missing or invalid.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NestingAborted"
+                }
+              }
+            }
+          }
+        },
+        "deprecated": false,
+        "security": [
+          {
+            "Bearer": []
+          }
+        ]
+      },
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/Accept"
+        }
+      ]
+    },
     "/v1/nesting/exportquotenest": {
       "get": {
         "tags": [
@@ -3150,8 +3212,8 @@
   ],
   "servers": [
     {
-      "url": "https://dev.api.nestapi.com",
-      "description": "Staging"
+      "description": "Staging",
+      "url": "https://dev.api.nestapi.com"
     }
   ],
   "components": {
@@ -5365,6 +5427,17 @@
         "description": "ContinueNesting",
         "type": "object"
       },
+      "AbortNesting": {
+        "title": "AbortNesting",
+        "properties": {
+          "RequestId": {
+            "type": "string",
+            "nullable": false
+          }
+        },
+        "description": "AbortNesting",
+        "type": "object"
+      },
       "DxfNestingRequest": {
         "title": "DxfNestingRequest",
         "required": [
@@ -6884,6 +6957,22 @@
           }
         },
         "description": "NestingContinued",
+        "type": "object"
+      },
+      "NestingAborted": {
+        "title": "NestingAborted",
+        "properties": {
+          "Success": {
+            "description": "`true` if the quote nest was aborted.",
+            "type": "boolean",
+            "nullable": false
+          },
+          "ErrorReason": {
+            "description": "Why the abort failed when `Success` is `false`; otherwise null.",
+            "type": "string"
+          }
+        },
+        "description": "NestingAborted",
         "type": "object"
       },
       "NestApiExport": {
