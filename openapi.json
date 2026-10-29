@@ -3212,8 +3212,8 @@
   ],
   "servers": [
     {
-      "url": "https://api.nestapi.com",
-      "description": "Production"
+      "description": "Production",
+      "url": "https://api.nestapi.com"
     }
   ],
   "components": {
