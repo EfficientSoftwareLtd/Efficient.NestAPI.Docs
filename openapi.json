@@ -450,7 +450,7 @@
           "account"
         ],
         "summary": "List the account's API keys",
-        "description": "Admin only (an Admin API key or the account owner). Returns every key on the account with its type and fairness weight.",
+        "description": "Admin only (an Admin API key or the account owner). Returns the account's keys with their type and fairness weight. Expired keys are included so they can be seen and revoked; revoked keys are not. Each key's `Expired` flag is `true` once its expiry date has passed, and `IsActive` is `true` only for a key that is neither expired nor revoked - filter on `IsActive` to find the keys that still work.",
         "operationId": "ListApiKeys",
         "responses": {
           "200": {
@@ -508,7 +508,7 @@
           "account"
         ],
         "summary": "Create an API key",
-        "description": "Admin only. Programmatically issue a key to one of your customers. Defaults to a Usage key; set `KeyType = Admin` to mint another admin key. Subject to the plan's active-key cap.\n\n**Body**\n\n- `Reference` — your own label for the key (for example the customer's name).\n- `Expires` — optional expiry date; omit for a key that does not expire.\n- `Email` — the customer's email address, associated with the key.\n- `Parallelism` — how many nests this key may run concurrently.\n- `KeyType` — `Usage` (nesting only, default) or `Admin`.\n- `Trial` — issue a time-boxed trial key (only meaningful on a paid plan).",
+        "description": "Admin only. Programmatically issue a key to one of your customers. Defaults to a Usage key; set `KeyType = Admin` to mint another admin key. Subject to the plan's active-key cap; expired and revoked keys don't count towards it.\n\n**Body**\n\n- `Reference` — your own label for the key (for example the customer's name).\n- `Expires` — optional expiry date; omit for a key that does not expire.\n- `Email` — the customer's email address, associated with the key.\n- `Parallelism` — how many nests this key may run concurrently.\n- `KeyType` — `Usage` (nesting only, default) or `Admin`.\n- `Trial` — issue a time-boxed trial key (only meaningful on a paid plan).",
         "operationId": "CreateApiKey",
         "parameters": [
           {
@@ -3212,8 +3212,8 @@
   ],
   "servers": [
     {
-      "url": "https://api.nestapi.com",
-      "description": "Production"
+      "description": "Production",
+      "url": "https://api.nestapi.com"
     }
   ],
   "components": {
