@@ -23,12 +23,27 @@ onboarding flow rather than working through the dashboard.
 
 | Endpoint | Method | Purpose |
 |----------|--------|---------|
-| `/admin/keys` | GET | List every key on the account, with its type and fairness weight |
+| `/admin/keys` | GET | List the account's keys, including expired ones, with their type and fairness weight |
 | `/admin/keys` | POST | Create a key |
 | `/admin/keys/{ApiKeyId}` | DELETE | Revoke a key |
 | `/admin/keys/{ApiKeyId}/regenerate` | POST | Rotate a key's secret |
 | `/admin/keys/{ApiKeyId}/type` | PATCH | Change a key between Usage and Admin |
 | `/admin/keys/{ApiKeyId}/weight` | PATCH | Set the key's [fairness weight](/account/fairness) |
+
+### Listing keys
+
+```bash
+curl https://api.nestapi.com/admin/keys \
+  -H "Authorization: Bearer YOUR_ADMIN_KEY"
+```
+
+The list includes keys that have expired, so you can see and revoke them. Revoked keys are
+not listed. Each `ClientKey` carries two flags:
+
+| Field | Notes |
+|-------|-------|
+| `Expired` | `true` once the key's `Expires` date has passed. An expired key is rejected on every request. |
+| `IsActive` | `true` when the key is neither expired nor revoked. Filter on this to find the keys that still work. |
 
 ### Creating a key
 
@@ -56,7 +71,8 @@ curl https://api.nestapi.com/admin/keys \
 | `Trial` | Request a time-boxed trial key (only meaningful on a paid plan). |
 
 The response is a `ClientKey` carrying the new `ApiKey` secret. Store it when you receive it.
-Key creation is subject to your plan's active-key cap.
+Key creation is subject to your plan's active-key cap. Expired and revoked keys don't count
+towards it.
 
 ### Rotating a key
 
