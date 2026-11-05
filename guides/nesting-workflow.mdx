@@ -114,6 +114,20 @@ Even with webhooks you can query a job by `RequestId`:
 | `Completed` | Finished — fetch the result or an export. |
 | `Failed` | The nest errored; see `GET /v1/nesting/failures`. |
 
+## Cancelling a job
+
+Call `POST /v1/nesting/abort` with the `RequestId`. What happens depends on where the job
+has got to:
+
+| Job | Result of the cancel |
+|-----|----------------------|
+| Running (2D) | Stops straight away and completes as normal with the best layout found so far, delivered to your `ResultsWebhookUri`. |
+| Queued (2D) | Removed before it starts. Its status becomes `Failed` ("Cancelled before it started"); no webhook is sent. |
+| Quote nest | Stops the sub-nest in progress and runs none of the rest. The quote completes, with the groups not nested reported as aborted. |
+| Finished, or held for a delayed start and not yet started | Cannot be cancelled. The response has `Success: false` and an `ErrorReason`. |
+
+A running 1D nest cannot be cancelled.
+
 ## Exporting
 
 Once complete, generate production output from the nest:
