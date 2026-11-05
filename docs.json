@@ -64,6 +64,7 @@
             "pages": [
               "POST /v1/nesting/delayedstart",
               "POST /v1/nesting/continue",
+              "POST /v1/nesting/abort",
               "GET /v1/nesting/status",
               "GET /v1/nesting/successes",
               "GET /v1/nesting/failures"
