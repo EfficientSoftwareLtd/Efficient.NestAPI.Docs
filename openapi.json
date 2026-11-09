@@ -1648,8 +1648,8 @@
         "tags": [
           "nesting"
         ],
-        "summary": "Abort a running quote nest",
-        "description": "Stops the in-progress nest for this `RequestId` and runs none of the remaining sub-nests. The quote then completes as normal, with the groups that were not nested reported as aborted. This is the classic interactive \"cancel\" and is only meaningful for a running quote nest.\n\n**Body**\n\n- `RequestId` — the running quote nest to abort.",
+        "summary": "Cancel a nest",
+        "description": "Cancels the nest for this `RequestId`.\n\n- **Quote nest:** stops the in-progress sub-nest and runs none of the rest. The quote then completes as normal, with the groups that were not nested reported as aborted.\n- **2D nest, running:** stops it early. It completes as normal with the best layout found so far, delivered to your `ResultsWebhookUri`.\n- **2D nest, waiting for a free slot:** it is removed before it starts and its status becomes `Failed` (\"Cancelled before it started\").\n\nA nest that has finished, or one submitted with `AutomaticallyStartNesting` false and not yet started, cannot be cancelled. 1D nests cannot be cancelled once running.\n\n**Body**\n\n- `RequestId` — the nest to cancel.",
         "operationId": "AbortNesting",
         "parameters": [
           {
@@ -1672,7 +1672,7 @@
         },
         "responses": {
           "200": {
-            "description": "The quote nest was aborted, or a reason it could not be.",
+            "description": "The nest was cancelled, or a reason it could not be.",
             "content": {
               "application/json": {
                 "schema": {
@@ -6963,7 +6963,7 @@
         "title": "NestingAborted",
         "properties": {
           "Success": {
-            "description": "`true` if the quote nest was aborted.",
+            "description": "`true` if the nest was cancelled.",
             "type": "boolean",
             "nullable": false
           },
