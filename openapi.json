@@ -1146,7 +1146,7 @@
           "nesting"
         ],
         "summary": "Nest from MyNesting XML",
-        "description": "Submit a nesting request from a MyNesting XML document. Returns a `RequestId`; the result is delivered asynchronously to your `ResultsWebhookUri`.\n\n**Body**\n\n- `MyNestingXML` — the MyNesting XML document, as a string.\n- `ResultsWebhookUri` — the URL the completed result is `POST`ed to.",
+        "description": "Submit a nesting request from a MyNesting XML document. Returns a `RequestId`; the result is delivered asynchronously to your `ResultsWebhookUri`.\n\n**Body**\n\n- `MyNestingXML` — the MyNesting XML document, as a string.\n- `ResultsWebhookUri` — the URL the completed result is `POST`ed to.\n\nThe job starts straight away unless the XML's `Settings` element has `StartNesting=\"False\"`, which holds it for `/v1/nesting/delayedstart` (follow it over SignalR). A job that starts straight away needs a `ResultsWebhookUri`. Lengths in the XML are millimetres.",
         "operationId": "MyNestingRequest",
         "parameters": [
           {
@@ -3212,8 +3212,8 @@
   ],
   "servers": [
     {
-      "url": "https://dev.api.nestapi.com",
-      "description": "Staging"
+      "description": "Staging",
+      "url": "https://dev.api.nestapi.com"
     }
   ],
   "components": {
