@@ -876,6 +876,16 @@
                 }
               }
             }
+          },
+          "404": {
+            "description": "The result is no longer available. Results are kept for about two hours from when the nest was submitted, including time spent queued and nesting, and are lost if the service restarts.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RenderResponse"
+                }
+              }
+            }
           }
         },
         "deprecated": false,
@@ -946,6 +956,16 @@
           },
           "401": {
             "description": "API key is missing or invalid.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReportSourceResponseV1"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "The result is no longer available. Results are kept for about two hours from when the nest was submitted, including time spent queued and nesting, and are lost if the service restarts.",
             "content": {
               "application/json": {
                 "schema": {
@@ -3212,8 +3232,8 @@
   ],
   "servers": [
     {
-      "description": "Staging",
-      "url": "https://dev.api.nestapi.com"
+      "url": "https://dev.api.nestapi.com",
+      "description": "Staging"
     }
   ],
   "components": {
